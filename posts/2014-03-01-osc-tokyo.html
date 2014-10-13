@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>Metasepi作戦会議 第13回 議事録 - Metasepi</title>
+
+  <meta name="description" content="metasepi.org">
+  <meta name="author" content="Kiwamu Okabe">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="http://metasepi.org/rss_en.xml" rel="alternate" title="Blog" type="application/rss+xml">
+
+  <!-- CSS concatenated and minified via ant build script-->
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/syntax.css">
+  <link rel="stylesheet" href="../css/calendar.css">
+  <!-- end CSS-->
+
+  <link rel="stylesheet" href="../css/default.css">
+
+  <script src="../js/libs/modernizr-2.0.6.min.js"></script>
+</head>
+
+<body onload="prettyPrint()">
+  <div id="fb-root"></div>
+  <script>
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = '//connect.facebook.net/ja_JP/all.js#xfbml=1';
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
+
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <a href="../">Metasepi</a>
+      </div>
+
+      <div class="nav">
+        <li><a href="../">Home</a></li>
+        <li><a href="../en/posts.html">Blog</a>(<a href="../posts.html">old</a>)</li>
+        <li><a href="../papers.html">Papers</a></li>
+        <li><a href="../map.html">Map</a></li>
+        <li><a href="../memories.html">Memories</a></li>
+        <li><a href="../about.html">About</a></li>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="content clearfix">
+      <h1>Metasepi作戦会議 第13回 議事録</h1>
+<div class="info">Posted on March  1, 2014 / Tags: <a href="../tags/meeting.html">meeting</a>, <a href="../tags/ajhc.html">ajhc</a>, <a href="../tags/ats.html">ats</a>, <a href="../tags/haskell.html">haskell</a>, <a href="../tags/netbsd.html">netbsd</a></div>
+<h2>Table of contents</h2>
+<ul>
+<li><a href="#発表資料">発表資料</a><ul>
+<li><a href="#metasepi-team-meeting-13-netbsd-driver-using-haskell---masterq_teokure">Metasepi team meeting #13: NetBSD driver using Haskell - <span class="citation">@masterq_teokure</span></a></li>
+</ul></li>
+<li><a href="#発表動画">発表動画</a></li>
+<li><a href="#デモ動画">デモ動画</a></li>
+<li><a href="#デモソースコード">デモソースコード</a></li>
+<li><a href="#会議の雰囲気">会議の雰囲気</a></li>
+</ul>
+<hr>
+<p>Metasepi作戦会議 第13回を <a href="http://www.ospn.jp/osc2014-spring/">オープンソースカンファレンス2014 Tokyo/Spring</a> で開催したでゲソ。 今回はNetBSDのサウンドドライバをAjhcコンパイラとHaskell言語で設計置換する話をしてみたでゲソ。 また、Metasepiプロジェクトの最初のイテレーションである <a href="2013-01-09-design_arafura.html">Arafura</a> が終わったので、イテレーションの振り返りと次のイテレーションへの展望をざっくざっくとまとめたでゲッソ。</p>
+<p>今回のデモはNetBSD kernelのHD Audioドライバの割り込みハンドラだけをHaskell化してみて、 実際に音源を再生するものでゲソ。 AjhcにおけるHaskellヒープアロケータであるs_alloc()関数が断続的に呼び出されていることがデモからわかるでゲソ。 ヒープアロケーションは頻繁に行なっているのでゲソが、GCはほとんど発生していないじゃなイカ。 これはどうことなのでゲソ？ Ajhcはコンテキスト単位に分割してHaskellヒープを管理しているでゲソ。 つまりHD Audioからのハードウェア割り込みが発生すると、 バージンなHaskellヒープがハードウェア割り込みに対応するHaskellコンテキストに割り当てられるでゲソ。 割り込み処理はあまり負荷なく終了するためHaskellヒープはあまり使われないまま、当該コンテキストは終了するでゲソ。 この割り込みHaskellコンテキストが終了するタイミングで、 汚れたHaskellヒープはバージンな状態になってヒーププールに戻されるのでゲソ。 ということは次のハードウェア割り込みの時にはまたバージンなHaskellヒープがいつも取り出せるということじゃなイカ! このAjhcの“コンテキストローカルヒープ”によってNetBSD kernel中のGCの発生頻度は極端に抑えられるのでゲソ。</p>
+<p>さて、 <a href="2013-12-24-jats-ug.html">以前にも説明した</a> 通りArafuraイテレーションは終わろうとしているでゲソ。 次のイテレーションでのkernelデザインは</p>
+<p>「NetBSD kernelをATSコンパイラを用いてスナッチ設計する」</p>
+<p>となる予定でゲソ。 この新しいイテレーションの名前を <a href="http://en.wikipedia.org/wiki/Bohai_Sea">Bohai</a> と名付けることにしようと思うでゲソ。 Bohai(渤海)は中国は北京に近い内海なのでゲソが、今は海洋汚染がすすんでいると聞くでゲソ。 さっそく型の力できれいな海を取り戻そうじゃなイカ! そしてもちろんBohaiはATSの作者である <a href="http://www.cs.bu.edu/~hwxi/">Hongwei</a> の故郷でゲソー。</p>
+<h2 id="発表資料">発表資料</h2>
+<h3 id="metasepi-team-meeting-13-netbsd-driver-using-haskell---masterq_teokure">Metasepi team meeting #13: NetBSD driver using Haskell - <span class="citation">@masterq_teokure</span></h3>
+<iframe src="http://www.slideshare.net/slideshow/embed_code/31790906" width="427" height="356" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC; border-width:1px 1px 0; margin-bottom:5px; max-width: 100%;" allowfullscreen> </iframe> 
+<div style="margin-bottom:5px">
+<strong> <a href="https://www.slideshare.net/master_q/metasepi-team-meeting-13-netbsd-driver-using-haskell" title="Metasepi team meeting #13: NetBSD driver using Haskell" target="_blank">Metasepi team meeting #13: NetBSD driver using Haskell</a> </strong> from <strong><a href="http://www.slideshare.net/master_q" target="_blank">Kiwamu Okabe</a></strong>
+</div>
+<h2 id="発表動画">発表動画</h2>
+<iframe width="560" height="350" src="//www.youtube.com/embed/Nt-4XIL1J1c" frameborder="0" allowfullscreen></iframe>
+
+<h2 id="デモ動画">デモ動画</h2>
+<iframe width="420" height="315" src="//www.youtube.com/embed/XEYcR5RG5cA" frameborder="0" allowfullscreen></iframe>
+
+<h2 id="デモソースコード">デモソースコード</h2>
+<p><a href="https://github.com/metasepi/netbsd-arafura-s1">https://github.com/metasepi/netbsd-arafura-s1</a></p>
+<h2 id="会議の雰囲気">会議の雰囲気</h2>
+<p><img src="../img/20140301_R1098839.jpg" /> <img src="../img/20140301_R1098837.jpg" /> <img src="../img/20140301_R1098840.jpg" /></p>
+<p>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_shortname = 'metasepi';
+    var disqus_identifier = '/posts/2014-03-01-osc-tokyo.html';
+    var disqus_url = 'http://metasepi.org' + '/posts/2014-03-01-osc-tokyo.html';
+    var disqus_title = 'Metasepi作戦会議 第13回 議事録';
+    var disqus_developer = 1;
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>
+    Please enable JavaScript to view the 
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  <a href="http://disqus.com" class="dsq-brlink">
+    blog comments powered by <span.logo-disqus>Disqus</span>
+  </a>
+</p>
+
+    </div>
+
+    <footer>
+      <p>
+        This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
+        <br>
+        Metasepi project is supported by <a href="http://www.itpl.co.jp/en/"><img alt="IT Planning, Inc." style="border-width:0" src="../img/it_planning_108x20.png" /></a> ×
+        <a href="https://github.com/axsh/"><img alt="Axsh Co." style="border-width:0" src="../img/axsh_81x25.png" /></a> ×
+        <a href="../past-supporters.html">Past Supporters</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="/js/libs/jquery-1.6.2.min.js"><\/script>')</script>
+
+  <!-- scripts concatenated and minified via ant build script-->
+  <script defer src="../js/plugins.js"></script>
+  <script defer src="../js/script.js"></script>
+  <!-- end scripts-->
+
+  <script>
+    window._gaq = [['_setAccount','UA-158383-8'],['_trackPageview'],['_trackPageLoadTime']];
+    Modernizr.load({
+      load: ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js'
+    });
+  </script>
+
+  <!--[if lt IE 7 ]>
+    <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js">
+    <script>
+      window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})
+  <![endif]-->
+
+<script type="text/javascript">
+<!--
+(function() {
+var login = '',
+    fpf = true,
+    fpn = '__ulfpc';
+
+// DO NOT ALTER BELOW THIS LINE
+var id = 6008444, h = 'a5fe';
+var rand = rand || Math.floor(Math.random() * 9000000) + 1000000;
+if('http:'==document.location.protocol){var params={id:id,lt:3,h:h,url:document.URL,ref:document.referrer,lg:login,rand:rand,bw:(window.innerWidth?window.innerWidth:(document.documentElement && document.documentElement.clientWidth!=0?document.documentElement.clientWidth:(document.body?document.body.clientWidth:0 ))),bh:(window.innerHeight?window.innerHeight:(document.documentElement && document.documentElement.clientHeight!=0?document.documentElement.clientHeight:(document.body?document.body.clientHeight:0 ))),dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sw:screen.width,sh:screen.height,dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sb:document.title,guid:'ON'};if(fpf){params.fp=getuid(fpn);}params.eflg=1;var a=document.createElement('a');var lg=document.createElement('img');lg.setAttribute('id','_ullogimgltr');lg.setAttribute('width',1);lg.setAttribute('height',1);lg.setAttribute('alt','');var src='http://le.nakanohito.jp/le/1/?';for(var key in params ) src=src.concat(key+'='+encodeURIComponent(params[key] )+'&');lg.src=src.slice(0,-1);a.setAttribute('href','http://smartphone.userlocal.jp/');a.setAttribute('target','_blank');a.appendChild(lg);var s=document.getElementsByTagName('body')[0];s.appendChild(a);}
+function getuid(key){var arr=[],date=new Date(),exp=new Date();exp.setFullYear(exp.getFullYear()+7);if(document.cookie){arr=document.cookie.split(";");for(var i=0; i<arr.length; i++ ){var str=arr[i].replace(/^\s+|\s+

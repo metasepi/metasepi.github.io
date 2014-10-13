@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>&quot;ML programmer's guide to ATS&quot; translated into Japanese - Metasepi</title>
+
+  <meta name="description" content="metasepi.org">
+  <meta name="author" content="Kiwamu Okabe">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="http://metasepi.org/rss_en.xml" rel="alternate" title="Blog" type="application/rss+xml">
+
+  <!-- CSS concatenated and minified via ant build script-->
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="../../css/syntax.css">
+  <link rel="stylesheet" href="../../css/calendar.css">
+  <!-- end CSS-->
+
+  <link rel="stylesheet" href="../../css/default.css">
+
+  <script src="../../js/libs/modernizr-2.0.6.min.js"></script>
+</head>
+
+<body onload="prettyPrint()">
+  <div id="fb-root"></div>
+  <script>
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = '//connect.facebook.net/ja_JP/all.js#xfbml=1';
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
+
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <a href="../../">Metasepi</a>
+      </div>
+
+      <div class="nav">
+        <li><a href="../../">Home</a></li>
+        <li><a href="../../en/posts.html">Blog</a>(<a href="../../posts.html">old</a>)</li>
+        <li><a href="../../papers.html">Papers</a></li>
+        <li><a href="../../map.html">Map</a></li>
+        <li><a href="../../memories.html">Memories</a></li>
+        <li><a href="../../about.html">About</a></li>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="content clearfix">
+      <h1>&quot;ML programmer's guide to ATS&quot; translated into Japanese</h1>
+<div class="info">Posted on December 23, 2013 / Tags: <a href="../../en/tags/ats.html">ats</a>, <a href="../../en/tags/translation.html">translation</a></div>
+<h2>Table of contents</h2>
+<ul>
+<li><a href="#mlプログラマ向けats言語ガイド">MLプログラマ向けATS言語ガイド</a><ul>
+<li><a href="#atsのすばらしき世界">ATSのすばらしき世界</a><ul>
+<li><a href="#ノート-線形論理linear-logicについて">ノート: 線形論理(Linear Logic)について</a></li>
+</ul></li>
+<li><a href="#拡張子">拡張子</a></li>
+<li><a href="#めくるめく静">めくるめく静</a></li>
+<li><a href="#異型atypicalの複合型">異型(Atypical)の複合型</a><ul>
+<li><a href="#ノート-intの型はフラット">ノート: intの型はフラット</a></li>
+</ul></li>
+<li><a href="#落ち着かない関数たち">落ち着かない関数たち</a></li>
+<li><a href="#タグ付きのアロー型">タグ付きのアロー型</a></li>
+<li><a href="#stdio.h-から例を">stdio.h から例を</a></li>
+<li><a href="#この文書のtodo">この文書のTODO</a></li>
+</ul></li>
+</ul>
+<hr>
+<p>This article is a part of <a href="http://qiita.com/advent-calendar/2013/theorem_prover">Theorem Prover Advent Calendar 2013 - Qiita [キータ]</a>.</p>
+<p>Do you know about ATS language <a href="http://www.ats-lang.org/">http://www.ats-lang.org/</a>? It has both dependent type and linear type, and to be theorem prover also theorem prover. It supports a variety of programming paradigms that include:</p>
+<ul>
+<li>Functional programming</li>
+<li>Imperative programming</li>
+<li>Concurrent programming</li>
+<li>Modular programming</li>
+</ul>
+<p>Additionally, Hello World program binary compiled by ATS is very small as 23kB.</p>
+<pre><code>$ cat hello.dats
+val _ = print (&quot;Hello, world!\n&quot;)
+implement main () = ()
+$ atscc -o hello hello.dats
+$ ./hello
+Hello, world!
+$ ldd hello | wc -l
+3
+$ nm hello | grep -c &quot; U &quot;
+24
+$ size hello
+   text    data     bss     dec     hex filename
+  21895     908     200   23003    59db hello</code></pre>
+<p>One compiled by Ajhc is 16kB, that is smaller than ATS’s. However, ATS also has good feature for embedded system.</p>
+<pre><code>$ cat Hello.hs
+main = putStrLn &quot;Hello, world!&quot;
+$ ajhc Hello.hs -o Hello
+$ ./Hello
+Hello, world!
+$ ldd Hello | wc -l
+3
+$ nm Hello | grep -c &quot; U &quot;
+19
+$ size Hello
+   text    data     bss     dec     hex filename
+  14056    1337     528   15921    3e31 Hello</code></pre>
+<p>…While writing this article, <a href="http://www.cs.bu.edu/~hwxi/">Hongwei Xi</a> said that ATS2 has move effective feature.</p>
+<pre><code>$ cat hello.dats
+implement
+main0 () = {
+  val () = println! (&quot;Hello world!&quot;)
+}
+$ patscc -o hello hello.dats
+$ ./hello
+Hello world!
+$ ldd hello | wc -l
+3
+$ nm hello | grep -c &quot; U &quot;
+6
+$ size hello
+   text    data     bss     dec     hex filename
+   3473     724      32    4229    1085 hello</code></pre>
+<p>Furthermore, <a href="http://benchmarksgame.alioth.debian.org/u64/benchmark.php?test=all&amp;lang=ats&amp;lang2=gcc&amp;data=u64">ATS is two times slower than C langugage at worst (on Computer Language Benchmarks Game)</a>. That is to say ATS is fast!</p>
+<p>However, any infomation about the ATS lanugage aren’t found in Japan… At beginning, let’s try to translate <a href="http://cs.likai.org/ats/ml-programmers-guide-to-ats">ML programmer’s guide to ATS - liulk @ cs-people</a> into Japanese, to become ATS kung-fu. De-gesso!</p>
+<hr />
+<p>This blog post will not be refreshed, because I decided to put any translation about ATS into github repository. Please see <a href="https://github.com/jats-ug/translate/blob/master/Web/cs.likai.org/ats/ml-programmers-guide-to-ats.md">https://github.com/jats-ug/translate/blob/master/Web/cs.likai.org/ats/ml-programmers-guide-to-ats.md</a>.</p>
+<h1 id="mlプログラマ向けats言語ガイド">MLプログラマ向けATS言語ガイド</h1>
+<p>このガイドではATS (Applied Type System) でのプログラミング作法を解説はしません。 それでも、熟練のMLプログラマであればすぐにATSの用語を理解してATSのコードを読み始めることができると思います。</p>
+<h2 id="atsのすばらしき世界">ATSのすばらしき世界</h2>
+<p>ATSでは、3つの世界でプログラミングをすることを覚えておくと良いでしょう。</p>
+<ul>
+<li>Dynamics(動的な世界): プログラムを実行した時に評価される部分です。これは既存のプログラミング言語に馴染んだプログラマにとってもっとも親しみ深い部分でしょう。</li>
+<li>Proofs(証明): 動的な特性を静的な特性に結びつけます。Proofs(証明)はプログラムの動的な部分と考えることができます。しかし証明はコンパイル後では消滅してしまい、実行時には存在しません。コンパイラはあなたが書いた証明を検査し、動作可能なコードを生成する前に削除するのです。</li>
+<li>Statics(静的な世界): 型検査時にコンパイラによって評価される部分です。静的な部分では静的な式の評価は常に終了しなければなりません。そのため型検査は決定可能です。</li>
+</ul>
+<p>ATSの前身であるDependent MLでは、静的な世界からは依存型を通して動的な世界を見るしかありませんでした。 動的なそれぞれの式は静的な式によって指定された型を持っています。 静的な制約は静的な式の集合によって形成され、 型検査はそれらの制約が充足可能であるかどうか調べます。</p>
+<p>ATSは依存型に加えて証明を使うことができ、 静的な世界をより強く動的な世界に関与させることができます。 プログラマが動的な式と対応する証明の項を混じり合って書くことができるのです。 証明はpropと呼ばれるclassical propositions(古典論理)や、 viewと呼ばれるlinear propositions(linear logic)(線形論理) のどちらかを取ります。</p>
+<p>Prologに馴染んだ人にとっては、propを定義するのはPrologの述語を定義することとよく似ています。 しかし、型検査は自動的にその述語の解決をしてくれません。 プログラムを記述するのと同じように、証明も手動で書き下す必要があります。 証明の記述をすることで、ATSを証明器として使うことができます。</p>
+<p>最後に、動的な世界と静的な世界の分離については 「動的な項の種は静的な種によって特徴づけられる」 と考えることもできます。</p>
+<ul>
+<li>プログラムの項はtypeによって特徴づけられる</li>
+<li>線形論理による証明の項はviewによって特徴づけられる</li>
+<li>古典論理による証明の項はpropによって特徴づけられる</li>
+</ul>
+<h3 id="ノート-線形論理linear-logicについて">ノート: 線形論理(Linear Logic)について</h3>
+<p>線形論理は、弱化規則と縮約規則という構造規則を許可しないという点で古典論理と異なります。 弱化規則は事実(fact)を与えて未使用のままに放置させません。 縮約規則は事実を複数回使用することを許しません。 つまり、事実はきっちり一度だけしか使えないのです。</p>
+<p>viewはその意味では線形論理です。 一般にviewの証明は、リソースの所有の追跡やリソースの状態の更新に使われます。</p>
+<h2 id="拡張子">拡張子</h2>
+<p>ATSで用いられるファイルはいくつかの拡張子を持っています。</p>
+<ul>
+<li>.datsファイルは動的と静的な宣言を格納します。これはSMLにおけるモジュールシステムのstructureやOCamlの.mlファイルに似ています。</li>
+<li>.satsファイルは静的な宣言を格納します。これはSMLにおけるモジュールシステムのsignatureやOCamlの.mliファイルに似ています。</li>
+<li>.catsファイルは.satsファイルから使われるC言語コードを格納します。</li>
+<li>.hatsファイルは動的もしくは静的なATSコードを格納します。これらは.satsもしくは.datsファイルからインクルードすることができます。</li>
+</ul>
+<p>.datsファイルと.satsファイルの特筆すべき違いは、関数と値のシグニチャ宣言です。</p>
+<p><sub>~</sub> {.ocaml} (* .datsファイル *) extern val c: int extern fun foo (x:int): int fun bar (x: int): int = … <sub>~</sub></p>
+<p><sub>~</sub> {.ocaml} (* .satsファイル <em>) val c: int fun foo (x:int): int (</em> foo関数の実体を宣言できません *) <sub>~</sub></p>
+<p>けれども典型的には.satsファイルでは関数の型を定義して、.datsファイルに実装を書きます。 そのような場合、.datsファイルの実装には型注釈は不要です。</p>
+<p><sub>~</sub> {.ocaml} (* .datsファイル *) implement baz (x) = … <sub>~</sub></p>
+<p><sub>~</sub> {.ocaml} (* .satsファイル *) fun baz (x:int): int <sub>~</sub></p>
+<p>重要なことですが、MLと異なり、ATSの型検査器はとても限定された型推論しか行ないません。 あなたは明示的に十分な型注釈を与える必要があります。 そうすればATSは型の導出できるようになるでしょう。</p>
+<h2 id="めくるめく静">めくるめく静</h2>
+<p>ATSはMLに少し似ています。 型とデータ型を定義することができます。</p>
+<pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* ATS *)</span>
+typedef t = <span class="dt">int</span>
+typedef pair (a:<span class="kw">type</span>, b:<span class="kw">type</span>) = '(a, b)
+datatype <span class="dt">option</span> (a:<span class="kw">type</span>) =
+  | <span class="dt">Some</span>(a) <span class="kw">of</span> a
+  | <span class="dt">None</span>(a)</code></pre>
+<pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* SML *)</span>
+<span class="kw">type</span> t = <span class="dt">int</span>
+<span class="kw">type</span> ('a, 'b) pair = 'a * 'b
+datatype 'a <span class="dt">option</span> =
+    <span class="dt">Some</span> <span class="kw">of</span> 'a
+  | <span class="dt">None</span></code></pre>
+<p>上記のSMLコードでは、定義済みのint型があったとき、 新しいtという名前の型をint型の別名として定義しています。 また、いくつかの型変数をパラメータとして取るような型を別名として定義できます。 さらに型変数aをパラメータとして取るoptionというデータ型も定義しています。 これらの識別子はすべて静的な識別子です。 対して、動的な識別子というのは実行時の値になります。</p>
+<p>一方ATSでは、データ型のコンストラクタに型変数を明示的に適用してやる必要があることに注意してください。 データ型に関する詳細な情報は <a href="http://www.ats-lang.org/htdocs-old/TUTORIAL/contents/datatypes.html">Datatypes in the ATS tutorial</a> を参照してくだっさい。 しかし、まずはこの章の残りを読んでからでも良いでしょう。</p>
+<p>型宣言は静的な識別子を“type”という種の静的な式に割り付けます。 つまりtypedefはstadefの特殊形です。 次に示す2つの静的な宣言はほぼ同じです。</p>
+<pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* ATS (1) *)</span>
+<span class="co">(* sta t:type *)</span>
+typedef t = <span class="dt">int</span>
+typedef pair (a:<span class="kw">type</span>, b:<span class="kw">type</span>) =
+  '(a, b)</code></pre>
+<pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* ATS (2) *)</span>
+<span class="co">(* sta t:_ *)</span>
+stadef t = <span class="dt">int</span>
+stadef pair (a:<span class="kw">type</span>, b:<span class="kw">type</span>) =
+  '(a, b)</code></pre>
+<p>この2つが違うのはtypedefがtが種“type”であることを保証するのに対して、 stadefは何も保証しないという点です。</p>
+<p>型は、静的な式や静的な識別子が取り得る数多くの種の内の一つです。 他の種としては以下が挙げられます。</p>
+<ul>
+<li>Ground種: int, bool, char, addrです。これらは依存型の土台になります。</li>
+<li>View種: 線形論理の命題です。</li>
+<li>Prop種: 古典論理の命題です。</li>
+<li>Viewtype種: 線形型です。これはType種とView種が結合したものに見えるかもしれません。</li>
+</ul>
+<p>datasortを使うことで新しい種を定義できます。 <a href="http://www.cs.bu.edu/~hwxi/academic/courses/CS520/Fall08/assignments/05/sllst_dats.html">sllist.dats</a> の最初の数行はリストに似た種を定義する方法を示しています。 またsortdefを使えば種の別名を定義できます。 これはサブセット種と呼ばれる種にpiggy-backな制約をつけます。 <a href="https://ats-lang.svn.sourceforge.net/svnroot/ats-lang/trunk/prelude/sortdef.sats">prelude/sortdef.sats</a> はその例です。 制約はシンプルなboolean種の式です。</p>
+<p>type, view, propの種について、別名定義、abstract quantityの宣言、代数的データのコンストラクタの宣言をすることができます。</p>
+<table border="1" bordercolor="#888888" cellspacing="0" style="border-color:rgb(136,136,136);border-width:1px;border-collapse:collapse">
+<tbody> <tr> <td style="width:60px"> </td> <td style="width:60px">
+Static
+</td> <td style="width:60px">
+Type
+</td> <td style="width:60px">
+View
+</td> <td style="width:60px">
+Prop
+</td> <td style="width:60px">
+Viewtype
+</td> </tr> <tr> <td>
+別名定義
+</td> <td>
+stadef
+</td>
+<td style="width:60px">
+typedef
+</td> <td>
+viewdef
+</td> <td>
+propdef
+</td>
+<td>
+viewtypedef
+</td> </tr> <tr> <td>
+Abstract
+</td> <td>
+sta
+</td>
+<td>
+abstype
+</td> <td>
+absview
+</td> <td>
+absprop
+</td> <td>
+absviewtype
+</td>
+</tr> <tr> <td style="width:60px">
+代数的
+</td> <td style="width:60px">
+(N/A)
+</td>
+<td style="width:60px">
+datatype
+</td> <td style="width:60px">
+<a href="http://www.ats-lang.org/htdocs-old/TUTORIAL/contents/dataviews.html">dataview</a>
+</td>
+<td style="width:60px">
+<a href="http://www.ats-lang.org/htdocs-old/TUTORIAL/contents/dataprops.html">dataprop</a>
+</td>
+<td style="width:60px">
+<a href="http://www.ats-lang.org/htdocs-old/TUTORIAL/contents/dataviewtypes.html">dataviewtype</a>
+</td>
+</tr> </tbody> </table>
+
+<p>type, view, prop, viewtypeはstatics(静的)の特殊形です。 つまり、typedef, viewdef, propdef, viewtypedefの代わりに単にstadefを使うことができます。 同様にabstractの宣言においてもabstype, absview, absprop, absviewtypeの代わりにstaを使うことができます。 けれどもdatasort, datatype, dataview, dataprop, dataviewtypeの間は交換することができません。 これらは新しい何かに対する代数的なコンストラクタを定義します。 (例: datatypeは新しい型のコンストラクタです。dataviewは新しいviewのコンストラクタです。などなど)</p>
+<p>view, prop, viewtypeについて、ここでは取り上げません。 ここでは型とシンプルな静的な式について注目しましょう。</p>
+<p>静的な式は種によって検査される第一級の言語です。 いくつかの例を見てみましょう。</p>
+<ul>
+<li>静的な式として書かれた数値は、種“int”の静的な数値になります</li>
+<li>ビルトインされた数値比較の述語があります。&lt;, &lt;=, &gt;, &gt;=, ==, &lt;&gt;は静的なシグニチャ“(int, int) -&gt; bool”を持っています</li>
+<li>ビルトインされた論理積と論理和である&amp;&amp;, ||は静的なシグニチャ“(bool, bool) -&gt; bool”を持っています</li>
+<li>0 &lt;= 4 &amp;&amp; 4 &lt; 10 は種“bool”の静的な式です</li>
+<li>一般的に、静的なnat_lt関数は次のように定義できます</li>
+</ul>
+<pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* ATS *)</span>
+stadef nat_lt (i: <span class="dt">int</span>, limit: <span class="dt">int</span>) =
+  <span class="dv">0</span> &lt;= i &amp;&amp; i &lt; limit</code></pre>
+<p>静的な関数であるnat_ltは、種boolが要求されればいつでも使うことができます。 例えば、実行時に数値の引数の範囲に制約をつけたい場合を考えましょう。</p>
+<ul>
+<li>ビルトインの静的な識別子intはオーバーロードされています。 種“type”と種“int -&gt; type”の2つの定義を持っています。二次的なintは依存型の数値で静的な式によって指示されています。</li>
+<li>int(3) は種“type”の静的な式です</li>
+<li>ガードを使った存在記号を用いて、数値型を指定した範囲に制限することができます。</li>
+</ul>
+<pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* ATS *)</span>
+typedef <span class="dt">NatLt</span> (n: <span class="dt">int</span>) =
+  [i: <span class="dt">int</span> | nat_lt (i, n)] <span class="dt">int</span>(i)</code></pre>
+<p>これで静的な関数 NatLt: int -&gt; type を定義できました。 静的な数値nを与えれば、NatLtは 0 から n - 1 までの範囲を持つ数値型のサブセットとしての型を返します。 NatLtの実装はこう読めるでしょう。 「種intであり、nat_lt(i, n)が真で、int(i)型として生産されるのようなiが存在する。」</p>
+<p>NatLt(n)型を使った関数は以下のようになるでしょう。</p>
+<p><sub>~</sub> {.ocaml} (* ATS *) fun digit_of_num (i: NatLt(10)): char = … <sub>~</sub></p>
+<p>ATS/Anariatsの中にビルトインされた多くの静的な演算子のシグニチャは <a href="https://svn.code.sf.net/p/ats-lang/code/trunk/prelude/basics_sta.sats">prelude/basics_sta.sats</a> で見ることができます。 stadefを使ってそのような演算子をオーバーロードできることに注意してください。 中置の二項演算子の結合性は <a href="https://ats-lang.svn.sourceforge.net/svnroot/ats-lang/trunk/prelude/fixity.ats">prelude/fixity.sats</a> で定義されています。</p>
+<h2 id="異型atypicalの複合型">異型(Atypical)の複合型</h2>
+<p>最初の区別は、 固定サイズの型はシンプルにtypeで表わされ、 任意サイズの型はt@ypeで表わされるということです。 typeの値はポインタワードと同じサイズを持つという点でMLの値と似ています。 それはボックス化もしくはアンボックス化されています。 typeのボックス化された値はGCによって管理されたヒープの中に配置されます。 ボックス化された値のいくつかの例を見てみましょう。</p>
+<table border="1"> <tbody> <tr> <td>
+<font face="courier
+new,monospace"><b>type</b></font>
+</td> <td>
+Expression
+</td> <td>
+Type
+</td>
+</tr> <tr> <td>
+Tuple
+</td> <td>
+’(e<sub>1</sub>, e<sub>2</sub>, … e<sub>n</sub>)
+</td> <td>
+’(t<sub>1</sub>, t<sub>2</sub>, … t<sub>n</sub>)
+</td> </tr> <tr> <td>
+Record
+</td> <td>
+’{lab<sub>1</sub> = e<sub>1</sub>, lab<sub>2</sub> = e<sub>2</sub>, … lab<sub>n</sub>= e<sub>n</sub>}
+</td> <td>
+’{lab<sub>1</sub> = t<sub>1</sub>, lab<sub>2</sub>= t<sub>2</sub>, … lab<sub>n</sub>= t<sub>n</sub>}
+</td> </tr> <tr>
+<td>
+List
+</td> <td>
+’[e<sub>1</sub>, e<sub>2</sub>, … e<sub>n</sub>]
+</td>
+<td>
+[n:int | n &gt;= 0] list(t, n)<br /> <br /> (* もしくは以下に相当 *)<br /> List t<br />
+</td> </tr> </tbody> </table>
+
+<p>けれどもMLの型はシステムプログラミングにとってあまりにも非力です。 メモリレイアウトをフラットな構造でしか表現できないのですから。 ここでt@ypeの値が役に立ちます。 しばしば このようなメモリレイアウトはview(線形論理のリソース)とt@ypeを持つことがあります。 つまるところ、これがviewt@ypeと呼ばれます。 t@ypeはviewt<span class="citation">@ypeの下位種であることに注意してください</span>。 そのためviewt@ypeと書かれているところを単にt<span class="citation">@ypeと書いても問題ありません</span>。 それどころか、C言語と同じ意味を持つ静的な関数である sizeof(t) が存在し、 それは以下に示す静的なシグニチャを持っています。</p>
+<p><sub>~</sub> {.ocaml} (* ATS *) sta sizeof: viewt@ype -&gt; int <sub>~</sub></p>
+<p>そしてこのsizeof静的関数はt@ypeにもviewt<span class="citation">@ypeにも使えるのです</span>。</p>
+<p>ボックス化タプル, レコード, リストはフラットなtypeとよく似ています。</p>
+<table border="1"> <tbody> <tr> <td>
+種<br />
+</td> <td>
+<font face="courier
+new,monospace"><b>type</b></font>
+</td> <td>
+<font face="courier
+new,monospace"><b>t@ype</b></font>
+</td> </tr> <tr> <td>
+Tuple
+</td>
+<td>
+’(t<sub>1</sub>, t<sub>2</sub>, … t<sub>n</sub>)
+</td>
+<td>
+@(t<sub>1</sub>, t<sub>2</sub>, … t<sub>n</sub>)
+</td> </tr> <tr>
+<td>
+Record
+</td> <td>
+’{lab<sub>1</sub> = t<sub>1</sub>, lab<sub>2</sub> = t<sub>2</sub>, … lab<sub>n</sub>= t<sub>n</sub>}
+</td>
+<td>
+@{lab<sub>1</sub> = t<sub>1</sub>, lab<sub>2</sub>= t<sub>2</sub>, … lab<sub>n</sub>= t<sub>n</sub>}
+</td> </tr> <tr> <td>
+Sequence<br /> (List/Array)<br />
+</td> <td>
+(* list *)<br /> list(t, n)<br />
+</td> <td>
+(<em> array </em>)<br /> @[t][n]<br />
+</td> </tr> </tbody> </table>
+
+<p>しかしフラットな値を構築することは少し異なります。 フラットな値はヒープ(ボックス化値と同じ)もしくはスタック(MLはスタックにデータ構造を確保しませんが)のどちらかに確保されます。 これについては別の記事 <a href="http://cs.likai.org/ats/manipulating-flat-memory">Manipulating flat memory</a> でお話しします。</p>
+<p>フラットなメモリを初期化しないこともできます。 “t?”という注釈は未初期化のメモリの型を表わしています。 そしてそのサイズはt型と同じです。 例えば、未初期化のintは“int?”と書きます。(章末のノートを見てください) しかし、型t1とt2について sizeof(t1) == sizeof(t2) であったとしても、 コンパイラはt1?とt2?を異なる型として扱います。</p>
+<p>最後に、ときどきtype(およびviewtype)やt@ype(およびviewt@ype)の後ろに ‘+’と’-‘という注釈を目にすることがあるでしょう。’+‘はそのパラメータが共変性であることを意味し、’-’はそのパラメータが反変性であることを意味しています。 注釈がない場合には、パラメータは不変性です。 これは静的な式の型に対して下位種を作るのに役に立ちます。 共変性は良く使われますが、反変性を使うことはまれです。</p>
+<h3 id="ノート-intの型はフラット">ノート: intの型はフラット</h3>
+<p>読者をおどろかせるかもしれませんが、ATSにといてintはt@ypeです。 64ビットマシンのC言語型であるintとlongを考えてみると、 intは32ビット、longは64ビット、そしてポインタは64ビットです。 intはポインタと同じサイズではありません。 同様に、ATSではlongもまたt@ypeです。 16ビットマシンの場合、intは16ビット、longは32ビット、ポインタは16ビットであるからです。</p>
+<h2 id="落ち着かない関数たち">落ち着かない関数たち</h2>
+<p>ATSでの関数の型の詳細は注意深く調査するべきでしょう。 その簡単な構成はMLと似ていて、シンプルなものです。</p>
+<pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* ATS (.sats) *)</span>
+<span class="kw">fun</span> function_name (x1: t1, ..., xn: tn): t' =
+  <span class="st">&quot;c_name&quot;</span></code></pre>
+<p><sub>~</sub> {.ocaml} (* SML (signature) <em>) val function_name: (t1 </em> … * tn) -&gt; t’ <sub>~</sub></p>
+<p>C言語に変換すると、function_nameはc_nameという名前になることに注意してください。 もっともこれは任意ですが。 これは以下のように使われます。</p>
+<ol style="list-style-type: decimal">
+<li>既存のC言語関数をATSにインポートして、ATSの型をつける</li>
+<li>ATSで実装された関数をC言語側へエクスポートする</li>
+</ol>
+<p>これはいくつかの重要な帰結を持ちます。</p>
+<ul>
+<li>ATSにおける関数の型はC言語の関数に直接写像されうる</li>
+<li>ATSにおける関数は常にアンカリー化されている</li>
+<li>タグを指定しないかぎり、デフォルトでは関数はクロージャとして使えず、部分適用も使えない (タグについては後に説明します)</li>
+</ul>
+<p>依存型にガードとアサートを追加すれば、以下のようになります。</p>
+<pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* ATS (.sats) *)</span>
+<span class="kw">fun</span> function_name
+    {forall quantifiers | guards} (x1: t1, ..., xn: tn):
+    [exists quantifiers | asserts] t' =
+  <span class="st">&quot;c_name&quot;</span></code></pre>
+<p>ガードはforall量化子の項で書くことができる種boolの静的な式です。 アサートはforallとexists量化子の項で書くことができる種boolの静的な式です。 なおかつ、t1 … tn はforall量化子の項で書くことができる種typeの静的な式です。 そしてt’はforallとexists量化子の項で書くことができる種typeの静的な式です。</p>
+<p>証明の項をさらに追加してみましょう。</p>
+<pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* ATS (.sats) *)</span>
+<span class="kw">fun</span> function_name
+    {forall quantifiers | guards} (pf1: prop1, ..., pfp: propp | x1: t1, ..., xn: tn):
+    [exists quantifiers | asserts] (prop'1, ..., prop'q | t') =
+  <span class="st">&quot;c_name&quot;</span></code></pre>
+<p>アンカリー化された引数は、証明の変数とプログラムの変数の2つの部分に分断されたことに注意してください。 証明の変数はコンパイルが完了すると削除されます。 プログラムの変数はコンパイルされてもそのまま残ります。</p>
+<p>最後になりますが、ATSはタグとして副作用を追跡するためにアロー型を使います。</p>
+<pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* ATS (.sats) *)</span>
+<span class="kw">fun</span> function_name
+    {forall quantifiers | guards} (pf1: prop1, ..., pfp: propp | x1: t1, ..., xn: tn)
+  :&lt;tag1, ..., tagk&gt;
+    [exists quantifiers | asserts] (prop'1, ..., prop'q | t') =
+  <span class="st">&quot;c_name&quot;</span></code></pre>
+<p>もし関数の型を静的な式として書きたければ、 (これまで見てきた関数のシグニチャに反していますが) 型の表現は以下のようになるでしょう。</p>
+<p><sub>~</sub> {.ocaml} (* ATS (static expression) *) {forall…} (prop1, …, propp | t1, …, tn) -<tag1, ..., tagk> [exists…] (prop’1, …, prop’q | t’) <sub>~</sub></p>
+<h2 id="タグ付きのアロー型">タグ付きのアロー型</h2>
+<p>ATSにおけるアロー型は“-&lt;&gt;”のような見た目をしています。 アロー型は -&lt;tag1, …, tagk&gt; のような形で装飾されます。 関数の様々な種を区別するために、現時点でATSは次のようなタグを解釈します。</p>
+<ul>
+<li>prf: 証明関数 (型検査が終わると削除れます)</li>
+<li>lin: 確実に一度だけしか呼び出されない関数</li>
+<li>fun: 通常の関数 (デフォルト)</li>
+<li>cloptr: 明示的に解放されるべきクロージャ</li>
+<li>cloref: GCされるクロージャ</li>
+</ul>
+<p>同様に次のタグは副作用の追跡に用いられます。</p>
+<ul>
+<li>exn: 例外を起こす</li>
+<li>ntm: 終了しない可能性がある</li>
+<li>ref: グローバルメモリへの参照を共有している</li>
+<li>0: 副作用なし (純粋)</li>
+<li>1: 副作用あり (判断できない場合も含まれる)</li>
+</ul>
+<p>副作用の有無を示すための表現である0や1の接尾辞を、関数の種を区別するタグに加えて付けることができます。 例えば cloref1 は、MLのようにGC対象となるクロージャであり、 副作用(例外発生など)を持っているというタグになります。</p>
+<h2 id="stdio.h-から例を">stdio.h から例を</h2>
+<p>ATSにおける典型的な関数の宣言はどのような見た目になるのでしょうか？ ここでは、次のプロトタイプ宣言を持つ標準Cライブラリを例に取りましょう。</p>
+<p><sub>~</sub> {.c} char <em>fgets(char </em>s, int size, FILE *stream); <sub>~</sub></p>
+<p>manページには 「fgets()はstreamから最大で size - 1 個の文字を読み込み、sが指すバッファに格納する。 ’\0’が一つバッファの中の最後の文字の後に書き込まれる。」 とあり、さらに 「fgets()は、成功するとsを返し、エラーや1文字も読み込んでいないのにファイルの終わりになった場合に NULL を返す。」 とあります。</p>
+<p>ATSでの宣言を見てみましょう。コメントをたくさん入れてみました。</p>
+<pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* fgets_vはfgetsの結果である成功か失敗を表わします。</span>
+<span class="co"> *)</span>
+dataview fgets_v (sz:<span class="dt">int</span>, addr, addr) =
+  | <span class="co">(* 成功した場合、lアドレスは長さnの文字列を格納している</span>
+<span class="co">     * サイズszの文字列バッファでしょう。</span>
+<span class="co">     *)</span>
+    {n:nat | n &lt; sz} {l:addr | l &lt;&gt; null}
+      fgets_v_succ(sz, l, l) <span class="kw">of</span> strbuf(sz, n) @ l
+
+  | <span class="co">(* 失敗した場合、lアドレスは単にサイズszの空箱のはずです *)</span>
+    {l:addr}
+      fgets_v_fail(sz, l, null) <span class="kw">of</span> bytes(sz) @ l
+
+<span class="kw">fun</span> fgets
+    <span class="co">(* countは読み込むバイト数です。</span>
+<span class="co">     * それはバッファのサイズであるsz以内でなければなりません。</span>
+<span class="co">     *)</span>
+    {count, sz:<span class="dt">int</span> | <span class="dv">0</span> &lt; count; count &lt;= sz}
+
+    <span class="co">(* fmはファイルモードのための静的な種です。 *)</span>
+    {m:fm}
+
+    <span class="co">(* lはバッファのアドレスを示す依存型です。 *)</span>
+    {l:addr}
+
+    ( <span class="co">(* ファイルモードが読み出しアクセスを含んでいることの証明。 *)</span>
+      pf_mod: file_mode_lte(m, r),
+      <span class="co">(* szバイトの列がlに存在することに対する線形論理の証明。 *)</span>
+      pf_buf: bytes(sz) @ l
+    | <span class="co">(* lアドレスによって指示されるポインタを引数に取る。 *)</span>
+      s: ptr(l),
+      <span class="co">(* 読み込む最大のバイト数を引数に取る。  *)</span>
+      size: <span class="dt">int</span>(count),
+      <span class="co">(* モードmによってオープンされたFILE構造体への参照を引数に取る。 *)</span>
+      stream: &amp;<span class="dt">FILE</span>(m)
+    )
+  :&lt;&gt;
+    <span class="co">(* l'は返値のポインタを指示します。 *)</span>
+    [l':addr]
+
+    ( <span class="co">(* pf_bufは消費され、ここでl'に一致する変化を形成します。 *)</span>
+      <span class="co">(* pf_buf is consumed, and this determines what it turns into</span>
+<span class="co">       * according to l'.</span>
+<span class="co">       *)</span>
+      fgets_v(sz, l, l')
+    | <span class="co">(* l'で示すポインタを返します。 *)</span>
+      ptr(l')
+    ) =
+  <span class="st">&quot;fgets&quot;</span></code></pre>
+<p>この例はATS/Anariatsの <a href="https://svn.code.sf.net/p/ats-lang/code/trunk/libc/SATS/stdio.sats">libc/SATS/stdio.sats</a> を元にしています。 わずかな修正と多くのコメントによる注釈が加えてあります。 はじめて見る人には明確には思えないかもしれません。 いくつかポイントがあります。</p>
+<ul>
+<li>実際のバッファサイズ(静的な変数sz)がfgets()が使用するサイズ(静的な変数count)よりも大きいことを許可しています。これはlibc/SATS/stdio.satsにおけるfgetsで定式化されています。しかしfgets()にバッファを全て使わないようには強制しません。</li>
+<li>fgets()がNULLではない値を返す場合、以前と同じポインタを返さなければなりません。しかもそのポインタはstrbufによって解釈を与えれていて、文字列バッファはゼロ終端されています。そうでない場合、同じく bytes(sz) @ l が返ります。fgets()の結果の種別を見分ける唯一の方法は、if式でそのポインタがNULLであるのかチェックすることです。もしあなたがチェックを見逃したら、型エラーになります。しかしエラーのチェックに飽き飽きすることもあるでしょう。そんな時はlibc/SATS/stdio.satsで定義されている例外を使うバージョンであるfgets_exn()を使うこともできます。</li>
+</ul>
+<p>参考のために、上記のコードからコメントを削除したものを載せておきます。</p>
+<pre class="sourceCode ocaml"><code class="sourceCode ocaml">dataview fgets_v (sz:<span class="dt">int</span>, addr, addr) =
+  | {n:nat | n &lt; sz} {l:addr | l &lt;&gt; null}
+      fgets_v_succ(sz, l, l) <span class="kw">of</span> strbuf(sz, n) @ l
+  | {l:addr}
+      fgets_v_fail(sz, l, null) <span class="kw">of</span> bytes(sz) @ l
+
+<span class="kw">fun</span> fgets
+    {n, sz:<span class="dt">int</span> | <span class="dv">0</span> &lt; n; n &lt;= sz} {m:fm} {l:addr} (
+      pf_mod: file_mode_lte(m, r), pf_buf: bytes(sz) @ l
+    | s: ptr(l), size: <span class="dt">int</span>(n), stream: &amp;<span class="dt">FILE</span>(m))
+  :&lt;&gt;
+    [l':addr] (fgets_v(sz, l, l') | ptr(l')) =
+  <span class="st">&quot;fgets&quot;</span></code></pre>
+<h2 id="この文書のtodo">この文書のTODO</h2>
+<ul>
+<li>fn (再帰なし) と fun (再帰あり) の比較との終端の計測</li>
+</ul>
+<p>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_shortname = 'metasepi';
+    var disqus_identifier = '/en/posts/2013-12-23-ml_guide_to_ats.html';
+    var disqus_url = 'http://metasepi.org' + '/en/posts/2013-12-23-ml_guide_to_ats.html';
+    var disqus_title = '"ML programmer's guide to ATS" translated into Japanese';
+    var disqus_developer = 1;
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>
+    Please enable JavaScript to view the 
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  <a href="http://disqus.com" class="dsq-brlink">
+    blog comments powered by <span.logo-disqus>Disqus</span>
+  </a>
+</p>
+
+    </div>
+
+    <footer>
+      <p>
+        This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
+        <br>
+        Metasepi project is supported by <a href="http://www.itpl.co.jp/en/"><img alt="IT Planning, Inc." style="border-width:0" src="../../img/it_planning_108x20.png" /></a> ×
+        <a href="https://github.com/axsh/"><img alt="Axsh Co." style="border-width:0" src="../../img/axsh_81x25.png" /></a> ×
+        <a href="../../past-supporters.html">Past Supporters</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="/js/libs/jquery-1.6.2.min.js"><\/script>')</script>
+
+  <!-- scripts concatenated and minified via ant build script-->
+  <script defer src="../../js/plugins.js"></script>
+  <script defer src="../../js/script.js"></script>
+  <!-- end scripts-->
+
+  <script>
+    window._gaq = [['_setAccount','UA-158383-8'],['_trackPageview'],['_trackPageLoadTime']];
+    Modernizr.load({
+      load: ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js'
+    });
+  </script>
+
+  <!--[if lt IE 7 ]>
+    <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js">
+    <script>
+      window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})
+  <![endif]-->
+
+<script type="text/javascript">
+<!--
+(function() {
+var login = '',
+    fpf = true,
+    fpn = '__ulfpc';
+
+// DO NOT ALTER BELOW THIS LINE
+var id = 6008444, h = 'a5fe';
+var rand = rand || Math.floor(Math.random() * 9000000) + 1000000;
+if('http:'==document.location.protocol){var params={id:id,lt:3,h:h,url:document.URL,ref:document.referrer,lg:login,rand:rand,bw:(window.innerWidth?window.innerWidth:(document.documentElement && document.documentElement.clientWidth!=0?document.documentElement.clientWidth:(document.body?document.body.clientWidth:0 ))),bh:(window.innerHeight?window.innerHeight:(document.documentElement && document.documentElement.clientHeight!=0?document.documentElement.clientHeight:(document.body?document.body.clientHeight:0 ))),dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sw:screen.width,sh:screen.height,dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sb:document.title,guid:'ON'};if(fpf){params.fp=getuid(fpn);}params.eflg=1;var a=document.createElement('a');var lg=document.createElement('img');lg.setAttribute('id','_ullogimgltr');lg.setAttribute('width',1);lg.setAttribute('height',1);lg.setAttribute('alt','');var src='http://le.nakanohito.jp/le/1/?';for(var key in params ) src=src.concat(key+'='+encodeURIComponent(params[key] )+'&');lg.src=src.slice(0,-1);a.setAttribute('href','http://smartphone.userlocal.jp/');a.setAttribute('target','_blank');a.appendChild(lg);var s=document.getElementsByTagName('body')[0];s.appendChild(a);}
+function getuid(key){var arr=[],date=new Date(),exp=new Date();exp.setFullYear(exp.getFullYear()+7);if(document.cookie){arr=document.cookie.split(";");for(var i=0; i<arr.length; i++ ){var str=arr[i].replace(/^\s+|\s+

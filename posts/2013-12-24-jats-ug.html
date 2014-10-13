@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>Japan ATS User Group (JATS-UG)の発足とAjhcの今後について - Metasepi</title>
+
+  <meta name="description" content="metasepi.org">
+  <meta name="author" content="Kiwamu Okabe">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="http://metasepi.org/rss_en.xml" rel="alternate" title="Blog" type="application/rss+xml">
+
+  <!-- CSS concatenated and minified via ant build script-->
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/syntax.css">
+  <link rel="stylesheet" href="../css/calendar.css">
+  <!-- end CSS-->
+
+  <link rel="stylesheet" href="../css/default.css">
+
+  <script src="../js/libs/modernizr-2.0.6.min.js"></script>
+</head>
+
+<body onload="prettyPrint()">
+  <div id="fb-root"></div>
+  <script>
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = '//connect.facebook.net/ja_JP/all.js#xfbml=1';
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
+
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <a href="../">Metasepi</a>
+      </div>
+
+      <div class="nav">
+        <li><a href="../">Home</a></li>
+        <li><a href="../en/posts.html">Blog</a>(<a href="../posts.html">old</a>)</li>
+        <li><a href="../papers.html">Papers</a></li>
+        <li><a href="../map.html">Map</a></li>
+        <li><a href="../memories.html">Memories</a></li>
+        <li><a href="../about.html">About</a></li>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="content clearfix">
+      <h1>Japan ATS User Group (JATS-UG)の発足とAjhcの今後について</h1>
+<div class="info">Posted on December 24, 2013 / Tags: <a href="../tags/ats.html">ats</a>, <a href="../tags/translation.html">translation</a>, <a href="../tags/haskell.html">haskell</a>, <a href="../tags/ajhc.html">ajhc</a>, <a href="../tags/jhc.html">jhc</a>, <a href="../tags/netbsd.html">netbsd</a></div>
+<h2>Table of contents</h2>
+<ul>
+<li><a href="#japan-ats-user-group-jats-ug-について">Japan ATS User Group (JATS-UG) について</a></li>
+<li><a href="#なんでいきなりユーザーグループ">なんでいきなりユーザーグループ？</a></li>
+<li><a href="#一通のメール">一通のメール</a></li>
+</ul>
+<hr>
+<p>この記事は <a href="http://qiita.com/advent-calendar/2013/theorem_prover">Theorem Prover Advent Calendar 2013 - Qiita [キータ]</a> の12/24(火曜)分じゃなイカ。</p>
+<h2 id="japan-ats-user-group-jats-ug-について">Japan ATS User Group (JATS-UG) について</h2>
+<p>突然でゲソが、<a href="http://www.ats-lang.org/">ATS言語</a>に関しての日本語情報を集約する組織である、 “Japan ATS User Group” 略して “JATS-UG” <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> を発足することをここに宣言するでゲソ! このユーザグループのホームページは <a href="http://jats-ug.metasepi.org/">http://jats-ug.metasepi.org/</a> でゲソ。</p>
+<p><a href="http://jats-ug.metasepi.org/"><img src="../img/20131224_jats-ug_website.png" /></a></p>
+<p>現在このページではATS言語の概要説明と <a href="https://github.com/jats-ug/translate/blob/master/index.md">翻訳ドキュメント置き場</a> へのリンクぐらいしかないでゲソ。 とりあえず年内はドキュメント翻訳に力を入れたいと思っているでゲソ。</p>
+<h2 id="なんでいきなりユーザーグループ">なんでいきなりユーザーグループ？</h2>
+<p>最近ワシがATSを調べているのには理由があるのでゲソ。 現在我々がいるイテレーションは <a href="2013-01-09-design_arafura.html">Arafura</a> でゲソ。 このArafuraイテレーションで採用しているデザインは</p>
+<p>「NetBSD kernelをAjhc Haskellコンパイラを用いてスナッチ設計する」</p>
+<p>だったでゲソ。 NetBSD kernelのデバイスドライバをAjhcでスナッチする環境がととのった今、 次のイテレーションの計画をオーバーラップして行なうべきでゲソ。 技術探索は賭け事と似ていて分散投資した方が成功率が上がるため、 イテレーションは短かくまわした方が効果的じゃなイカ？ 本当はまっとうなKPTなどをした方がいいでゲソが、現状の問題点は明らかでゲソ。</p>
+<p>それはAjhcの開発に工数を取られすぎているという問題でゲソ。 Haskellを組み込み応用するということ自体が既に挑戦であり、 その挑戦がある程度成功しないと製品化のスタート地点に立てないのでゲソ。 しかもこのAjhcの開発にアップストリームであるJohnはほとんど工数を払えていないでゲソ。 さらにAjhcには組み込み応用するための技術的課題が山積しているじゃなイカ。 つまりProblemでゲソ。</p>
+<p>一方、スナッチ設計という手法については比較的うまくいっているでゲソ。 NetBSD kernelに適用した結果はこのイテレーションでも完全に判明することはないでゲソが、 今のところ根本的欠陥は見つかっていないでゲソ。 NetBSD kernelの採用についてはまだなにもわからないでゲソが、 おそらく最初のイテレーションではどんなkernelを使っても似たようなもんだと思うでゲソ。 つまり、この2つは明らかにKeepじゃなイカ？</p>
+<p>じゃあTryはなんでゲソ？ <a href="2013-12-23-ml_guide_to_ats.html">昨日の記事</a> に書いたでゲソがATSはjhcと似たような特性を持っていて、 組み込み開発に適用することができそうでゲソ。 ところがこのATS、日本語の情報がまったくなく、さらには日本にはコミュニティさえないようだったでゲソ。。。 埋もれておくにはもったいないコンパイラなのにでゲソ! これはマズイじゃないか。 そこで、ワシがATSを勉強するついでに各種文書を翻訳して日本にATSコミュニティを築こうと思うのでゲソ。 これが次のイテレーションを開始するために必要な最初のTryでゲソ。</p>
+<h2 id="一通のメール">一通のメール</h2>
+<p>そこーしているとATSの作者からメールが届いたじゃなイカ。 なになに？でゲソ。</p>
+<pre><code>Date: Mon Dec 23 11:40 JST 2013
+
+Hi Metasepi-chan,
+
+I spent quite some time today browsing metasepi.org.
+
+I am really interested in your Metasepi project, partly because I myself
+wanted to implement NetBSD in ATS about 5 years ago. Unfortunately, I
+never had time to get the project started as I needed to spend so much time
+on ATS2. By the way, I had planned to use the very same approach which you
+call &quot;Snatch&quot;. I had also considered Minix but I chose NetBSD because
+it was a real OS.
+
+I think I know first-handedly the dilemma you are currently in.
+On one hand, you want to be able to fully focus on writing the kernel.
+On the other hand, you also need to add features to Ajhc constantly
+to address all kinds of issues that keep popping up, which undoubtedly
+makes it very difficult for you to focus.
+
+I would highly recommend that you use ATS to implement NetBSD kernel.
+Unlike jhc, there is no semantics gap between ATS and C. In
+particular, they both use the same native unboxed data representation.
+Once you become familiar with ATS, you can readily visualize the C code
+that your ATS source is to be compiled into. ATS is truly an ideal
+language for the kind of &quot;Snatch&quot; approach you want to take to re-write
+NetBSD. If you take the lead, then I will be happy to &quot;chip in&quot; :)
+
+I also spent some time reading documentation on jhc. Personally, I
+feel that there is simply too much uncertainty to use it in real kernel
+implementation. Features like GC could make the kernel highly unpredictable,
+scaring away potential users.
+
+I think that we both believe C is the right language for systems
+programming. The problem with C is that it is too difficult to write
+correct C programs. ATS is designed to allow the programmer to
+correctly write the kind of C programs he or she wanted to write in the
+first place. While jhc generates C code, the kind of C code it generates
+may not be suited for kernel. This is what I call a semantics gap.
+
+I write this message in the hope that we could join effort in doing
+something that has not been done up to now: Writing a real kernel in
+(largely) functional style that can truly deliever safety-wise as well as
+performance-wise.
+
+Cheers,
+
+--Hongwei</code></pre>
+<p>なんかワシが言いたいことを全部先取りされてしまったでゲソ。 これも中国四千年の重みという奴かもしれないじゃなイカ。</p>
+<p>しかし、それでもjhcの先に未来がないということにはならないでゲソ。 ATSの型表現は安全ではあっても、Haskellのように豊かではないでゲソ。 決定的なのは型クラスの不在でゲソ。 Haskellの上でくりひろげられている非常に高階なプログラミングは、 ATSを使っても実現できるとは思えないでゲソ。 つまり、高階な記述を使ったアプリケーションにはATSはおそらく向いていないということじゃなイカ。 Haskellの問題点は、その高階な表現を完全にGHCの実装に依存してしまっていることでゲソ。 GHCが組み込みドメインで使えるようになる見込みはほぼゼロでゲソ。 じゃぁjhcはどーなのカ？ というと今度はGHCの豊かな表現力の多くが通用しないのでゲソ。 つまりjhcはATSのような記述をプログラマに強いるHaskell実装に現状なってしまっているのでゲソ。 もしjhcの持つこの問題をいくばくかでも軽減できれば、Haskellの応用範囲は劇的に広がることになるはずじゃなイカ。 問題は、誰がその膨大な工数を払うことができるのか、ということでゲソ。 Johnのような天才でさえ擦り切れてしまう、このあまりにも挑戦的な課題に誰が立ち向かうことができるのか。 言い方をかえれば、誰がJohnの心をささえることができるのか。 それがHaskellの組み込み応用という分野に高くそびえたつ冷たい壁なんじゃなイカ？</p>
+<p>でもこれも前進に他ならないのでゲソ。 <a href="http://www.youtube.com/watch?v=60tEEOWCdv8">のぼった日は沈み</a>、 <a href="http://www.utamap.com/showkasi.php?surl=B11852">そして願わくばまた日の出の時刻に光が見えることを信じて</a>。 メリークリスマス! でゲソ。</p>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>名前が <a href="http://jaws-ug.jp/">JAWS-UG – AWS User Group – Japan</a> のモロパクりですね。。。<a href="#fnref1">↩</a></p></li>
+</ol>
+</div>
+<p>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_shortname = 'metasepi';
+    var disqus_identifier = '/posts/2013-12-24-jats-ug.html';
+    var disqus_url = 'http://metasepi.org' + '/posts/2013-12-24-jats-ug.html';
+    var disqus_title = 'Japan ATS User Group (JATS-UG)の発足とAjhcの今後について';
+    var disqus_developer = 1;
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>
+    Please enable JavaScript to view the 
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  <a href="http://disqus.com" class="dsq-brlink">
+    blog comments powered by <span.logo-disqus>Disqus</span>
+  </a>
+</p>
+
+    </div>
+
+    <footer>
+      <p>
+        This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
+        <br>
+        Metasepi project is supported by <a href="http://www.itpl.co.jp/en/"><img alt="IT Planning, Inc." style="border-width:0" src="../img/it_planning_108x20.png" /></a> ×
+        <a href="https://github.com/axsh/"><img alt="Axsh Co." style="border-width:0" src="../img/axsh_81x25.png" /></a> ×
+        <a href="../past-supporters.html">Past Supporters</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="/js/libs/jquery-1.6.2.min.js"><\/script>')</script>
+
+  <!-- scripts concatenated and minified via ant build script-->
+  <script defer src="../js/plugins.js"></script>
+  <script defer src="../js/script.js"></script>
+  <!-- end scripts-->
+
+  <script>
+    window._gaq = [['_setAccount','UA-158383-8'],['_trackPageview'],['_trackPageLoadTime']];
+    Modernizr.load({
+      load: ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js'
+    });
+  </script>
+
+  <!--[if lt IE 7 ]>
+    <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js">
+    <script>
+      window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})
+  <![endif]-->
+
+<script type="text/javascript">
+<!--
+(function() {
+var login = '',
+    fpf = true,
+    fpn = '__ulfpc';
+
+// DO NOT ALTER BELOW THIS LINE
+var id = 6008444, h = 'a5fe';
+var rand = rand || Math.floor(Math.random() * 9000000) + 1000000;
+if('http:'==document.location.protocol){var params={id:id,lt:3,h:h,url:document.URL,ref:document.referrer,lg:login,rand:rand,bw:(window.innerWidth?window.innerWidth:(document.documentElement && document.documentElement.clientWidth!=0?document.documentElement.clientWidth:(document.body?document.body.clientWidth:0 ))),bh:(window.innerHeight?window.innerHeight:(document.documentElement && document.documentElement.clientHeight!=0?document.documentElement.clientHeight:(document.body?document.body.clientHeight:0 ))),dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sw:screen.width,sh:screen.height,dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sb:document.title,guid:'ON'};if(fpf){params.fp=getuid(fpn);}params.eflg=1;var a=document.createElement('a');var lg=document.createElement('img');lg.setAttribute('id','_ullogimgltr');lg.setAttribute('width',1);lg.setAttribute('height',1);lg.setAttribute('alt','');var src='http://le.nakanohito.jp/le/1/?';for(var key in params ) src=src.concat(key+'='+encodeURIComponent(params[key] )+'&');lg.src=src.slice(0,-1);a.setAttribute('href','http://smartphone.userlocal.jp/');a.setAttribute('target','_blank');a.appendChild(lg);var s=document.getElementsByTagName('body')[0];s.appendChild(a);}
+function getuid(key){var arr=[],date=new Date(),exp=new Date();exp.setFullYear(exp.getFullYear()+7);if(document.cookie){arr=document.cookie.split(";");for(var i=0; i<arr.length; i++ ){var str=arr[i].replace(/^\s+|\s+

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>Detail of the jgc garbage collector - Metasepi</title>
+
+  <meta name="description" content="metasepi.org">
+  <meta name="author" content="Kiwamu Okabe">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="http://metasepi.org/rss_en.xml" rel="alternate" title="Blog" type="application/rss+xml">
+
+  <!-- CSS concatenated and minified via ant build script-->
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/syntax.css">
+  <link rel="stylesheet" href="../css/calendar.css">
+  <!-- end CSS-->
+
+  <link rel="stylesheet" href="../css/default.css">
+
+  <script src="../js/libs/modernizr-2.0.6.min.js"></script>
+</head>
+
+<body onload="prettyPrint()">
+  <div id="fb-root"></div>
+  <script>
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = '//connect.facebook.net/ja_JP/all.js#xfbml=1';
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
+
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <a href="../">Metasepi</a>
+      </div>
+
+      <div class="nav">
+        <li><a href="../">Home</a></li>
+        <li><a href="../en/posts.html">Blog</a>(<a href="../posts.html">old</a>)</li>
+        <li><a href="../papers.html">Papers</a></li>
+        <li><a href="../map.html">Map</a></li>
+        <li><a href="../memories.html">Memories</a></li>
+        <li><a href="../about.html">About</a></li>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="content clearfix">
+      <h1>Detail of the jgc garbage collector</h1>
+<div class="info">Posted on May 17, 2013 / Tags: <a href="../tags/jhc.html">jhc</a>, <a href="../tags/jgc.html">jgc</a>, <a href="../tags/gc.html">gc</a>, <a href="../tags/haskell.html">haskell</a></div>
+<h2>Table of contents</h2>
+<ul>
+<li><a href="#gcのルート">GCのルート</a><ul>
+<li><a href="#root_stackとは何か">root_stackとは何か</a></li>
+<li><a href="#root_stableptrsとは何か">root_StablePtrsとは何か</a></li>
+<li><a href="#他にgcルートになるものは">他にGCルートになるものは？</a></li>
+</ul></li>
+<li><a href="#ミューテターにとってのクリティカルリージョンは">ミューテターにとってのクリティカルリージョンは？</a></li>
+<li><a href="#参照はループになるか">参照はループになるか？</a></li>
+<li><a href="#gcを中断再開できるか">GCを中断/再開できるか</a></li>
+</ul>
+<hr>
+<p>AjhcのデフォルトのGCはjgcでゲソ。 このjgcについての解説は <a href="https://twitter.com/dec9ue">@dec9ue</a> 氏のプレゼン資料が詳しかったでゲソ。</p>
+<iframe src="http://www.slideshare.net/slideshow/embed_code/16298437" width="427" height="356" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC;border-width:1px 1px 0;margin-bottom:5px" allowfullscreen webkitallowfullscreen mozallowfullscreen> </iframe> 
+<div style="margin-bottom:5px">
+<strong> <a href="http://www.slideshare.net/dec9ue/gc-16298437" title="小二病でもGCやりたい" target="_blank">小二病でもGCやりたい</a> </strong> from <strong><a href="http://www.slideshare.net/dec9ue" target="_blank">dec9ue</a></strong>
+</div>
+<p>これからAjhcを使って以下を実現したいでゲソ。</p>
+<ul>
+<li>クリティカルリージョンの保護</li>
+<li>割り込みコンテキストをHaskellで記述</li>
+<li>並列実行</li>
+<li>GCの中断と再開</li>
+</ul>
+<p>とすると、jgcに対してもう少し突っ込んだ理解を今しておいた方が良さそうでゲソ。</p>
+<h2 id="gcのルート">GCのルート</h2>
+<p>gc_perform_gc関数の前半でヒープにマーキングしているはずなので、読めばわかるはずじゃなイカ。</p>
+<pre class="sourceCode c"><code class="sourceCode c"><span class="dt">void</span> A_STD
+gc_perform_gc(gc_t gc)
+{
+        profile_push(&amp;gc_gc_time);
+        arena-&gt;number_gcs++;
+
+        <span class="dt">unsigned</span> number_redirects = <span class="dv">0</span>;
+        <span class="dt">unsigned</span> number_stack = <span class="dv">0</span>;
+        <span class="dt">unsigned</span> number_ptr = <span class="dv">0</span>;
+        <span class="kw">struct</span> stack stack = EMPTY_STACK;
+
+        clear_used_bits(arena);
+
+        debugf(<span class="st">&quot;Setting Roots:&quot;</span>);
+        stack_check(&amp;stack, root_stack.ptr);
+        <span class="kw">for</span>(<span class="dt">unsigned</span> i = <span class="dv">0</span>; i &lt; root_stack.ptr; i++) {
+                gc_add_grey(&amp;stack, root_stack.stack[i]);
+                debugf(<span class="st">&quot; %p&quot;</span>, root_stack.stack[i]);
+        }
+        debugf(<span class="st">&quot; # &quot;</span>);
+        <span class="kw">struct</span> StablePtr *sp;
+        LIST_FOREACH(sp, &amp;root_StablePtrs, link) {
+            gc_add_grey(&amp;stack, (entry_t *)sp);
+            debugf(<span class="st">&quot; %p&quot;</span>, root_stack.stack[i]);
+        }</code></pre>
+<p>gc_perform_gc関数が開始すると…</p>
+<ol style="list-style-type: decimal">
+<li>stack一時変数を初期化</li>
+<li>arenaの中身のused_bitを一般0クリア</li>
+<li>stack_check関数を呼び出してstack一時変数がroot_stack.ptr個分のエントリを格納できるか調べ</li>
+<li>stack一時変数のサイズが足りなければstack_grow関数でreallocを呼び出し拡張</li>
+<li>root_stack.stack配列の要素を一つずつgc_add_grey関数に食わせる</li>
+<li>gc_add_grey関数はroot_stack.stack配列の要素がヒープ中かどうかチェックする。nh_stuff配列の中にある要素は静的確保されたもの</li>
+<li>さらにgc_add_grey関数はroot_stack.stack配列の要素にused_bitが立ってないことを確認してから立てる</li>
+<li>6と7に成功したらstack-&gt;stack配列に当該root_stack.stack配列の要素を積む</li>
+<li>BSDリストであるroot_StablePtrsを順番に辿る</li>
+<li>6と7と同様にしてgc_add_grey関数でチェックした後stack-&gt;stack配列にroot_StablePtrsの要素を積む</li>
+</ol>
+<p>ということはroot_stackとroot_StablePtrsの2つがGCルートということになるでゲソ。</p>
+<p>ところでちょっと気になるんでゲソが、 root_StablePtrsをgc_add_grey関数にかける前にstack_checkをもう一度呼び出してstack一時変数のサイズが足りてるかチェックした方がいいんじゃなイカ… このままだとStablePtrの個数が多い場合にはふっとぶ気がするでゲソ。</p>
+<h3 id="root_stackとは何か">root_stackとは何か</h3>
+<p>これはふつーのプログラムでは使われないようでゲソ。 jhcのGrinがgc_add_root関数を使うコード吐き出すことがあるようでゲソ。</p>
+<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/src/C/FromGrin2.hs</span>
+declareEvalFunc isCAF n <span class="fu">=</span> <span class="kw">do</span>
+    fn <span class="ot">&lt;-</span> tagToFunction n
+    grin <span class="ot">&lt;-</span> asks rGrin
+    declareStruct n
+    nt <span class="ot">&lt;-</span> nodeType n
+    <span class="kw">let</span> ts <span class="fu">=</span> runIdentity <span class="fu">$</span> findArgs (grinTypeEnv grin) n
+        fname <span class="fu">=</span> toName <span class="fu">$</span> <span class="st">&quot;E_&quot;</span> <span class="fu">++</span> show fn
+        aname <span class="fu">=</span> name <span class="st">&quot;arg&quot;</span>
+        rvar <span class="fu">=</span> localVariable wptr_t (name <span class="st">&quot;r&quot;</span>)
+        atype <span class="fu">=</span> ptrType nt
+        body <span class="fu">=</span> rvar <span class="fu">=*</span> functionCall (toName (show <span class="fu">$</span> fn)) (mgc [ project' (arg i) (variable aname) <span class="fu">|</span> _ <span class="ot">&lt;-</span> ts <span class="fu">|</span> i <span class="ot">&lt;-</span> [(<span class="dv">1</span><span class="ot"> ::</span> <span class="dt">Int</span>) <span class="fu">..</span> ] ])
+        update <span class="fu">=</span>  f_update (variable aname) rvar
+        addroot <span class="fu">=</span>  <span class="kw">if</span> isCAF <span class="fu">&amp;&amp;</span> fopts <span class="dt">FO.Jgc</span> <span class="kw">then</span> f_gc_add_root (cast sptr_t rvar) <span class="kw">else</span> emptyExpression
+        body' <span class="fu">=</span> <span class="kw">if</span> not isCAF <span class="fu">&amp;&amp;</span> fopts <span class="dt">FO.Jgc</span> <span class="kw">then</span> subBlock (gc_roots [f_MKLAZY(variable aname)] <span class="fu">&amp;</span> rest) <span class="kw">else</span> rest
+        rest <span class="fu">=</span> body <span class="fu">&amp;</span> update <span class="fu">&amp;</span> addroot <span class="fu">&amp;</span> creturn rvar
+    tellFunctions [function fname wptr_t (mgct [(aname,atype)]) [a_STD, a_FALIGNED] body']
+    return fname</code></pre>
+<p>ちょっとコードの意図が取りにくいでゲソが“E_”ではじまる関数はサンクの評価関数であるはずなので、 スタティックサンクだとGCルートになるんじゃなイカ？ その時に“E_”ではじまる評価関数の中にgc_add_root関数が埋め込まれるはずでゲソ。 …でもなんかそのケースは稀な気がするでゲソ。 grinの最適化の中でほとんどのスタティックサンクは使用元の関数の中に展開されてしまいそうでゲソ。 簡単な例を作ってみてもgc_add_root関数が埋め込まれたC言語コードをajhcは吐き出さないようでゲソ。 まぁここではこんなものがGCルートになる可能性があるよ、ということでいいんじゃなイカ？</p>
+<h3 id="root_stableptrsとは何か">root_StablePtrsとは何か</h3>
+<p><a href="http://www.haskell.org/ghc/docs/latest/html/libraries/base/Foreign-StablePtr.html#v:newStablePtr">Foreign.StablePtr.newStablePtr(これはGHCのAPI)</a> をHaskellコードから呼ぶとstruct StablePtrがstableptr.cでmalloc確保されて、 root_StablePtrsに繋がれるんでゲソ。 つまりStablePtrを保管する器ということじゃなイカ。リストより木構造の方が良い気もするでゲソ…</p>
+<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- | newStablePtr will seq its argument to get rid of nasty GC issues and be</span>
+<span class="co">-- compatible with FFI calling conventions, if this is an issue, you can put an</span>
+<span class="co">-- extra box around it.</span>
+<span class="ot">newStablePtr ::</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">StablePtr</span> a)
+newStablePtr x <span class="fu">=</span> <span class="kw">do</span>
+    fromUIO <span class="fu">$</span> \w <span class="ot">-&gt;</span> <span class="kw">case</span> c_newStablePtr (toBang_ x) w <span class="kw">of</span>
+        (<span class="st"># w', s #) -&gt; (# w', fromBang_ s #)</span></code></pre>
+<pre class="sourceCode c"><code class="sourceCode c">wptr_t c_newStablePtr(sptr_t c) {
+    <span class="kw">struct</span> StablePtr* sp = malloc(<span class="kw">sizeof</span>(<span class="kw">struct</span> StablePtr));
+    sp-&gt;contents = c;
+    LIST_INSERT_HEAD(&amp;root_StablePtrs, sp, link);
+    assert(GET_PTYPE(sp) == <span class="dv">0</span>);
+    <span class="kw">return</span> (wptr_t)TO_SPTR(P_VALUE,(wptr_t)sp);
+}</code></pre>
+<h3 id="他にgcルートになるものは">他にGCルートになるものは？</h3>
+<p>さすがに上の2つだけがGCルートのはずないでゲソ。根っこがスカスカじゃなイカ。 もう一つGCルートがあり、それはC言語のミューテターがコツコツ作るGCスタックでゲソ。 gc_perform_gc関数の続きを読むと…</p>
+<pre class="sourceCode c"><code class="sourceCode c">        stack_check(&amp;stack, gc - gc_stack_base);
+        number_stack = gc - gc_stack_base;
+        <span class="kw">for</span>(<span class="dt">unsigned</span> i = <span class="dv">0</span>; i &lt; number_stack; i++) {
+                debugf(<span class="st">&quot; |&quot;</span>);
+                <span class="co">// TODO - short circuit redirects on stack</span>
+                sptr_t ptr = gc_stack_base[i];
+                <span class="kw">if</span>(<span class="dv">1</span> &amp;&amp; (IS_LAZY(ptr))) {
+                        assert(GET_PTYPE(ptr) == P_LAZY);
+                        VALGRIND_MAKE_MEM_DEFINED(FROM_SPTR(ptr), <span class="kw">sizeof</span>(uintptr_t));
+                        <span class="kw">if</span>(!IS_LAZY(GETHEAD(FROM_SPTR(ptr)))) {
+                                <span class="dt">void</span> *gptr = TO_GCPTR(ptr);
+                                <span class="kw">if</span>(gc_check_heap(gptr))
+                                        s_set_used_bit(gptr);
+                                number_redirects++;
+                                debugf(<span class="st">&quot; *&quot;</span>);
+                                ptr = (sptr_t)GETHEAD(FROM_SPTR(ptr));
+                        }
+                }
+                <span class="kw">if</span>(__predict_false(!IS_PTR(ptr))) {
+                        debugf(<span class="st">&quot; -&quot;</span>);
+                        <span class="kw">continue</span>;
+                }
+                number_ptr++;
+                entry_t *e = TO_GCPTR(ptr);
+                debugf(<span class="st">&quot; %p&quot;</span>,(<span class="dt">void</span> *)e);
+                gc_add_grey(&amp;stack, e);
+        }</code></pre>
+<p>このコードはgcからgc_stack_baseまでの領域の差す先を entry_tポインタとしてgc_add_grey関数に食わせるでゲソ。 gcとgc_stack_baseはプログラム起動時には同じ場所を指しているでゲソ。</p>
+<pre class="sourceCode c"><code class="sourceCode c"><span class="dt">void</span>
+jhc_alloc_init(<span class="dt">void</span>) {
+        VALGRIND_PRINTF(<span class="st">&quot;Jhc-Valgrind mode active.</span><span class="ch">\n</span><span class="st">&quot;</span>);
+<span class="ot">#ifdef _JHC_JGC_FIXED_MEGABLOCK</span>
+        saved_gc = gc_stack_base = (<span class="dt">void</span> *) gc_stack_base_area;
+<span class="ot">#else</span>
+        saved_gc = gc_stack_base = malloc((1UL &lt;&lt; <span class="dv">18</span>)*<span class="kw">sizeof</span>(gc_stack_base[<span class="dv">0</span>]));
+<span class="ot">#endif</span>
+        arena = new_arena();</code></pre>
+<p>ところがミューテターの中にgc_frame0関数というのがよくあらわれるでゲソ。</p>
+<pre class="sourceCode c"><code class="sourceCode c"><span class="dt">static</span> wptr_t A_STD A_MALLOC
+fR$__fJhc_Basics_$pp(gc_t gc,sptr_t v80776080,sptr_t v58800110)
+{
+        {   gc_frame0(gc,1,v58800110); <span class="co">// &lt;= GCルートにv58800110を登録</span>
+            wptr_t v100444 = eval(gc,v80776080);
+            <span class="kw">if</span> (SET_RAW_TAG(CJhc_Prim_Prim_$BE) == v100444) {
+                <span class="kw">return</span> eval(gc,v58800110);
+            } <span class="kw">else</span> {
+                sptr_t v106;
+                sptr_t v108;
+                <span class="co">/* (&quot;CJhc.Prim.Prim.:&quot; ni106 ni108) */</span>
+                v106 = ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)v100444)-&gt;a1;
+                v108 = ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)v100444)-&gt;a2;
+                {   gc_frame0(gc,2,v106,v108); <span class="co">// &lt;= GCルートにv106とv108を登録</span>
+                    sptr_t x7 = s_alloc(gc,cFR$__fJhc_Basics_$pp);
+                    ((<span class="kw">struct</span> sFR$__fJhc_Basics_$pp*)x7)-&gt;head = TO_FPTR(&amp;E__fR$__fJhc_Basics_$pp);
+                    ((<span class="kw">struct</span> sFR$__fJhc_Basics_$pp*)x7)-&gt;a1 = v108;
+                    ((<span class="kw">struct</span> sFR$__fJhc_Basics_$pp*)x7)-&gt;a2 = v58800110;
+                    sptr_t v69834446 = MKLAZY(x7);
+                    {   gc_frame0(gc,1,v69834446); <span class="co">// &lt;= GCルートにv69834446を登録</span>
+                        wptr_t x8 = s_alloc(gc,cCJhc_Prim_Prim_$x3a);
+                        ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x8)-&gt;a1 = v106;
+                        ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x8)-&gt;a2 = v69834446;
+                        <span class="kw">return</span> x8;
+                    }
+                }
+            }
+        }
+}</code></pre>
+<p>このgc_frame0関数はイカのような実装で、つまり上のミューテターはGCルートに</p>
+<ul>
+<li>v58800110: 関数の引数の一つ</li>
+<li>v106とv108: v100444のメンバー。v100444自体はGCルートに登録されない</li>
+<li>v69834446: s_alloc関数で確保したx7スマートポインタに遅延ビットを立てたもの</li>
+</ul>
+<p>の4つを登録しているでゲソ。</p>
+<pre class="sourceCode c"><code class="sourceCode c"><span class="ot">#define gc_frame0(gc,n,...) void *ptrs[n] = { __VA_ARGS__ }; \</span>
+        <span class="kw">for</span>(<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; n; i++) gc[i] = (sptr_t)ptrs[i]; \
+        gc_t sgc = gc;  gc_t gc = sgc + n;</code></pre>
+<p>どーせs_alloc関数を呼ばないかぎりはGCは走らないので、 GCルートに追加するタイミングはs_alloc関数の直前まではあんまり厳密にしなくても良いはずでゲソ。 また、eval関数はサンクの評価を行なう可能性があり、その中でs_alloc関数を呼び出す可能性があるので、 その直前でGCルートを最新の情報に更新しておく必要があるはずでゲソ。</p>
+<p>ミューテターをC言語で書いていても、コンパイルパイプラインで自動生成するようにすれば、 gc_frame0関数の挿入のようなアイデアも実装漏れが起きることを気にしないで実現できるでゲソ。 いいじゃなイカ! しかもこの“gc”という参照でゲソが、スコープを抜けると元の位置を自動的に指すようになっているでゲソ。 C言語のスコープを使った上手いスタックの実現方法でゲソ。</p>
+<p>ただしこのjgcのGCスタックはC言語のスタックに強く紐づいているため、 再入を実現するためにはGCスタックもコンテキスト分持つ必要があるでゲソ。 例えばLWP毎に一つ必要になるはずでゲソ。 さらに多重割り込みを考慮すると割り込み毎に一つ必要になるはずじゃなイカ。</p>
+<h2 id="ミューテターにとってのクリティカルリージョンは">ミューテターにとってのクリティカルリージョンは？</h2>
+<p>まずイカの関数は単一のHaskellヒープをさわってしまうので、なんらかの排他処理が必要になるはずでゲソ。</p>
+<ul>
+<li>gc_perform_gc</li>
+<li>s_alloc</li>
+<li>gc_add_root</li>
+<li>gc_array_alloc</li>
+<li>gc_array_alloc_atomic</li>
+<li>gc_malloc_foreignptr</li>
+<li>gc_new_foreignptr</li>
+</ul>
+<p>これらの関数はajhc/rts/rts/gc_jgc.cで閉じているので、C言語実装で比較的容易に排他処理できそうでゲソ。 またgc_frame0マクロはgcポインタを作りなおすだけなのでゲソが、 コンストラクタを呼んでスマートポインタを得てからgcポインタの位置をずらしているでゲソ。 この方式のままだとコンストラクタ+GCルート登録までを排他するか、 自コンテキストから他コンテキストとでヒープを分けるか…とにかく使えるしろものではないじゃなイカ。 さらに並列実行の時にいったいどーやって誰がgc_perform_gcすれば良いのかは今のところアイデアがないでゲソ… 完全に並列GCにする方法があるのか、はたまたジャイアントロックするにしても他のコンテキストを停止させる方法があるのか謎でゲソ…</p>
+<h2 id="参照はループになるか">参照はループになるか？</h2>
+<p>おそらくループなることはないでゲソ。 gc_perform_gc関数を読むかぎりでは参照ループを検出しているようには見えないでゲソ。 それなら参照カウントを使ったGCを導入することも可能なんじゃなイカ？ メジャーGCが走る頻度を下げることが可能かもしれないでゲソ。</p>
+<h2 id="gcを中断再開できるか">GCを中断/再開できるか</h2>
+<p>jgcではGC開始時にused_bitを全クリアしていまうため、 マーキングフェーズが完全に完了しないかぎりヒープ領域の内でどこを使って良いのか判別できないでゲソ。 無理矢理回避策を考えるとするとビットマーク領域を2倍持っておいて、 一方を空き領域検索用に、一方を漸進的なマーキング用に使うというアイデアでゲソ。 ただ、ほんとうにこの実装で上手くいくかはやってみないとわからないところでゲソ…</p>
+<p>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_shortname = 'metasepi';
+    var disqus_identifier = '/posts/2013-05-17-jgc_detail.html';
+    var disqus_url = 'http://metasepi.org' + '/posts/2013-05-17-jgc_detail.html';
+    var disqus_title = 'Detail of the jgc garbage collector';
+    var disqus_developer = 1;
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>
+    Please enable JavaScript to view the 
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  <a href="http://disqus.com" class="dsq-brlink">
+    blog comments powered by <span.logo-disqus>Disqus</span>
+  </a>
+</p>
+
+    </div>
+
+    <footer>
+      <p>
+        This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
+        <br>
+        Metasepi project is supported by <a href="http://www.itpl.co.jp/en/"><img alt="IT Planning, Inc." style="border-width:0" src="../img/it_planning_108x20.png" /></a> ×
+        <a href="https://github.com/axsh/"><img alt="Axsh Co." style="border-width:0" src="../img/axsh_81x25.png" /></a> ×
+        <a href="../past-supporters.html">Past Supporters</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="/js/libs/jquery-1.6.2.min.js"><\/script>')</script>
+
+  <!-- scripts concatenated and minified via ant build script-->
+  <script defer src="../js/plugins.js"></script>
+  <script defer src="../js/script.js"></script>
+  <!-- end scripts-->
+
+  <script>
+    window._gaq = [['_setAccount','UA-158383-8'],['_trackPageview'],['_trackPageLoadTime']];
+    Modernizr.load({
+      load: ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js'
+    });
+  </script>
+
+  <!--[if lt IE 7 ]>
+    <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js">
+    <script>
+      window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})
+  <![endif]-->
+
+<script type="text/javascript">
+<!--
+(function() {
+var login = '',
+    fpf = true,
+    fpn = '__ulfpc';
+
+// DO NOT ALTER BELOW THIS LINE
+var id = 6008444, h = 'a5fe';
+var rand = rand || Math.floor(Math.random() * 9000000) + 1000000;
+if('http:'==document.location.protocol){var params={id:id,lt:3,h:h,url:document.URL,ref:document.referrer,lg:login,rand:rand,bw:(window.innerWidth?window.innerWidth:(document.documentElement && document.documentElement.clientWidth!=0?document.documentElement.clientWidth:(document.body?document.body.clientWidth:0 ))),bh:(window.innerHeight?window.innerHeight:(document.documentElement && document.documentElement.clientHeight!=0?document.documentElement.clientHeight:(document.body?document.body.clientHeight:0 ))),dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sw:screen.width,sh:screen.height,dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sb:document.title,guid:'ON'};if(fpf){params.fp=getuid(fpn);}params.eflg=1;var a=document.createElement('a');var lg=document.createElement('img');lg.setAttribute('id','_ullogimgltr');lg.setAttribute('width',1);lg.setAttribute('height',1);lg.setAttribute('alt','');var src='http://le.nakanohito.jp/le/1/?';for(var key in params ) src=src.concat(key+'='+encodeURIComponent(params[key] )+'&');lg.src=src.slice(0,-1);a.setAttribute('href','http://smartphone.userlocal.jp/');a.setAttribute('target','_blank');a.appendChild(lg);var s=document.getElementsByTagName('body')[0];s.appendChild(a);}
+function getuid(key){var arr=[],date=new Date(),exp=new Date();exp.setFullYear(exp.getFullYear()+7);if(document.cookie){arr=document.cookie.split(";");for(var i=0; i<arr.length; i++ ){var str=arr[i].replace(/^\s+|\s+

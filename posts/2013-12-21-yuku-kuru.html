@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>めたせぴ2013☆ゆく年くる年 - Metasepi</title>
+
+  <meta name="description" content="metasepi.org">
+  <meta name="author" content="Kiwamu Okabe">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="http://metasepi.org/rss_en.xml" rel="alternate" title="Blog" type="application/rss+xml">
+
+  <!-- CSS concatenated and minified via ant build script-->
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/syntax.css">
+  <link rel="stylesheet" href="../css/calendar.css">
+  <!-- end CSS-->
+
+  <link rel="stylesheet" href="../css/default.css">
+
+  <script src="../js/libs/modernizr-2.0.6.min.js"></script>
+</head>
+
+<body onload="prettyPrint()">
+  <div id="fb-root"></div>
+  <script>
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = '//connect.facebook.net/ja_JP/all.js#xfbml=1';
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
+
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <a href="../">Metasepi</a>
+      </div>
+
+      <div class="nav">
+        <li><a href="../">Home</a></li>
+        <li><a href="../en/posts.html">Blog</a>(<a href="../posts.html">old</a>)</li>
+        <li><a href="../papers.html">Papers</a></li>
+        <li><a href="../map.html">Map</a></li>
+        <li><a href="../memories.html">Memories</a></li>
+        <li><a href="../about.html">About</a></li>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="content clearfix">
+      <h1>めたせぴ2013☆ゆく年くる年</h1>
+<div class="info">Posted on December 21, 2013 / Tags: <a href="../tags/haskell.html">haskell</a>, <a href="../tags/ajhc.html">ajhc</a>, <a href="../tags/project.html">project</a></div>
+<h2>Table of contents</h2>
+<ul>
+<li><a href="#年12月">2012年12月</a></li>
+<li><a href="#年1月">2013年1月</a></li>
+<li><a href="#年2月">2013年2月</a></li>
+<li><a href="#年3月">2013年3月</a></li>
+<li><a href="#年4月">2013年4月</a></li>
+<li><a href="#年5月">2013年5月</a></li>
+<li><a href="#年6月">2013年6月</a></li>
+<li><a href="#年7月">2013年7月</a></li>
+<li><a href="#年8月">2013年8月</a></li>
+<li><a href="#年9月">2013年9月</a></li>
+<li><a href="#年10月">2013年10月</a></li>
+<li><a href="#年11月">2013年11月</a></li>
+<li><a href="#年12月-1">2013年12月</a></li>
+<li><a href="#年まとめ">2013年まとめ</a></li>
+<li><a href="#年はどんな年">2014年はどんな年？</a></li>
+</ul>
+<hr>
+<p>この記事は <a href="http://qiita.com/advent-calendar/2013/haskell">Haskell Advent Calendar 2013 - Qiita [キータ]</a> の12/21(土曜)分じゃなイカ。</p>
+<p>今年はワシにとって激動の年だったでゲソ。 Metasepiプロジェクトが本格的に稼動して、 <a href="http://ajhc.metasepi.org/">Ajhc Haskellコンパイラ</a> という最初の製品を出荷できたでゲソ。 今年一年を振り返って、ついでに来年の願望や妄想をしてみなイカ？ また何をするのにどれぐらい工数がかかったのか覚えておくと後で役に立つかもしれないでゲソ。</p>
+<h2 id="年12月">2012年12月</h2>
+<p>去年何をしていたかというとGHCのランタイムの調査をしていたんじゃなイカ。 つまり<a href="http://www.paraiso-lang.org/ikmsm/books/c83.html">C83 λカ娘</a>の記事の執筆でゲソ。 この調査の中でワシは組み込みドメインへのGHCの応用に深く絶望したんでゲソ。。。 当時のワシの頭の中には関数型言語と言えばHaskellで、その処理系はGHCしか読んだことがなかったのでゲソ。 型推論を持つ言語のランタイムがGHCの様なありさまでは、POSIXの外に出ることは不可能、、、 と思っていたとき偶然試した <a href="http://repetae.net/computer/jhc/">Jhc Haskell Compiler</a> がとても小さなランタイムを持つことを知ったのでゲソ。 これはいいじゃなイカ! とC83 λカ娘にはその希望だけにおわせておいたでゲソ。</p>
+<p>と、C83 λカ娘の記事が完成したその夜、突然 <a href="http://www.paraiso-lang.org/ikmsm/books/c84-sample.pdf">めたせぴ☆ふぁうんでーしょんの序章</a> の文章が頭に舞い降りたんでゲソ。</p>
+<pre><code>$ pwd
+/home/kiwamu/doc/IKMSM/C84
+$ git log -p
+--snip--
+commit 7e43651b93631caa192bb7097126f9ce4735f060
+Author: Kiwamu Okabe &lt;kiwamu@debian.or.jp&gt;
+Date:   Mon Dec 24 18:37:54 2012 +0900
+
+    About metasepi.</code></pre>
+<p>すぐに記事の序章と結末だけ書いて、その間の文章を埋めるべくMetasepiの開発はスタートしたんでゲソ。 まさしくDDD(同人誌 - ドリブン - デベロップメント)じゃなイカ!</p>
+<p><em>やったことリスト</em></p>
+<ul>
+<li><a href="http://www.paraiso-lang.org/ikmsm/books/c84.html">C84 λカ娘</a> の原稿作成開始</li>
+<li>jhcのソースコード読み開始</li>
+<li><a href="https://gitorious.org/metasepi/netbsd-arafura/activities">NetBSD bootloaderの一部をHaskell化</a>できた</li>
+</ul>
+<p><a href="http://repetae.net/"><img src="http://repetae.net/pictures/me_tree_small.jpg" alt="若いころの John Meacham" /></a></p>
+<h2 id="年1月">2013年1月</h2>
+<p>ひたすらjhcをコネコネしているとなんとなくソースコードツリー詳細が見えてきたのがこの頃でゲソ。 ドキュメントを全く読まずにこれ以上ソースを読んでも身にならないと気がついて <a href="https://twitter.com/dif_engine">@dif_engine</a>さんに協力してもらって <a href="http://repetae.net/computer/jhc/manual.html">Jhc User’s Manual</a> を日本語訳したでゲソ。 はっきり言ってこのドキュメントはコンパイラの利用者が読むものではなかったでゲソ! 後半にいくと型システムの説明になり、今でもワシは完全には理解できていないでゲソ。。。 この日本語訳は今では <a href="http://ajhc.metasepi.org/manual_ja.html">Ajhcのホームページの中に置かれている</a> でゲソ。</p>
+<p>また、このころ「Haskell言語で少しずつC言語の設計を置換する」という設計手法を思いつくでゲソ。 もちろん、OSの書かれたC言語のソースコードをHaskellで設計置換するのに少しずつでうまくいく訳がないのでゲソ。 最も大きな問題はほとんどのコンパイラがコンパイラの利用者が意図しても再入可能かコードを吐き出せない、つまり割込みハンドラをHaskellによって記述できないからじゃなイカ。 しかしとにかくここではjhcを成長させて再入可能にすることでC言語の設計置換に使えるコンパイラに仕立て上げようということになったのでゲソ。 これ以降、この設計置換の手法を“スナッチ”と呼び、Ajhcを使ったスナッチをNetBSDに対して適用するデザインを“Arafura”と呼ばれることになるでゲソ。 Arafuraを実現するためのjhcの拡張、つまりarafura-jhcという名前にその後変遷することになるでゲソ。</p>
+<p><em>やったことリスト</em></p>
+<ul>
+<li><a href="http://metasepi.org/posts/2013-01-09-design_arafura.html">Arafuraイテレーション</a>開始</li>
+<li><a href="http://metasepi.org/posts/2013-01-12-jhc_manual_ja.html">jhcユーザーズマニュアル日本語訳</a></li>
+</ul>
+<p><a href="http://metasepi.org/posts/2013-01-09-design_arafura.html"><img src="../draw/2012-12-27-arafura_design.png" alt="デザインArafura" /></a></p>
+<h2 id="年2月">2013年2月</h2>
+<p>この頃はフラストーレションがたまっていたでゲソ。 その原因は2つあったでゲソ。 1つ目はMetasepiプロジェクトに関する説明会を開催したはよかったのでゲソが、 その効果はほとんどなかったということでゲソ。 2つ目はjhcの作者であるJohnのメールやpatchに対する反応が悪かったことでゲソ。</p>
+<p>しかし、そもそも他人に期待するのは間違っていたのでゲソ。 何に使えるかもわからないコンパイラとOSに興味を持つ訳がないのでゲソ。しかも、ワシの説明は絵空事にしか見えないじゃなイカ。 そこでこの月以降はメモリが数百kB程度しかないマイコンをターゲットにして、デモをひたすら作成することにしたでゲソ。 マイコンをターゲットにする理由はいくつかあるのでゲソが最も大きいかったのが 「他のHaskellコンパイラでは絶対できない実現できない領域に安定した足場を築き、 そこから他の領域に攻撃を仕掛ける」 という短期的な戦略でゲソ。</p>
+<p>またこの頃 <a href="https://twitter.com/dec9ue">@dec9ue</a> さんがjhcのGCを調査してくれて、後々楽ができたでゲソ!</p>
+<p><em>やったことリスト</em></p>
+<ul>
+<li><a href="http://metasepi.org/posts/2013-02-03-kickoff_meeting.html">Metasepi作戦会議 第1回</a>開催</li>
+<li><a href="https://github.com/ajhc/demo-cortex-m3">STBee Miniマイコンデモ</a>作成</li>
+</ul>
+<p><a href="http://strawberry-linux.com/catalog/items?code=32105"><img src="https://raw.github.com/ajhc/demo-cortex-m3/master/img/stbee-mini-v2.jpg" alt="STBee Miniマイコンボード" /></a></p>
+<h2 id="年3月">2013年3月</h2>
+<p>この月、ついに来るべきときが来たでゲソ。 あまりにもJohnの動きが遅いことにイライラしていたワシはjhcをforkすることにしたでゲソ。 <a href="http://www.haskell.org/pipermail/jhc/2013-March/001007.html">[jhc] ANNOUNCE: Start Ajhc project with forking jhc.</a> という挑戦状のようなメールをたたきつけたじゃなイカ。 ただ、後に判明することなのでゲソが、この時Johnが動けなかった理由の一つに会社の法務から個人プロジェクトへ貢献をしらばれていたことがあったようでゲソ。</p>
+<p>forkをしてまずはじめにやったことは<a href="https://github.com/ajhc/ajhc">githubにリポジトリ</a>を作ったことでゲソ。 なにを当たり前なと思うかもしれないでゲソがワシは強いGNU信者なので、 <a href="http://savannah.gnu.org/">Savannah</a> でリポジトリを管理することを真剣に考えていたでゲソ。 しかしjhcの悪い点の一つに他人とのコラボレーションをしにくい開発体制があるでゲソ。 そこでgithubでのpull requestを受け付けられるようにし、 さらに<a href="http://ajhc.metasepi.org/">できるだけカジュアルに見えるホームページ</a>をでっちあげたのでゲソ。</p>
+<p>Ajhcプロジェクトによってコンパイラ側にも大規模な修正ができるようになったので、 もうすこし凝ったマイコンのデモであるモールス信号のアプリをでっちあげることにしたでゲソ。 このアプリを書く時にAjhcのGCに様々な問題が見つかり、その修正をしたでゲソ。 特に <a href="http://ajhc.metasepi.org/manual_ja.html#cflagsで指定できる特殊なdefine">GCの空間効率を最大化するオプション群</a> を作れたのは収穫だったじゃなイカ。 もっとも、これらのオプションは1MB以下のメモリしか持たないようなアーキティクチャでのみ有効で、 おそらくUNIXモドキkernelでは使わない可能性が高いでゲソが。。。 それでもこれからはIoTの時代らしいので、そんな要求には有効でゲソ!</p>
+<p><em>やったことリスト</em></p>
+<ul>
+<li>jhcをforkしてAjhcリポジトリを作った</li>
+<li>Ajhc 0.8.0.1, <a href="http://www.haskell.org/pipermail/jhc/2013-March/001028.html">0.8.0.2</a> リリース</li>
+<li>Ajhcをcabalで管理しようと思いたつ</li>
+<li><a href="https://github.com/ajhc/demo-cortex-m3/blob/master/stm32f3-discovery/hs_src/MainMorseCode.hs">マイコン用モールス信号アプリ</a>作成</li>
+</ul>
+<p><a href="http://www.st.com/web/en/catalog/tools/FM116/SC959/SS1532/PF254044"><img src="https://raw.github.com/ajhc/demo-cortex-m3/master/img/stm32f3-discovery.jpg" alt="stm32f3-discoveryマイコンボード" /></a></p>
+<h2 id="年4月">2013年4月</h2>
+<p>cabalを使ってAjhcをインストールできるようにしたでゲソ。 Johnはたいそう<a href="http://www.haskell.org/pipermail/jhc/2013-March/001036.html">cabalが嫌い</a> で(気持ちはわかるでゲソ)、GNU makeで何も問題がないと思っていたようでゲソが、 ワシとしてはAjhcというプロジェクトの宣伝目的のためだけにcabal対応をする価値はあるのではなイカと考えたでゲソ。 githubを使ってカジュアルな開発をするのと同じ理由、つまり参入障壁を下げたかったんじゃなイカ。 本当はAjhc上で使うHaskellライブラリそのものもcabalで管理したかったんでゲソが、 GHCとAjhcでプリミティブの型やbaseライブラリの構造があまりにも異なるため、断念して今にいたるでゲソ。</p>
+<p>また、この頃からMetasepiとAjhcを使って生計を立てられないか真剣に考えはじめたでゲソ。 なにしろあまりにもゴールが巨大で遠くにあるため、継続的にフルタイムの工数を投入できないと達成できる気がしなかったからでゲソ。。。 そこで、京都大学に某申請を出したのでゲソが、残念ながら落選してしまったでゲソ。 しかしその時作成した申請書は <a href="http://metasepi.org/doc/20130508_5year_plan.pdf">Metasepiプロジェクトの5ヶ年計画</a> としてひきつがれることになるでゲソ。 しかもなんとその計画の多くの部分を1年で達成することができたでゲソ。少し申請書の計画の見積りが控え目すぎたんじゃなイカ？</p>
+<p><em>やったことリスト</em></p>
+<ul>
+<li><a href="http://metasepi.org/posts/2013-04-22-travel_in_kyoto-u.html">Metasepi作戦会議 第2回</a>開催</li>
+<li>Ajhc <a href="http://www.haskell.org/pipermail/jhc/2013-April/001047.html">0.8.0.3</a>, <a href="https://github.com/ajhc/ajhc/blob/arafura/docs/announce_ajhc/announce-0.8.0.4.md">0.8.0.4</a> リリース</li>
+<li><a href="http://metasepi.org/doc/20130508_5year_plan.pdf">5ヶ年計画</a>を立てる</li>
+</ul>
+<div class="figure">
+<img src="http://farm9.staticflickr.com/8545/8673977464_3207ce4538_m.jpg" />
+</div>
+<h2 id="年5月">2013年5月</h2>
+<p><a href="http://metasepi.org/posts/2013-05-16-jhc_grin_to_c.html">Jhc compile pipeline: Grin =&gt; C (code example) - Metasepi</a> こんなドキュメントを書きながらコンパイラパイプラインの調査をひたすらやっていた時期でゲソ。 また、Johnが作っていたリグレッションテストを掘りおこして、 <a href="https://travis-ci.org/ajhc/ajhc">Travis-CI上でテスト</a>するようにしたのもこのころでゲソ。</p>
+<p><em>やったことリスト</em></p>
+<ul>
+<li>Travis-CI環境の改善</li>
+</ul>
+<p><a href="http://travis-ci.org/"><img src="http://about.travis-ci.org/images/travis-mascot-200px.png" /></a></p>
+<h2 id="年6月">2013年6月</h2>
+<p>この月、革新的な機能がAjhcに追加されたでゲソ! それは <a href="http://metasepi.org/posts/2013-06-20-reentrant_jhc.html">“再入可能”</a> なバイナリを作成する機能でゲソ。 また、pthreadを使ったスレッドもAjhcにこのころ実装されたでゲソ。 これでAjhcの応用範囲はぐっと広がったじゃなイカ!</p>
+<p><em>やったことリスト</em></p>
+<ul>
+<li>Ajhc <a href="http://www.haskell.org/pipermail/jhc/2013-June/001061.html">0.8.0.5</a>, <a href="http://www.haskell.org/pipermail/jhc/2013-June/001062.html">0.8.0.6</a> リリース</li>
+</ul>
+<div class="figure">
+<img src="../draw/20132013-12-21_arenalife.png" />
+</div>
+<h2 id="年7月">2013年7月</h2>
+<p>半年の間執筆していた<a href="http://www.paraiso-lang.org/ikmsm/books/c84.html">C84 λカ娘</a> の原稿がついに完成したでゲソ! 書き始めた当初はマイコンボードでHaskellが動作すれば記事ができると思っていたでゲソ。 ところが半年がんばってみたらなんと再入可能ヒープまで作ることができたでゲソ! これはもしかするとご飯作れるんじゃなイカ？と思い翌月から営業に出ることになるでゲソ。</p>
+<p><em>やったことリスト</em></p>
+<ul>
+<li><a href="http://www.paraiso-lang.org/ikmsm/books/c84.html">C84 λカ娘</a> の原稿が完成</li>
+<li><a href="https://github.com/metasepi/chibios-arafura">ChibiOS/RT上のアプリをHaskellで</a>書いてみようと思いたつ</li>
+<li>Ajhc <a href="http://www.haskell.org/pipermail/jhc/2013-July/001063.html">0.8.0.7</a> リリース</li>
+</ul>
+<p><a href="http://www.paraiso-lang.org/ikmsm/books/c84.html"><img src="http://www.paraiso-lang.org/ikmsm/images/c84-cover-s.jpg" alt="簡約!? λカ娘 Go!" /></a></p>
+<h2 id="年8月">2013年8月</h2>
+<p><a href="https://twitter.com/ebijun">NetBSDのエラい人</a>からの入れ知恵で <a href="https://www.ospn.jp/osc2013-kyoto/">オープンソースカンファレンス2013 Kansai@Kyoto</a> にはじめてMetasepiプロジェクトとして展示してみたでゲソ。 この時にはマイコン上でのデモは安定して動いていたのでその展示をしてAjhcのことをみんなに知ってほしかったんじゃなイカ。</p>
+<p>それから<a href="https://twitter.com/mzp">@mzp</a>さんから<a href="https://github.com/ajhc/ajhc/pull/32">pull requestをもらった</a>でゲソ! たいへん恥しいバグばかりを修正してもらったでゲソが大助かり。 しかも短時間にワシが今まで読んだjhcの知識にあっさり追い付いてくるとは、、、さすがは“なごやこわい”じゃなイカ？</p>
+<p><em>やったことリスト</em></p>
+<ul>
+<li><a href="http://metasepi.org/posts/2013-08-04-osckansai2013.html">Metasepi作戦会議 第3回</a>開催</li>
+<li><a href="https://github.com/ajhc/demo-cortex-m3/tree/master/mbed-nxp-lpc1768">mbedマイコンを使ったRSSリーダデモ</a>作成開始</li>
+<li><a href="https://github.com/ajhc/demo-android-ndk">Android NDKサンプルアプリのスナッチ</a>開始</li>
+</ul>
+<div class="figure">
+<img src="http://farm8.staticflickr.com/7408/9432077241_5dc08517a7_n.jpg" />
+</div>
+<h2 id="年9月">2013年9月</h2>
+<p>いくらマイコンとはいえ、Lチカだけのデモでは寂しすぎるので、なにか実用っぽいデモを作ろうと思うじゃなイカ。 ワシとしては猫も杓子もネットワークにむらがっているのが好きになれないのでゲソが、ウケを狙ってTCP/IPプロトコルスタックを使ったデモを作ってみたでゲソ。 <a href="http://www.reddit.com/">reddit.com</a>のRSSを取得してLCDパネルに電光表示するRSSリーダアプリでゲソ。 このデモはmbedマイコンを使って作成したでゲソ。 どーかんがえてもstm32マイコンを使った方が価格優位にあるのでゲソが、mbedの方がブランド力が高いと判断して、ここではmbedを使ってみたでゲソ。 たまたま<a href="http://atnd.org/events/41585">mbed祭り</a>と<a href="http://www.ospn.jp/osc2013-do/">オープンソースカンファレンス2013 Hokkaido</a> が同時期に開催されていたので、このデモの展示をしてきたでゲソ。 ARM社のmbedの中の人である <a href="http://mbed.org/users/simon/">Simon Ford</a> にも興味を持ってもらえてよかったでゲソ。 お金にはなりそうもなかったでゲソが。。。</p>
+<p>また、この月に裏で作業していたAndroid NDKのサンプルアプリのスナッチが完了したでゲソ。 これでAndroid NDKアプリをHaskellで書く下地ができたじゃなイカ。</p>
+<p><em>やったことリスト</em></p>
+<ul>
+<li><a href="http://metasepi.org/posts/2013-09-16-osc2013-do.html">Metasepi作戦会議 第4回</a>開催</li>
+<li><a href="https://github.com/ajhc/demo-cortex-m3/tree/master/mbed-nxp-lpc1768">mbedマイコンを使ったRSSリーダデモ</a>作成完成</li>
+<li>Ajhc <a href="http://www.haskell.org/pipermail/jhc/2013-September/001065.html">0.8.0.8</a> リリース</li>
+<li><a href="https://github.com/ajhc/demo-android-ndk">Android NDKサンプルアプリのスナッチ</a>完了</li>
+</ul>
+<p><a href="https://mbed.org/handbook/mbed-NXP-LPC1768"><img src="https://raw.github.com/ajhc/demo-cortex-m3/master/img/mbed-nxp-lpc1768.jpg" /></a></p>
+<h2 id="年10月">2013年10月</h2>
+<p>Android上でHaskellアプリをこねこね書いていたら、タッチパネルで回転できる立方体を表示するアプリ <a href="https://play.google.com/store/apps/details?id=org.metasepi.ajhc.android.cube">Cube</a> ができたでゲソ。 このアプリをredditに投稿したところ大変良い反応で嬉しかったでゲソ。 もっとも、やっていることは簡単で、マイコン上で再入可能を実現したことの方がはるかに困難で意義深いものだったでゲソ。 しかし、ユーザは見た目の派手さに注目するのだ、ということを再認識できたじゃなイカ。 実装は地味に堅実に、デモは派手に作るのがコツということかもしれないでゲソ。</p>
+<p><em>やったことリスト</em></p>
+<ul>
+<li><a href="http://metasepi.org/posts/2013-10-06-osc2013-hi.html">Metasepi作戦会議 第5回</a>開催</li>
+<li><a href="http://metasepi.org/posts/2013-10-20-osc2013-tokyo.html">Metasepi作戦会議 第6回</a>開催</li>
+<li>Ajhc <a href="http://www.haskell.org/pipermail/jhc/2013-October/001069.html">0.8.0.9</a> リリース</li>
+<li><a href="https://play.google.com/store/apps/details?id=org.metasepi.ajhc.android.cube">Android Cubeデモ</a>完成</li>
+</ul>
+<p><a href="https://play.google.com/store/apps/details?id=org.metasepi.ajhc.android.cube"><img src="https://raw.github.com/ajhc/demo-android-ndk/master/cube/res/drawable-xhdpi/ic_launcher.png" alt="Cubeデモアプリロゴ" /></a></p>
+<h2 id="年11月">2013年11月</h2>
+<p><a href="http://www.chibios.org/">ChibiOS/RT</a>というRTOS上でHaskellのforkOSスレッドが使えるようになったでゲソ。 もっと前に使えるようになっていたはずなのでゲソが、gitのログからだとどうもこの月のようでゲソ。 Ajhcには-fcustomthreadというコンパイルオプションがあり、このオプションを使うとHaskellスレッドの下まわりのOSスレッドを選択的に実装できるようになっているでゲソ。 その機構がRTOS上でもうまく動作することが実証できたでゲソ。 mbedマイコンのサポートに本腰を入れる時が来たら、この機能を使ってmbed-rtos上にHaskellスレッドを構築することも可能なはずじゃなイカ？</p>
+<p><em>やったことリスト</em></p>
+<ul>
+<li><a href="http://metasepi.org/posts/2013-11-10-kof2013.html">Metasepi作戦会議 第7回</a></li>
+<li><a href="http://metasepi.org/posts/2013-11-24-osc-fukuoka-oita.html">Metasepi作戦会議 第8回</a></li>
+<li>ChibiOS/RT上で<a href="http://hackage.haskell.org/package/base-4.6.0.1/docs/Control-Concurrent.html#v:forkOS">forkOS</a>を使ったスレッドが動作するようになる</li>
+</ul>
+<p><a href="http://www.chibios.org/"><img src="https://raw.github.com/metasepi/chibios-arafura/metasepi-arafura/docs/rsc/logo.png" /></a></p>
+<h2 id="年12月-1">2013年12月</h2>
+<p><a href="http://www.paraiso-lang.org/ikmsm/books/c85.html">C85 λカ娘</a> の記事を書き上げたでゲソ。 この記事はAndroidを題材にしたスナッチ設計の手引きでゲソ。 これまでAjhcを使って様々なドメインに対してスナッチ設計を試してみていたので、 その手法をワシ以外の人間も使えるように文書にまとめておきたかったのでゲソ。 実はC85の同人誌には別の記事を考えていたのでゲソが、記事を書く工数ではなく実装工数が不足していて無理だったでゲソ。 そのお蔵入りになった記事はC86、、、に掲載できるとうれしいかもでゲソー。</p>
+<p><em>やったことリスト</em></p>
+<ul>
+<li><a href="http://www.paraiso-lang.org/ikmsm/books/c85.html">C85 λカ娘</a> の原稿完成</li>
+<li>Ajhc <a href="http://www.haskell.org/pipermail/jhc/2013-December/001072.html">0.8.0.10</a> リリース</li>
+</ul>
+<p><a href="http://www.paraiso-lang.org/ikmsm/books/c85.html"><img src="http://www.paraiso-lang.org/ikmsm/images/c85-cover-s.jpg" alt="簡約!? λカ娘 Rock!" /></a></p>
+<h2 id="年まとめ">2013年まとめ</h2>
+<p>今年AjhcリポジトリにMetasepiプロジェクトとして加えた変更は1.5万行程度だったでゲソ。 コンパイラパイプラインについては5千行。 ランタイムは1.5千行程度変更を加えたでゲソ。</p>
+<pre><code>$ pwd
+/home/kiwamu/src/ajhc
+$ git diff -r d0d55fd5d7de2d642ea921b1c5efeeb6e3aa1d85 | wc -l
+14692
+$ git diff -r d0d55fd5d7de2d642ea921b1c5efeeb6e3aa1d85 src | wc -l
+4624
+$ git diff -r d0d55fd5d7de2d642ea921b1c5efeeb6e3aa1d85 rts/rts | wc -l
+1401</code></pre>
+<p>やみくもに変更すれば良いというものではないし、 元にしたjhcがあまりにもメンテナンスされていなかったせいもあるでゲソが、 Haskellコンパイラのド素人にしてはよくやった方なんじゃなイカ？</p>
+<p><a href="http://ajhc.metasepi.org/"><img src="../img/ajhc_logo_beta1.png" /></a></p>
+<h2 id="年はどんな年">2014年はどんな年？</h2>
+<p>現時点でやってみたい/やらなければならないことはイカの通りでゲソ。</p>
+<ul>
+<li>MVarのようなコンテキスト間の状態共有</li>
+<li>ユーザ空間スレッド</li>
+<li>C言語のポインタを局所的に降下するポインタコンビネータ</li>
+<li>GHCでしか使えないライブラリ群の移植</li>
+<li>NetBSD/Linux kernelドライバをHaskellで書いてみる</li>
+<li><a href="https://developers.google.com/native-client/dev/">Native Client</a>を使ったブラウザ上実行</li>
+<li>Haskell以外の言語処理系を使ったスナッチ設計 (例:<a href="http://www.ats-lang.org/">ATS Programming Language</a>)</li>
+<li>よりよいARMマイコンサポート</li>
+<li>よりよいAndroid NDKサポート</li>
+<li>8bitマイコンに限定的に適用できないか検討</li>
+<li>jhcによる最適化後のバイナリに対するよりよいデバッグ手法</li>
+<li>Haskell+マイコンをIoTビジネスにする</li>
+<li>速度/空間効率ベンチマーク</li>
+<li>GCの一部だけでもFPGAを使ってハードマクロ化できないか</li>
+<li>英語論文を書いて研究者に宣伝</li>
+<li><a href="https://github.com/ajhc/ajhc/issues?labels=bug&amp;page=1&amp;state=open">バグなおせ</a></li>
+</ul>
+<p>でも、、、未来のことは誰にもわからないんじゃなイカ？ Metasepiが本格的に立ち上がってまだ一年たらず。 内容はともかくとして、 これからもこの活動を継続できるかどうか、 成果を出し続けられるかどうかが大事なんでゲソ。 どんなに良い技術でも途中で燃え尽きてしまっては <a href="http://metasepi.org/posts/2012-08-18-haskell-or-ocaml-os.html">過去の試み</a> と同じ結果が待つのみでゲソ。 あせらず、ゆっくり、確実にやることでゲソー。</p>
+<p><a href="http://metasepi.org/"><img src="../img/metasepi_logo_v1_200x200.png" /></a></p>
+<p>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_shortname = 'metasepi';
+    var disqus_identifier = '/posts/2013-12-21-yuku-kuru.html';
+    var disqus_url = 'http://metasepi.org' + '/posts/2013-12-21-yuku-kuru.html';
+    var disqus_title = 'めたせぴ2013☆ゆく年くる年';
+    var disqus_developer = 1;
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>
+    Please enable JavaScript to view the 
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  <a href="http://disqus.com" class="dsq-brlink">
+    blog comments powered by <span.logo-disqus>Disqus</span>
+  </a>
+</p>
+
+    </div>
+
+    <footer>
+      <p>
+        This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
+        <br>
+        Metasepi project is supported by <a href="http://www.itpl.co.jp/en/"><img alt="IT Planning, Inc." style="border-width:0" src="../img/it_planning_108x20.png" /></a> ×
+        <a href="https://github.com/axsh/"><img alt="Axsh Co." style="border-width:0" src="../img/axsh_81x25.png" /></a> ×
+        <a href="../past-supporters.html">Past Supporters</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="/js/libs/jquery-1.6.2.min.js"><\/script>')</script>
+
+  <!-- scripts concatenated and minified via ant build script-->
+  <script defer src="../js/plugins.js"></script>
+  <script defer src="../js/script.js"></script>
+  <!-- end scripts-->
+
+  <script>
+    window._gaq = [['_setAccount','UA-158383-8'],['_trackPageview'],['_trackPageLoadTime']];
+    Modernizr.load({
+      load: ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js'
+    });
+  </script>
+
+  <!--[if lt IE 7 ]>
+    <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js">
+    <script>
+      window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})
+  <![endif]-->
+
+<script type="text/javascript">
+<!--
+(function() {
+var login = '',
+    fpf = true,
+    fpn = '__ulfpc';
+
+// DO NOT ALTER BELOW THIS LINE
+var id = 6008444, h = 'a5fe';
+var rand = rand || Math.floor(Math.random() * 9000000) + 1000000;
+if('http:'==document.location.protocol){var params={id:id,lt:3,h:h,url:document.URL,ref:document.referrer,lg:login,rand:rand,bw:(window.innerWidth?window.innerWidth:(document.documentElement && document.documentElement.clientWidth!=0?document.documentElement.clientWidth:(document.body?document.body.clientWidth:0 ))),bh:(window.innerHeight?window.innerHeight:(document.documentElement && document.documentElement.clientHeight!=0?document.documentElement.clientHeight:(document.body?document.body.clientHeight:0 ))),dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sw:screen.width,sh:screen.height,dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sb:document.title,guid:'ON'};if(fpf){params.fp=getuid(fpn);}params.eflg=1;var a=document.createElement('a');var lg=document.createElement('img');lg.setAttribute('id','_ullogimgltr');lg.setAttribute('width',1);lg.setAttribute('height',1);lg.setAttribute('alt','');var src='http://le.nakanohito.jp/le/1/?';for(var key in params ) src=src.concat(key+'='+encodeURIComponent(params[key] )+'&');lg.src=src.slice(0,-1);a.setAttribute('href','http://smartphone.userlocal.jp/');a.setAttribute('target','_blank');a.appendChild(lg);var s=document.getElementsByTagName('body')[0];s.appendChild(a);}
+function getuid(key){var arr=[],date=new Date(),exp=new Date();exp.setFullYear(exp.getFullYear()+7);if(document.cookie){arr=document.cookie.split(";");for(var i=0; i<arr.length; i++ ){var str=arr[i].replace(/^\s+|\s+

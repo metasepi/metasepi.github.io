@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>ocamloptの全体像 - Metasepi</title>
+
+  <meta name="description" content="metasepi.org">
+  <meta name="author" content="Kiwamu Okabe">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="http://metasepi.org/rss_en.xml" rel="alternate" title="Blog" type="application/rss+xml">
+
+  <!-- CSS concatenated and minified via ant build script-->
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/syntax.css">
+  <link rel="stylesheet" href="../css/calendar.css">
+  <!-- end CSS-->
+
+  <link rel="stylesheet" href="../css/default.css">
+
+  <script src="../js/libs/modernizr-2.0.6.min.js"></script>
+</head>
+
+<body onload="prettyPrint()">
+  <div id="fb-root"></div>
+  <script>
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = '//connect.facebook.net/ja_JP/all.js#xfbml=1';
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
+
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <a href="../">Metasepi</a>
+      </div>
+
+      <div class="nav">
+        <li><a href="../">Home</a></li>
+        <li><a href="../en/posts.html">Blog</a>(<a href="../posts.html">old</a>)</li>
+        <li><a href="../papers.html">Papers</a></li>
+        <li><a href="../map.html">Map</a></li>
+        <li><a href="../memories.html">Memories</a></li>
+        <li><a href="../about.html">About</a></li>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="content clearfix">
+      <h1>ocamloptの全体像</h1>
+<div class="info">Posted on February 13, 2013 / Tags: <a href="../tags/ocaml.html">ocaml</a>, <a href="../tags/internal.html">internal</a></div>
+<h2>Table of contents</h2>
+<ul>
+<li><a href="#発端">発端</a></li>
+<li><a href="#起動プロセスについて">起動プロセスについて</a></li>
+<li><a href="#ランタイムについて">ランタイムについて</a></li>
+<li><a href="#コンパイルパイプラインについて">コンパイルパイプラインについて</a></li>
+</ul>
+<hr>
+<h2 id="発端">発端</h2>
+<div class="figure">
+<img src="../img/20130213-nomore_camlp4.png" />
+</div>
+<p><a href="http://togetter.com/li/450580">ocamloptを読むことになりました。 - Togetter</a></p>
+<p>Camlp4だけはこわいんでゲソ… 逃げるしかないでゲソ。</p>
+<p>考えてみると、確かにアラフラにはjhcを採用する予定でゲソが、 ひょっとしたらこのデザインに致命的な欠陥が見つかる可能性も高いでゲソ。 その場合、OCamlは代替案として大変有望でゲソ。 今のうちに調べておいて損はないんじゃなイカ？</p>
+<p><a href="https://github.com/master-q/read_ocamlopt/">簡単なプログラム</a> を作ってみて、コンパイル結果とocamloptを比較すればだいたいわかるはずでゲソ。</p>
+<pre><code>$ uname -a
+Linux casper 3.2.0-4-amd64 #1 SMP Debian 3.2.35-2 x86_64 GNU/Linux
+$ pwd
+/home/kiwamu/src/read_ocamlopt
+$ ocamlopt -version
+4.00.1
+$ cat helloworld/helloworld.ml
+let hello _ = print_endline &quot;Hello world!&quot;;;
+let _ = hello ();
+$ make
+ocamlopt -verbose -dstartup -o helloworld/helloworld helloworld/helloworld.ml
++ as -o 'helloworld/helloworld.o' '/tmp/camlasm034093.s'
++ as -o '/tmp/camlstartup43810e.o' 'helloworld/helloworld.startup.s'
++ gcc -o 'helloworld/helloworld'   '-L/usr/local/lib/ocaml'  '/tmp/camlstartup43810e.o' '/usr/local/lib/ocaml/std_exit.o' 'helloworld/helloworld.o' '/usr/local/lib/ocaml/stdlib.a' '/usr/local/lib/ocaml/libasmrun.a' -lm  -ldl</code></pre>
+<p>ということは以下のファイルについて調べればocamloptの全体像がわかるはずでゲソ。</p>
+<ul>
+<li><a href="https://github.com/master-q/read_ocamlopt/blob/master/helloworld/helloworld.startup.s">helloworld.startup.s</a> - 起動プロセスについて</li>
+<li>libasmrun.a - ランタイムについて</li>
+<li>helloworld.o - コンパイルパイプラインについて</li>
+</ul>
+<h2 id="起動プロセスについて">起動プロセスについて</h2>
+<pre><code>$ pwd
+/home/kiwamu/src/read_ocamlopt/helloworld
+$ gdb helloworld
+(gdb) b camlHelloworld__hello_1030
+Breakpoint 1 at 0x403560
+(gdb) run
+Starting program: /home/kiwamu/src/read_ocamlopt/helloworld/helloworld
+warning: Could not load shared library symbols for linux-vdso.so.1.
+Do you need &quot;set solib-search-path&quot; or &quot;set sysroot&quot;?
+
+Breakpoint 1, 0x0000000000403560 in camlHelloworld__hello_1030 ()
+(gdb) bt
+#0  0x0000000000403560 in camlHelloworld__hello_1030 ()
+#1  0x0000000000403591 in camlHelloworld__entry ()
+#2  0x00000000000003e8 in ?? ()
+#3  0x0000000000403229 in caml_program ()
+#4  0x000000000002950d in ?? ()
+#5  0x0000000000411a52 in caml_start_program ()
+#6  0x0000000000000000 in ?? ()</code></pre>
+<p>スタックが小細工されているけれど、 caml_start_program関数を呼び出すのはasmrun/startup.cなので、 以下のようなコールグラフになるはずでゲソ。</p>
+<pre><code>caml_main (asmrun/startup.c)
+=&gt; caml_init_custom_operations(); /* これocamlopt nativeでも必要？ */
+   caml_register_custom_operations(&amp;caml_int32_ops);
+   caml_register_custom_operations(&amp;caml_nativeint_ops);
+   caml_register_custom_operations(&amp;caml_int64_ops);
+parse_camlrunparam(); /* OCAMLRUNPARAM環境変数の解析 */
+=&gt; caml_init_gc (minor_heap_init, heap_size_init, heap_chunk_init,
+                 percent_free_init, max_percent_free_init);
+   caml_page_table_initialize(Bsize_wsize(minor_size) + major_heap_size);
+   caml_set_minor_heap_size (Bsize_wsize (norm_minsize (minor_size)));
+   caml_major_heap_increment = Bsize_wsize (norm_heapincr (major_incr));
+   caml_percent_free = norm_pfree (percent_fr);
+   caml_percent_max = norm_pmax (percent_m);
+   caml_init_major_heap (major_heap_size);
+init_atoms();
+/* なんだろ？Initialize the atom table and the static data and code area limits. */
+caml_init_signals();
+/* スタックあふれ検出 */
+sigsetjmp(caml_termination_jmpbuf.buf, 0); /* 例外かな？ */
+=&gt; caml_start_program (asmrun/amd64.S)
+   /* r12-r15はcallee-savedなので、レジスタで取りまわすことはないはず... */
+   push caml_gc_regs
+   push caml_last_return_address
+   push caml_bottom_of_stack
+   /* caml_young_ptrをr15にロード */
+   /* caml_exception_pointerをr14にロード */
+   /* Exception handlerをr13にロード */
+   push r13
+   push r14
+   /* スタックポインタをr14にロード */
+   /* r12にentry_pointを取りcall */
+   =&gt; caml_program (helloworld.startup.s)
+      =&gt; camlPervasives__entry
+         =&gt; register_named_value &quot;Pervasives.do_at_exit&quot; do_at_exit
+            =&gt; caml_register_named_value /* プロセス終了時にflushするように */
+      caml_globals_inited += 1
+      =&gt; camlHelloworld__entry /* &lt;= OCamlコード */</code></pre>
+<p>ところで、上記のような解析をする際にはocamloptでコンパイルされた実行バイナリをobjdump -Sで見てみると良いでゲソ。 C言語の場合と同じように元のOCamlソースコードがまざって見えるので読みやすいでゲソ。 OCamlは本当に取り回しの良い、安心して使える言語でゲソ。 これが歴史の重みという奴じゃなイカ？</p>
+<h2 id="ランタイムについて">ランタイムについて</h2>
+<p>んー。やっぱり無茶苦茶多いじゃなイカ… でもこれ全部本当に必要なのカ？ 機能を限定すれば削れそうなものもありそうでゲソ。 ちょっと今はocamloptを本格的に使うかわからないので、これらの詳細調査は遠慮したいでゲッソ。</p>
+<p>もし使う時が来たら、また <a href="http://www.paraiso-lang.org/ikmsm/books/c83.html">簡約! λカ娘(4) - 参照透明な海を守る会</a> でやったようにランタイムのサイズ削減をやってみれば、自然に中身に手垢をつけられるはずでゲソ。 その時が楽しみでゲッソ!</p>
+<pre><code>$ size /usr/local/lib/ocaml/libasmrun.a|grep libasmrun.a|sort -k 6
+   1696       0       0    1696     6a0 alloc.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   1108      24       0    1132     46c amd64.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   3656       0       0    3656     e48 array.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   1342       8      16    1366     556 backtrace.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   1150       0     104    1254     4e6 callback.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   3165       0       8    3173     c65 compact.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   2585      16    6144    8745    2229 compare.o (ex /usr/local/lib/ocaml/libasmrun.a)
+    633       0      16     649     289 custom.o (ex /usr/local/lib/ocaml/libasmrun.a)
+     94      12       4     110      6e debugger.o (ex /usr/local/lib/ocaml/libasmrun.a)
+    421       0       0     421     1a5 dynlink.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   6569      24   20640   27233    6a61 extern.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   1272      40      40    1352     548 fail.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   1815       0      56    1871     74f finalise.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   3836       0       0    3836     efc floats.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   2791      64    8056   10911    2a9f freelist.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   4628       0      72    4700    125c gc_ctrl.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   1524       0     476    2000     7d0 globroots.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   2369       0      24    2393     959 hash.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   7196      16    6240   13452    348c intern.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   6343     184       0    6527    197f ints.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   7217      56      40    7313    1c91 io.o (ex /usr/local/lib/ocaml/libasmrun.a)
+    938       0       0     938     3aa lexing.o (ex /usr/local/lib/ocaml/libasmrun.a)
+     80       0       0      80      50 main.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   3960       0      80    4040     fc8 major_gc.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   3529       0       0    3529     dc9 md5.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   3256       0      40    3296     ce0 memory.o (ex /usr/local/lib/ocaml/libasmrun.a)
+    310       0       0     310     136 meta.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   2373       0     200    2573     a0d minor_gc.o (ex /usr/local/lib/ocaml/libasmrun.a)
+    701       0       8     709     2c5 misc.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   1721       0       0    1721     6b9 natdynlink.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   1531       0       0    1531     5fb obj.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   2220       0       4    2224     8b0 parsing.o (ex /usr/local/lib/ocaml/libasmrun.a)
+    917       0       0     917     395 printexc.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   2316       8      80    2404     964 roots.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   1347      24      32    1403     57b signals.o (ex /usr/local/lib/ocaml/libasmrun.a)
+    804       0    8200    9004    232c signals_asm.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   1502      48     288    1838     72e startup.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   1261       0       4    1265     4f1 str.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   2706      36       8    2750     abe sys.o (ex /usr/local/lib/ocaml/libasmrun.a)
+    202       0       0     202      ca terminfo.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   1532       0       0    1532     5fc unix.o (ex /usr/local/lib/ocaml/libasmrun.a)
+   2181       8      16    2205     89d weak.o (ex /usr/local/lib/ocaml/libasmrun.a)</code></pre>
+<h2 id="コンパイルパイプラインについて">コンパイルパイプラインについて</h2>
+<p>まずはコールグラフを書いてみたでゲソ。</p>
+<pre class="sourceCode ocaml"><code class="sourceCode ocaml">main
+Arg<span class="kw">.</span>parse (Arch<span class="kw">.</span>command_line_options @ Options<span class="kw">.</span><span class="dt">list</span>) anonymous usage;
+=&gt; process_file Format<span class="kw">.</span>err_formatter
+   =&gt; process_implementation_file ppf name
+      =&gt; Optcompile.implementation ppf name opref <span class="co">(* &lt;= コンパイルパイプライン本体 *)</span>
+         <span class="kw">let</span> (++) x f = f x <span class="kw">in</span>
+         <span class="kw">let</span> (+++) (x, y) f = (x, f y) <span class="kw">in</span>
+         <span class="kw">let</span> inputfile = Pparse<span class="kw">.</span>preprocess sourcefile <span class="kw">in</span>
+         Pparse<span class="kw">.</span>file ppf inputfile Parse<span class="kw">.</span>implementation ast_impl_magic_number
+             <span class="co">(* :: Parsetree.structure *)</span>
+         ++ print_if ppf Clflags<span class="kw">.</span>dump_parsetree Printast<span class="kw">.</span>implementation
+             <span class="co">(* :: Parsetree.structure -&gt; Parsetree.structure *)</span>
+         ++ Typemod<span class="kw">.</span>type_implementation sourcefile outputprefix modulename env
+             <span class="co">(* :: Parsetree.structure -&gt; Typedtree.structure * Typedtree.module_coercion *)</span>
+         ++ Translmod<span class="kw">.</span>transl_store_implementation modulename
+             <span class="co">(* :: Typedtree.structure * Typedtree.module_coercion -&gt; int * Lambda.lambda *)</span>
+         +++ print_if ppf Clflags<span class="kw">.</span>dump_rawlambda Printlambda<span class="kw">.</span>lambda
+             <span class="co">(* :: Lambda.lambda -&gt; Lambda.lambda *)</span>
+         +++ Simplif<span class="kw">.</span>simplify_lambda
+             <span class="co">(* :: Lambda.lambda -&gt; Lambda.lambda *)</span>
+         +++ print_if ppf Clflags<span class="kw">.</span>dump_lambda Printlambda<span class="kw">.</span>lambda
+             <span class="co">(* :: Lambda.lambda -&gt; Lambda.lambda *)</span>
+         ++ Asmgen<span class="kw">.</span>compile_implementation outputprefix ppf;
+             <span class="co">(* :: int * Lambda.lambda -&gt; unit *)</span>
+         Compilenv.save_unit_info cmxfile; <span class="co">(* &lt;= コンパイル済みcurrent_unitをファイル書き込み *)</span>
+=&gt; Asmlink<span class="kw">.</span>link ppf (List<span class="kw">.</span>rev !objfiles) target;
+   make_startup_file ppf startup units_tolink; <span class="co">(* &lt;= helloworld.startup.sファイル生成 *)</span>
+   =&gt; Proc<span class="kw">.</span>assemble_file startup startup_obj
+      Ccomp<span class="kw">.</span>command (Config<span class="kw">.</span>asm ^ <span class="st">&quot; -o &quot;</span> ^
+        Filename<span class="kw">.</span>quote outfile ^ <span class="st">&quot; &quot;</span> ^ Filename<span class="kw">.</span>quote infile)
+      <span class="co">(* gasでオブジェクトファイルに *)</span>
+   call_linker (List<span class="kw">.</span>map object_file_name objfiles) startup_obj output_name;
+   =&gt; Ccomp<span class="kw">.</span>call_linker mode output_name files c_lib;</code></pre>
+<p>少し混乱しやすいでゲソが、 Argモジュールは単にコマンド引数を解析するだけでなく、 <a href="http://ocaml.jp/Arg">標準ライブラリArgモジュール</a> にある通り、anonymous関数を引数を適用するんでゲソ。</p>
+<p>Optcompile.implementation関数がコンパイルパイプラインの本体で、 Haskellのdoと比較すると、 ++ が &gt;&gt; で、 +++ が &gt;&gt;= みたいな感じでゲソ。 あくまで感じであってモナドとかそんな高尚なもんじゃないでゲソ。 つまり内側から外側に向かって処理が進むようでゲソ。 最初ギョっとするでゲソが、慣れれば読みやすいでゲソ。 print_ifは無視できるので、コンパイルパイプラインを抜き出すと…</p>
+<pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">let</span> inputfile = Pparse<span class="kw">.</span>preprocess sourcefile <span class="kw">in</span>
+Pparse<span class="kw">.</span>file ppf inputfile Parse<span class="kw">.</span>implementation ast_impl_magic_number
+    <span class="co">(* :: Parsetree.structure *)</span>
+++ Typemod<span class="kw">.</span>type_implementation sourcefile outputprefix modulename env
+    <span class="co">(* :: Parsetree.structure -&gt; Typedtree.structure * Typedtree.module_coercion *)</span>
+++ Translmod<span class="kw">.</span>transl_store_implementation modulename
+    <span class="co">(* :: Typedtree.structure * Typedtree.module_coercion -&gt; int * Lambda.lambda *)</span>
++++ Simplif<span class="kw">.</span>simplify_lambda
+    <span class="co">(* :: Lambda.lambda -&gt; Lambda.lambda *)</span>
+++ Asmgen<span class="kw">.</span>compile_implementation outputprefix ppf;
+    <span class="co">(* :: int * Lambda.lambda -&gt; unit *)</span></code></pre>
+<p>それでは、このコンパイルパイプラインに注目して再度コールグラフを書いてみようじゃなイカ。</p>
+<pre class="sourceCode ocaml"><code class="sourceCode ocaml">Optcompile<span class="kw">.</span>implementation ppf name opref
+=&gt; <span class="kw">let</span> inputfile = Pparse<span class="kw">.</span>preprocess sourcefile <span class="kw">in</span>
+   <span class="kw">let</span> comm = Printf<span class="kw">.</span>sprintf <span class="st">&quot;%s %s &gt; %s&quot;</span> pp (Filename<span class="kw">.</span>quote sourcefile) tmpfile <span class="kw">in</span>
+   Ccomp.command comm <span class="co">(* 指定されたプリプロセッサコマンドにかける *)</span>
+=&gt; Pparse<span class="kw">.</span>file ppf inputfile Parse<span class="kw">.</span>implementation ast_impl_magic_number
+   Location<span class="kw">.</span>input_name := inputfile;
+   <span class="kw">let</span> lexbuf = Lexing<span class="kw">.</span>from_channel ic <span class="kw">in</span>
+   Location<span class="kw">.</span>init lexbuf inputfile;
+   =&gt; Parse<span class="kw">.</span>implementation lexbuf
+      =&gt; wrap Parser.implementation <span class="co">(* パーサ本体 *)</span>
+=&gt; ++ Typemod<span class="kw">.</span>type_implementation sourcefile outputprefix modulename env
+   <span class="kw">let</span> (str, sg, finalenv) = type_structure initial_env ast Location<span class="kw">.</span>none <span class="kw">in</span>
+   <span class="kw">let</span> simple_sg = simplify_signature sg <span class="kw">in</span>
+   check_nongen_schemes finalenv str.str_items;
+   normalize_signature finalenv simple_sg;
+   <span class="kw">let</span> coercion = Includemod<span class="kw">.</span>compunit sourcefile sg <span class="st">&quot;(inferred signature)&quot;</span> simple_sg <span class="kw">in</span>
+   Typecore.force_delayed_checks (); <span class="co">(* 型推論の本体 *)</span>
+   (str, coercion) <span class="co">(* :: Typedtree.structure * Typedtree.module_coercion *)</span>
+=&gt; ++ Translmod<span class="kw">.</span>transl_store_implementation modulename
+   =&gt; transl_store_gen module_name (str, restr) <span class="kw">false</span>
+      <span class="kw">let</span> (map, prims, size) = build_ident_map restr (defined_idents str) <span class="kw">in</span>
+      <span class="kw">let</span> f = <span class="kw">function</span>
+        | [ { str_desc = <span class="dt">Tstr_eval</span> expr } ] <span class="kw">when</span> topl -&gt;
+            <span class="kw">assert</span> (size = <span class="dv">0</span>);
+            subst_lambda !transl_store_subst (transl_exp expr)
+        | str -&gt; transl_store_structure module_id map prims str <span class="kw">in</span>
+      transl_store_label_init module_id size f str
+      <span class="co">(* λ項に変換してるらしい、返値のintはサイズみたい *)</span>
+=&gt; +++ Simplif<span class="kw">.</span>simplify_lambda
+   =&gt; <span class="kw">let</span> lam = simplify_exits lam <span class="co">(* なんだろう？ *)</span>
+   =&gt; simplify_lets lam
+      <span class="co">(* 最適化。だいたい以下？</span>
+<span class="co">         * コンパイル時β簡約</span>
+<span class="co">         * 未使用のletを削除。またlet参照を値にする *)</span>
+=&gt; ++ Asmgen<span class="kw">.</span>compile_implementation outputprefix ppf;
+   <span class="co">(* λ項からアセンブリコードへ *)</span>
+   Emit.begin_assembly(); <span class="co">(* アセンブラファイルのヘッダを書き込む *)</span>
+   =&gt; Closure<span class="kw">.</span>intro size lam <span class="co">(* :: Clambda.ulambda *)</span>
+      <span class="kw">let</span> (ulam, approx) = close Tbl<span class="kw">.</span>empty Tbl<span class="kw">.</span>empty lam <span class="kw">in</span> ulam
+      <span class="co">(* アンカリー化、直接呼び出し *)</span>
+   ++ Cmmgen<span class="kw">.</span>compunit size <span class="co">(* :: Clambda.ulambda -&gt; Cmm.phrase list *)</span>
+   <span class="co">(* λ項からC--へ *)</span>
+   ++ List<span class="kw">.</span>iter (compile_phrase ppf) <span class="co">(* :: Cmm.phrase list -&gt; unit *)</span>
+   compile_phrase ppf
+     (Cmmgen<span class="kw">.</span>reference_symbols
+        (List<span class="kw">.</span>filter (<span class="kw">fun</span> s -&gt; s &lt;&gt; <span class="st">&quot;&quot;</span> &amp;&amp; s.[<span class="dv">0</span>] &lt;&gt; <span class="ch">'%'</span>)
+           (List<span class="kw">.</span>map Primitive<span class="kw">.</span>native_name !Translmod<span class="kw">.</span>primitive_declarations))
+     ); <span class="co">(* 関数とデータをアセンブラファイルに書き込む *)</span>
+   Emit.end_assembly(); <span class="co">(* アセンブラファイルのフッタを書き込む *)</span>
+   Proc.assemble_file asmfile (prefixname ^ ext_obj) <span class="co">(* gasでオブジェクトファイルに *)</span></code></pre>
+<p>このコンパイルパイプラインが実際には一瞬で完了するのだから、すごいでゲソ。</p>
+<p>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_shortname = 'metasepi';
+    var disqus_identifier = '/posts/2013-02-13-ocamlopt.html';
+    var disqus_url = 'http://metasepi.org' + '/posts/2013-02-13-ocamlopt.html';
+    var disqus_title = 'ocamloptの全体像';
+    var disqus_developer = 1;
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>
+    Please enable JavaScript to view the 
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  <a href="http://disqus.com" class="dsq-brlink">
+    blog comments powered by <span.logo-disqus>Disqus</span>
+  </a>
+</p>
+
+    </div>
+
+    <footer>
+      <p>
+        This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
+        <br>
+        Metasepi project is supported by <a href="http://www.itpl.co.jp/en/"><img alt="IT Planning, Inc." style="border-width:0" src="../img/it_planning_108x20.png" /></a> ×
+        <a href="https://github.com/axsh/"><img alt="Axsh Co." style="border-width:0" src="../img/axsh_81x25.png" /></a> ×
+        <a href="../past-supporters.html">Past Supporters</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="/js/libs/jquery-1.6.2.min.js"><\/script>')</script>
+
+  <!-- scripts concatenated and minified via ant build script-->
+  <script defer src="../js/plugins.js"></script>
+  <script defer src="../js/script.js"></script>
+  <!-- end scripts-->
+
+  <script>
+    window._gaq = [['_setAccount','UA-158383-8'],['_trackPageview'],['_trackPageLoadTime']];
+    Modernizr.load({
+      load: ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js'
+    });
+  </script>
+
+  <!--[if lt IE 7 ]>
+    <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js">
+    <script>
+      window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})
+  <![endif]-->
+
+<script type="text/javascript">
+<!--
+(function() {
+var login = '',
+    fpf = true,
+    fpn = '__ulfpc';
+
+// DO NOT ALTER BELOW THIS LINE
+var id = 6008444, h = 'a5fe';
+var rand = rand || Math.floor(Math.random() * 9000000) + 1000000;
+if('http:'==document.location.protocol){var params={id:id,lt:3,h:h,url:document.URL,ref:document.referrer,lg:login,rand:rand,bw:(window.innerWidth?window.innerWidth:(document.documentElement && document.documentElement.clientWidth!=0?document.documentElement.clientWidth:(document.body?document.body.clientWidth:0 ))),bh:(window.innerHeight?window.innerHeight:(document.documentElement && document.documentElement.clientHeight!=0?document.documentElement.clientHeight:(document.body?document.body.clientHeight:0 ))),dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sw:screen.width,sh:screen.height,dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sb:document.title,guid:'ON'};if(fpf){params.fp=getuid(fpn);}params.eflg=1;var a=document.createElement('a');var lg=document.createElement('img');lg.setAttribute('id','_ullogimgltr');lg.setAttribute('width',1);lg.setAttribute('height',1);lg.setAttribute('alt','');var src='http://le.nakanohito.jp/le/1/?';for(var key in params ) src=src.concat(key+'='+encodeURIComponent(params[key] )+'&');lg.src=src.slice(0,-1);a.setAttribute('href','http://smartphone.userlocal.jp/');a.setAttribute('target','_blank');a.appendChild(lg);var s=document.getElementsByTagName('body')[0];s.appendChild(a);}
+function getuid(key){var arr=[],date=new Date(),exp=new Date();exp.setFullYear(exp.getFullYear()+7);if(document.cookie){arr=document.cookie.split(";");for(var i=0; i<arr.length; i++ ){var str=arr[i].replace(/^\s+|\s+

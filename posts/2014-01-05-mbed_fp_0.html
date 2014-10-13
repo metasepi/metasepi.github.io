@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>Metasepi作戦会議 第9回 議事録 - Metasepi</title>
+
+  <meta name="description" content="metasepi.org">
+  <meta name="author" content="Kiwamu Okabe">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="http://metasepi.org/rss_en.xml" rel="alternate" title="Blog" type="application/rss+xml">
+
+  <!-- CSS concatenated and minified via ant build script-->
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/syntax.css">
+  <link rel="stylesheet" href="../css/calendar.css">
+  <!-- end CSS-->
+
+  <link rel="stylesheet" href="../css/default.css">
+
+  <script src="../js/libs/modernizr-2.0.6.min.js"></script>
+</head>
+
+<body onload="prettyPrint()">
+  <div id="fb-root"></div>
+  <script>
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = '//connect.facebook.net/ja_JP/all.js#xfbml=1';
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
+
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <a href="../">Metasepi</a>
+      </div>
+
+      <div class="nav">
+        <li><a href="../">Home</a></li>
+        <li><a href="../en/posts.html">Blog</a>(<a href="../posts.html">old</a>)</li>
+        <li><a href="../papers.html">Papers</a></li>
+        <li><a href="../map.html">Map</a></li>
+        <li><a href="../memories.html">Memories</a></li>
+        <li><a href="../about.html">About</a></li>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="content clearfix">
+      <h1>Metasepi作戦会議 第9回 議事録</h1>
+<div class="info">Posted on January  5, 2014 / Tags: <a href="../tags/meeting.html">meeting</a>, <a href="../tags/ajhc.html">ajhc</a>, <a href="../tags/ats.html">ats</a>, <a href="../tags/rust.html">rust</a>, <a href="../tags/mbed.html">mbed</a></div>
+<h2>Table of contents</h2>
+<ul>
+<li><a href="#発表資料">発表資料</a></li>
+<li><a href="#発表音声">発表音声</a></li>
+<li><a href="#旅の情報-名古屋">旅の情報 (名古屋)</a><ul>
+<li><a href="#交通">交通</a></li>
+<li><a href="#宿">宿</a></li>
+<li><a href="#朝温泉に入りたい">朝、温泉に入りたい</a></li>
+<li><a href="#スタバでもくもく">スタバでもくもく</a></li>
+<li><a href="#マルツパーツ">マルツパーツ</a></li>
+</ul></li>
+<li><a href="#会議の雰囲気">会議の雰囲気</a></li>
+</ul>
+<hr>
+<p>Metasepi作戦会議 第9回を <a href="http://partake.in/events/ab56454b-c305-4f3b-b8ce-872871ab7da9">mbedではじめる関数型マイコンプログラミング講習会β</a> というのをやってみたでゲソ。</p>
+<p>みんなは <a href="http://ja.wikipedia.org/wiki/%E3%83%A2%E3%83%8E%E3%81%AE%E3%82%A4%E3%83%B3%E3%82%BF%E3%83%BC%E3%83%8D%E3%83%83%E3%83%88">「モノのインターネット」(IoT：Internet of Things)</a> という言葉を聞いたことがあるでゲソ？ 古くはユビキタス社会と呼ばれていたでゲソが、それの別名が最近付けられたのでゲソ。 バスケットボールのようなこれまでなんの変哲もない物体にもマイコンを搭載して、 データー収集をしたりインテリジェントな応答を返させたりしようというのでゲソ。 <a href="http://monoist.atmarkit.co.jp/mn/articles/1310/15/news009.html">「モノのインターネット」製造業への経済効果は2850億ドル――ガートナー</a> なのだそうで、金額はともかくとしても注目されている分野であることには違いないでゲソ。 このIoTのデバイスはコスト重視になるはずなので、LinuxのようなリッチなOSは搭載できないと思うでゲソ。 さらにネットワークに接続することが必須となるためにBluetoothやWifiをしゃべれなければならないはずじゃなイカ。 そのような複雑な機器にもかかわらず出荷後に製品をデバッグすることは困難、つまりランタイムエラーをなんらかの方法で削減しなければならないのでゲソ。 そこで昨年ワシが調べていたように強い型を使った言語を設計に使うことで設計工数を押さえつつランタイムエラーを削減できるはずじゃなイカ。 Ajhcがその解決策になるかどうかは不透明でゲソが、とにかく「関数型言語 + マイコン」という分野のコミュニティを作ることは有益だと思ったのでゲソ。 そのような講習会のコースを作るために、まずは関数型言語ユーザの多い名古屋でβ版を開催しようということになったのでゲソ。 この講習会は続けて開催する予定で、今回はその準備編ということになるんじゃなイカ。</p>
+<p>ところで、昨年の検討結果からマイコンプログラミングが可能な静的型付け関数型言語の選択肢はイカのようでゲソ。 今年はそれぞれの言語処理系の評価をして、Arafuraより後のイテレーションに何れを採用するか見当をつけたいでゲソ。</p>
+<ul>
+<li><a href="http://ajhc.metasepi.org/">Ajhc</a></li>
+<li><a href="http://www.ats-lang.org/">ATS</a></li>
+<li><a href="http://www.rust-lang.org/">Rust</a></li>
+</ul>
+<p>Ajhcはこれまでワシが技術探索してきた成果でゲソ。 ATSはこないだ <a href="2013-12-24-jats-ug.html">ユーザーグループを作って</a> 詳細調査中。 またRustは大変開発が活発なので <a href="http://cmr.github.io/">Rust ’n Stuffs</a> をRSS購読しておくと良いと <a href="https://twitter.com/pirapira">@pirapira</a> 殿におそわったでゲソ。ありがとうでゲソー! それにしてもAjhcをはじめた時はjhcしか処理系の候補がなかったのに、 今は3つも選択肢があるとは嬉しい悲鳴という奴じゃなイカ。</p>
+<p>今回の会場は <a href="http://basecamp-nagoya.jp/">コワーキングスペース「ベースキャンプ名古屋」</a> さんをお借りしたでゲソ。 <a href="http://basecamp-nagoya.jp/blog/entry-794.html">スタッフブログにこの講習会が掲載され</a> ているでゲソ。 またこの講習会参加者のコワーキングスペース利用料金を <a href="http://www.itpl.co.jp/">ITプランニング</a> 殿に援助してもらったでゲソ。うれしいじゃなイカー。ありがとうでゲッソ!</p>
+<h2 id="発表資料">発表資料</h2>
+<iframe src="http://www.slideshare.net/slideshow/embed_code/29698577" width="427" height="356" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC;border-width:1px 1px 0;margin-bottom:5px" allowfullscreen> </iframe> 
+<div style="margin-bottom:5px">
+<strong> <a href="https://www.slideshare.net/master_q/functional-mcu-programming-0-development-environment" title="Functional MCU programming #0: Development environment" target="_blank">Functional MCU programming #0: Development environment</a> </strong> from <strong><a href="http://www.slideshare.net/master_q" target="_blank">Kiwamu Okabe</a></strong>
+</div>
+<h2 id="発表音声">発表音声</h2>
+<iframe width="100%" height="166" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/128115689&amp;color=ff6600&amp;auto_play=false&amp;show_artwork=true"></iframe>
+
+<h2 id="旅の情報-名古屋">旅の情報 (名古屋)</h2>
+<p>この講習会は名古屋で続けて開催する予定なので、詳しく旅の情報を記録しておこうと思うでゲソ。</p>
+<h3 id="交通">交通</h3>
+<p>高速バスは安いでゲソ。 <a href="http://www.bushikaku.net/">夜行バス比較なび 全国の夜行バスの最安値情報</a> から検索すれば 東京→名古屋 を片道2000円程度で移動できるでゲソ。 ただし、年末年始は相場が高めだったでゲソ…盲点だっだじゃなイカ。</p>
+<h3 id="宿">宿</h3>
+<p>ホテルはいつも <a href="http://www.jalan.net/">じゃらんnet</a> で探しているのでゲソが、どうも名古屋近郊だといつでも <a href="http://www.jalan.net/yad335292/plan/">カプセルイン名古屋</a> が最安値のようでゲソ。2500円で一泊できるでゲソ。 ホテル自体は、、、まぁ可も不可もない感じでゲソ。 カプセルの中に電源がないので注意が必要でゲソ。</p>
+<h3 id="朝温泉に入りたい">朝、温泉に入りたい</h3>
+<p>夜行高速バスで移動すると、どうしてもひとっ風呂あびたくなるでゲソ。 少し駅から遠いでゲソが <a href="http://www.toukichirou.com/index.html">太閤天然温泉　湯吉郎</a> は土日祝日にかぎって朝6時から開いているので、おすすめでゲソー。 タオルが有料なので持参すべきでゲソ。</p>
+<h3 id="スタバでもくもく">スタバでもくもく</h3>
+<p><a href="http://www.starbucks.co.jp/store/search/detail.php?id=389">栄駅近辺には多くのスタバがひしめいている</a> でゲソ。たいだい電源があり、夜22:30ぐらいまで開いているようでゲソ。 作業場所に困ることはなさそうでゲソ。</p>
+<h3 id="マルツパーツ">マルツパーツ</h3>
+<p><a href="http://www.marutsu.co.jp/nagoyaotai/">マルツパーツ館　名古屋小田井店</a> は名古屋にある唯一のパーツショップのようでゲソ。 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> 1Fにマイコンボードが置いてあり <a href="http://www.st.com/web/jp/catalog/tools/FM116/SC959/SS1532/PF252419">STM32F4DISCOVERY</a> と <a href="http://www.st.com/web/jp/catalog/tools/FM116/SC959/SS1532/PF250863">STM32VLDISCOVERY</a> が置いてあったでゲソ。やはりワシが最初にターゲットにした <a href="http://www.st-japan.co.jp/web/jp/catalog/tools/PF254044">STM32F3DISCOVERY</a> はマイナーなボードだったようでゲソ。。。</p>
+<h2 id="会議の雰囲気">会議の雰囲気</h2>
+<p><img src="../img/20140105_mbed_fp_meeting.jpg" /> <img src="../img/20140105_R1098744.jpg" /> <img src="../img/20140105_R1098746.jpg" /> <img src="../img/20140105_R1098739.jpg" /> <img src="../img/20140105_R1098741.jpg" /></p>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="https://twitter.com/ytsuboi/status/420159418789924864">@ytsuboiからツッコミ</a> で <a href="http://osu-ameyoko.co.jp/?page_id=272">「大須あたりにはもっとたくさんあります」</a> だそうでゲソ!<a href="#fnref1">↩</a></p></li>
+</ol>
+</div>
+<p>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_shortname = 'metasepi';
+    var disqus_identifier = '/posts/2014-01-05-mbed_fp_0.html';
+    var disqus_url = 'http://metasepi.org' + '/posts/2014-01-05-mbed_fp_0.html';
+    var disqus_title = 'Metasepi作戦会議 第9回 議事録';
+    var disqus_developer = 1;
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>
+    Please enable JavaScript to view the 
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  <a href="http://disqus.com" class="dsq-brlink">
+    blog comments powered by <span.logo-disqus>Disqus</span>
+  </a>
+</p>
+
+    </div>
+
+    <footer>
+      <p>
+        This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
+        <br>
+        Metasepi project is supported by <a href="http://www.itpl.co.jp/en/"><img alt="IT Planning, Inc." style="border-width:0" src="../img/it_planning_108x20.png" /></a> ×
+        <a href="https://github.com/axsh/"><img alt="Axsh Co." style="border-width:0" src="../img/axsh_81x25.png" /></a> ×
+        <a href="../past-supporters.html">Past Supporters</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="/js/libs/jquery-1.6.2.min.js"><\/script>')</script>
+
+  <!-- scripts concatenated and minified via ant build script-->
+  <script defer src="../js/plugins.js"></script>
+  <script defer src="../js/script.js"></script>
+  <!-- end scripts-->
+
+  <script>
+    window._gaq = [['_setAccount','UA-158383-8'],['_trackPageview'],['_trackPageLoadTime']];
+    Modernizr.load({
+      load: ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js'
+    });
+  </script>
+
+  <!--[if lt IE 7 ]>
+    <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js">
+    <script>
+      window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})
+  <![endif]-->
+
+<script type="text/javascript">
+<!--
+(function() {
+var login = '',
+    fpf = true,
+    fpn = '__ulfpc';
+
+// DO NOT ALTER BELOW THIS LINE
+var id = 6008444, h = 'a5fe';
+var rand = rand || Math.floor(Math.random() * 9000000) + 1000000;
+if('http:'==document.location.protocol){var params={id:id,lt:3,h:h,url:document.URL,ref:document.referrer,lg:login,rand:rand,bw:(window.innerWidth?window.innerWidth:(document.documentElement && document.documentElement.clientWidth!=0?document.documentElement.clientWidth:(document.body?document.body.clientWidth:0 ))),bh:(window.innerHeight?window.innerHeight:(document.documentElement && document.documentElement.clientHeight!=0?document.documentElement.clientHeight:(document.body?document.body.clientHeight:0 ))),dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sw:screen.width,sh:screen.height,dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sb:document.title,guid:'ON'};if(fpf){params.fp=getuid(fpn);}params.eflg=1;var a=document.createElement('a');var lg=document.createElement('img');lg.setAttribute('id','_ullogimgltr');lg.setAttribute('width',1);lg.setAttribute('height',1);lg.setAttribute('alt','');var src='http://le.nakanohito.jp/le/1/?';for(var key in params ) src=src.concat(key+'='+encodeURIComponent(params[key] )+'&');lg.src=src.slice(0,-1);a.setAttribute('href','http://smartphone.userlocal.jp/');a.setAttribute('target','_blank');a.appendChild(lg);var s=document.getElementsByTagName('body')[0];s.appendChild(a);}
+function getuid(key){var arr=[],date=new Date(),exp=new Date();exp.setFullYear(exp.getFullYear()+7);if(document.cookie){arr=document.cookie.split(";");for(var i=0; i<arr.length; i++ ){var str=arr[i].replace(/^\s+|\s+

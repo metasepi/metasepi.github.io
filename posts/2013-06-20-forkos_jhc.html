@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>Build forkOS API using pthread. - Metasepi</title>
+
+  <meta name="description" content="metasepi.org">
+  <meta name="author" content="Kiwamu Okabe">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="http://metasepi.org/rss_en.xml" rel="alternate" title="Blog" type="application/rss+xml">
+
+  <!-- CSS concatenated and minified via ant build script-->
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/syntax.css">
+  <link rel="stylesheet" href="../css/calendar.css">
+  <!-- end CSS-->
+
+  <link rel="stylesheet" href="../css/default.css">
+
+  <script src="../js/libs/modernizr-2.0.6.min.js"></script>
+</head>
+
+<body onload="prettyPrint()">
+  <div id="fb-root"></div>
+  <script>
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = '//connect.facebook.net/ja_JP/all.js#xfbml=1';
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
+
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <a href="../">Metasepi</a>
+      </div>
+
+      <div class="nav">
+        <li><a href="../">Home</a></li>
+        <li><a href="../en/posts.html">Blog</a>(<a href="../posts.html">old</a>)</li>
+        <li><a href="../papers.html">Papers</a></li>
+        <li><a href="../map.html">Map</a></li>
+        <li><a href="../memories.html">Memories</a></li>
+        <li><a href="../about.html">About</a></li>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="content clearfix">
+      <h1>Build forkOS API using pthread.</h1>
+<div class="info">Posted on June 20, 2013 / Tags: <a href="../tags/jhc.html">jhc</a>, <a href="../tags/ajhc.html">ajhc</a>, <a href="../tags/thread.html">thread</a>, <a href="../tags/pthread.html">pthread</a></div>
+<h2>Table of contents</h2>
+<ul>
+<li><a href="#作成方法を考えよう">作成方法を考えよう</a><ul>
+<li><a href="#ghc-baseパッケージの設計をまねる">(1) GHC baseパッケージの設計をまねる</a></li>
+<li><a href="#foreign-import-ccall-wrapperで関数ポインタを作る">(2) foreign import ccall “wrapper”で関数ポインタを作る</a></li>
+<li><a href="#グローバル関数テーブルのインデックスを引数渡し">(3) グローバル関数テーブルのインデックスを引数渡し</a></li>
+<li><a href="#ラムダ式を使うために-stdgnu11でコンパイル">(4) ラムダ式を使うために-std=gnu++11でコンパイル</a></li>
+</ul></li>
+<li><a href="#結論-やはりnewstableptrに直接io-を突っ込んだ際の挙動を観察するべき">結論: やはりnewStablePtrに直接IO ()を突っ込んだ際の挙動を観察するべき</a></li>
+<li><a href="#実装">実装</a></li>
+</ul>
+<hr>
+<p>再入可能にしようとして、まずは <a href="http://hackage.haskell.org/packages/archive/base/latest/doc/html/Control-Concurrent.html#v:forkOS">forkOS</a> を作ろうとしたらハマったでゲソ。 このページはforkOSをpthread_createを使って作るメモ書きでゲソ。</p>
+<h2 id="作成方法を考えよう">作成方法を考えよう</h2>
+<p>作る前にまずは作戦をねるでゲソー。</p>
+<h3 id="ghc-baseパッケージの設計をまねる">(1) GHC baseパッケージの設計をまねる</h3>
+<p><a href="http://hackage.haskell.org/packages/archive/base/latest/doc/html/src/Control-Concurrent.html#forkOS">GHCでのforkOSの実装</a> を見ると、StablePtrにIO関数を包んで、C言語のforkOS_createThread関数に渡しているでゲソ。 pthread_createは</p>
+<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ghc/libraries/base/Control/Concurrent.hs</span>
+foreign export ccall forkOS_entry
+<span class="ot">    ::</span> <span class="dt">StablePtr</span> (<span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
+
+foreign <span class="kw">import </span>ccall &quot;forkOS_entry&quot; forkOS_entry_reimported
+<span class="ot">    ::</span> <span class="dt">StablePtr</span> (<span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
+
+<span class="ot">forkOS_entry ::</span> <span class="dt">StablePtr</span> (<span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
+forkOS_entry stableAction <span class="fu">=</span> <span class="kw">do</span>
+        action <span class="ot">&lt;-</span> deRefStablePtr stableAction
+        action
+
+foreign <span class="kw">import </span>ccall forkOS_createThread
+<span class="ot">    ::</span> <span class="dt">StablePtr</span> (<span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">CInt</span>
+
+<span class="ot">forkOS ::</span> <span class="dt">IO</span> () <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">ThreadId</span>
+forkOS action0
+    <span class="fu">|</span> rtsSupportsBoundThreads <span class="fu">=</span> <span class="kw">do</span>
+<span class="co">-- snip --</span>
+        entry <span class="ot">&lt;-</span> newStablePtr (myThreadId <span class="fu">&gt;&gt;=</span> putMVar mv <span class="fu">&gt;&gt;</span> action_plus)
+        err <span class="ot">&lt;-</span> forkOS_createThread entry
+        when (err <span class="fu">/=</span> <span class="dv">0</span>) <span class="fu">$</span> fail <span class="st">&quot;Cannot create OS thread.&quot;</span>
+        tid <span class="ot">&lt;-</span> takeMVar mv
+        freeStablePtr entry
+        return tid</code></pre>
+<pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* File: ghc/rts/posix/OSThreads.c */</span>
+<span class="dt">static</span> <span class="dt">void</span> *
+forkOS_createThreadWrapper ( <span class="dt">void</span> * entry )
+{
+    Capability *cap;
+    cap = rts_lock();
+    rts_evalStableIO(&amp;cap, (HsStablePtr) entry, NULL);
+    rts_unlock(cap);
+    <span class="kw">return</span> NULL;
+}
+
+<span class="dt">int</span>
+forkOS_createThread ( HsStablePtr entry )
+{
+    pthread_t tid;
+    <span class="dt">int</span> result = pthread_create(&amp;tid, NULL,
+				forkOS_createThreadWrapper, (<span class="dt">void</span>*)entry);
+    <span class="kw">if</span>(!result)
+        pthread_detach(tid);
+    <span class="kw">return</span> result;
+}</code></pre>
+<p>どうやらGHCではStablePtrはFFIを越えることができて、その型はHsStablePtrのようでゲソ。 このようなコードをAjhcでも実現できなイカ？ ところが <a href="https://github.com/ajhc/ajhc-dumpyard/tree/master/try_pthread1">それぽいコード</a> を書いてみたところエラーになるじゃなイカ。 これはStablePtrは単なるスマートポインタになるはずでゲソが、 どうもこのスマートポインタを直接C言語コードに渡すのが禁止されているようでゲソ。</p>
+<pre><code>$ make
+--snip--
+Compiling...
+[1 of 1] Jhc.Conc         
+jhc-conc-pthread/Jhc/Conc.hs:28  - Error: caught error processing decl: user error (createFunc: attempt to pass a void argument)
+jhc-conc-pthread/Jhc/Conc.hs:28  - Error: Type 'Foreign.StablePtr.StablePtr (IO ())' cannot be used in a foreign declaration</code></pre>
+<p>このスマートポインタを直接C言語コードに見せる行為をはたして許して良いものか考えどころでゲソ。。。 イカはforeignで使って良い要素を判定している箇所の抜き出しでゲソ。</p>
+<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/src/E/FromHs.hs</span>
+<span class="kw">instance</span> <span class="dt">DataTableMonad</span> <span class="dt">C</span> <span class="kw">where</span>
+    getDataTable <span class="fu">=</span> asks ceDataTable
+
+ffiTypeInfo bad t cont <span class="fu">=</span> <span class="kw">do</span>
+    dataTable <span class="ot">&lt;-</span> getDataTable
+    <span class="kw">case</span> lookupExtTypeInfo dataTable t <span class="kw">of</span>
+        <span class="dt">Just</span> r <span class="ot">-&gt;</span> cont r
+        <span class="dt">Nothing</span> <span class="ot">-&gt;</span> <span class="kw">do</span>
+            sl <span class="ot">&lt;-</span> getSrcLoc
+            liftIO <span class="fu">$</span> warn sl <span class="dt">InvalidFFIType</span> <span class="fu">$</span> printf <span class="st">&quot;Type '%s' cannot be used in a foreign declaration&quot;</span> (pprint<span class="ot"> t ::</span> <span class="dt">String</span>)
+            return bad
+
+convertDecls tiData props classHierarchy assumps dataTable hsDecls <span class="fu">=</span> res <span class="kw">where</span>
+    res <span class="fu">=</span> <span class="kw">do</span>
+        (a,ws) <span class="ot">&lt;-</span> evalRWST ans ceEnv <span class="dv">2</span>
+        mapM_ addWarning ws
+        return a
+    ceEnv <span class="fu">=</span> <span class="dt">CeEnv</span> {
+        ceCoerce <span class="fu">=</span> tiCoerce tiData,
+        ceAssumps <span class="fu">=</span> assumps,
+        ceFuncs <span class="fu">=</span> funcs,
+        ceProps <span class="fu">=</span> props,
+        ceSrcLoc <span class="fu">=</span> bogusASrcLoc,
+        ceDataTable <span class="fu">=</span> dataTable
+        }
+
+<span class="co">-- File: ajhc/src/E/Main.hs</span>
+processDecls <span class="ot">::</span>
+    <span class="dt">CollectedHo</span>             <span class="co">-- ^ Collected ho</span>
+    <span class="ot">-&gt;</span> <span class="dt">Ho</span>                   <span class="co">-- ^ preliminary haskell object  data</span>
+    <span class="ot">-&gt;</span> <span class="dt">TiData</span>               <span class="co">-- ^ front end output</span>
+    <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">CollectedHo</span>,<span class="dt">Ho</span>)  <span class="co">-- ^ (new accumulated ho, final ho for this modules)</span>
+processDecls cho ho' tiData <span class="fu">=</span> withStackStatus <span class="st">&quot;processDecls&quot;</span> <span class="fu">$</span>  <span class="kw">do</span>
+<span class="co">--snip--</span>
+    <span class="kw">let</span> derives <span class="fu">=</span> (collectDeriving originalDecls)
+    <span class="kw">let</span> dataTable <span class="fu">=</span> toDataTable (getConstructorKinds (hoKinds <span class="fu">$</span> hoTcInfo ho'))
+            (tiAllAssumptions tiData) originalDecls (hoDataTable <span class="fu">$</span> hoBuild ho)
+        classInstances <span class="fu">=</span> deriveClasses (choCombinators cho) fullDataTable derives
+        fullDataTable <span class="fu">=</span> dataTable <span class="ot">`mappend`</span> hoDataTable (hoBuild ho)
+<span class="co">--snip--</span>
+    ds' <span class="ot">&lt;-</span> convertDecls tiData theProps
+        (hoClassHierarchy <span class="fu">$</span> hoTcInfo ho') allAssumps  fullDataTable decls</code></pre>
+<p>もう一つ気になるのはdeRefStablePtrを使ってIOを元に戻しても実行不能という点でゲソ。</p>
+<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Foreign.StablePtr</span>
+
+<span class="ot">main ::</span> <span class="dt">IO</span> ()
+main <span class="fu">=</span> <span class="kw">do</span>
+  p <span class="ot">&lt;-</span> newStablePtr <span class="fu">$</span> print <span class="st">&quot;hoge&quot;</span>
+  d <span class="ot">&lt;-</span> deRefStablePtr p
+  d</code></pre>
+<p>上のコードをコンパイルすると、イカのようなエラーになるでゲソ。</p>
+<pre><code>$ ajhc --tdir=tmp -o Main Main.hs
+--snip--
+Typechecking...
+Compiling...
+Collected Compilation...
+-- TypeAnalyzeMethods
+-- BoxifyProgram
+-- Boxy WorkWrap
+-- LambdaLift
+Converting to Grin...
+Updatable CAFS: 0
+Constant CAFS:  0
+Recursive CAFS: 0
+Exiting abnormally. Work directory is 'tmp'
+ajhc: Grin.FromE.compile'.ce in function: theMain
+can't grok expression: &lt;fromBang_ x128471745∷IO ()&gt; x62470114</code></pre>
+<h3 id="foreign-import-ccall-wrapperで関数ポインタを作る">(2) foreign import ccall “wrapper”で関数ポインタを作る</h3>
+<p>wrapperというforeign import宣言 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> があり、これを使えば任意のIOを関数ポインタに変換することができるようでゲソ。 wrapperを使えば簡単にpthread_createにHaskellのIOを呼び出してもらえるじゃなイカ？ やってみるでゲソ!</p>
+<p>…と、 <a href="https://github.com/ajhc/ajhc-dumpyard/tree/master/try_pthread2">ものすごくいい加減なコード</a> を書いてみたでゲソ。 ところが今度はFunPtrというC言語の型がみつからないとGCCに怒られるでゲソ。</p>
+<pre><code>Running: gcc tmp/rts/profile.c tmp/rts/rts_support.c tmp/rts/gc_none.c tmp/rts/jhc_rts.c tmp/lib/lib_cbits.c tmp/rts/gc_jgc.c tmp/rts/stableptr.c -Itmp/cbits -Itmp tmp/main_code.c -o Main '-std=gnu99' -D_GNU_SOURCE '-falign-functions=4' -ffast-math -Wextra -Wall -Wno-unused-parameter -fno-strict-aliasing -DNDEBUG -O3 '-D_JHC_GC=_JHC_GC_JGC'
+tmp/main_code.c: In function ‘fFE$__CCall_testThread’:
+tmp/main_code.c:659:17: warning: statement with no effect [-Wunused-value]
+tmp/main_code.c: In function ‘ftheMain’:
+tmp/main_code.c:1146:68: error: ‘FunPtr’ undeclared (first use in this function)
+tmp/main_code.c:1146:68: note: each undeclared identifier is reported only once for each function it appears in
+Exiting abnormally. Work directory is 'tmp'
+ajhc: user error (C code did not compile.)</code></pre>
+<p>これはイカのようなC言語コードをAjhcが吐き出すためでゲソ。 もうちょっと小細工すれば関数ポインタが使えるようになりそうじゃなイカ？</p>
+<pre class="sourceCode c"><code class="sourceCode c"><span class="dt">static</span> <span class="dt">void</span> A_STD
+ftheMain(gc_t gc)
+{
+        saved_gc = gc;
+        (<span class="dt">uint32_t</span>)pthread_create((pthread_t*)<span class="dv">0</span>,(pthread_attr_t*)<span class="dv">0</span>,(FunPtr)((uintptr_t)&amp;testThread),(HsPtr)<span class="dv">0</span>);
+        <span class="kw">return</span>;
+}
+
+HsPtr
+testThread(HsPtr x30)
+{
+        <span class="kw">return</span> (HsPtr)fFE$__CCall_testThread(saved_gc,(uintptr_t)x30);
+}</code></pre>
+<p>どうも上の不具合はイカのpatchで簡単に修正できるようでゲソ。たぶんこれはイージーミスだと思うでゲソ。</p>
+<pre class="sourceCode diff"><code class="sourceCode diff"><span class="kw">--- a/lib/jhc/Jhc/Type/Ptr.hs</span>
+<span class="dt">+++ b/lib/jhc/Jhc/Type/Ptr.hs</span>
+<span class="dt">@@ -3,4 +3,4 @@ module Jhc.Type.Ptr where</span>
+ import Jhc.Prim.Bits
+
+ data {-# CTYPE &quot;HsPtr&quot; #-} Ptr a = Ptr Addr_
+<span class="st">-data {-# CTYPE &quot;FunPtr&quot; #-} FunPtr a = FunPtr FunAddr_</span>
+<span class="ot">+data {-# CTYPE &quot;HsFunPtr&quot; #-} FunPtr a = FunPtr FunAddr_</span></code></pre>
+<p>しかしこれでFunPtrを使った関数ポインタを実現できたんでゲソが、 任意のIOを関数ポインタ化できることにはならないでゲソ。 具体的にはイカのような型になってしまっているforkOSの引数をIO ()にしたいでゲソ。</p>
+<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">forkOS ::</span> <span class="dt">FunPtr</span> (<span class="dt">Ptr</span> () <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Ptr</span> ())) <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">Int</span></code></pre>
+<p>GHCはどんな魔法を使っているのでゲソ？ <a href="https://github.com/ajhc/ajhc-dumpyard/tree/master/ghc_foreign_wrapper">GHCでforeign import ccall “wrapper”を使う例</a> を解析すれば何かわかるかもしれないでゲソ。 freeHaskellFunPtrの行方を探ったところ、 どうもghc/rts/Adjustor.cでwrapperが作ったコード片のラッパーを作るようでゲソ。 createAdjustorというのが主犯のようじゃなイカ。</p>
+<p>とりあえず任意のIOをFunPtrに変換するのはキツいにしても、 定数的なIOはラベルをふるだけなのだから比較的簡単にFunPtr化できるんじゃなイカ？</p>
+<p><a href="http://hackage.haskell.org/trac/ghc/wiki/Commentary/Rts/FFI">Commentary/Rts/FFI – GHC</a> を読んでみたでゲソが、具体的な実現方法については言及がないでゲソ。</p>
+<h3 id="グローバル関数テーブルのインデックスを引数渡し">(3) グローバル関数テーブルのインデックスを引数渡し</h3>
+<p>StablePtrを使わずにコンテキスト間でIOを授受する方法として無理矢理考えてみたでゲソ。 結局インデックスの意味がC言語側に漏れるので、 StablePtrを直接C言語に渡すケースと比較して危険度はほとんど変わらない気もするでゲソ…</p>
+<h3 id="ラムダ式を使うために-stdgnu11でコンパイル">(4) ラムダ式を使うために-std=gnu++11でコンパイル</h3>
+<p>さすがにこれは筋が悪すぎるので、困った時の隠し玉に取っておかなイカ？</p>
+<h2 id="結論-やはりnewstableptrに直接io-を突っ込んだ際の挙動を観察するべき">結論: やはりnewStablePtrに直接IO ()を突っ込んだ際の挙動を観察するべき</h2>
+<pre><code>ajhc: Grin.FromE.compile'.ce in function: theMain
+can't grok expression: &lt;fromBang_ x128471745∷IO ()&gt; x62470114</code></pre>
+<p>このメッセージはcompile’関数が以下の型を意図せず受け取ったことをしめしているでゲソ。</p>
+<pre class="sourceCode haskell"><code class="sourceCode haskell">(<span class="dt">EAp</span> (<span class="dt">EPrim</span> (<span class="dt">PrimPrim</span> <span class="st">&quot;fromBang_&quot;</span>) [x] e1) e2)</code></pre>
+<p>ということはこのEApという型はどこかで変換されるべきで、そのしくみから漏れてきたと考えられるじゃなイカ。 しかし仮にイカのようなpatchをあてても…</p>
+<pre class="sourceCode diff"><code class="sourceCode diff"><span class="kw">--- a/lib/haskell-extras/Foreign/StablePtr.hs</span>
+<span class="dt">+++ b/lib/haskell-extras/Foreign/StablePtr.hs</span>
+<span class="dt">@@ -5,7 +5,9 @@ module Foreign.StablePtr(</span>
+     castPtrToStablePtr,
+     newStablePtr,
+     deRefStablePtr,
+<span class="st">-    freeStablePtr</span>
+<span class="ot">+    freeStablePtr,</span>
+<span class="ot">+    newStablePtrIO,</span>
+<span class="ot">+    deRefStablePtrIO,</span>
+     ) where
+ 
+ import Jhc.Prim.Rts
+<span class="dt">@@ -37,6 +39,19 @@ deRefStablePtr x = do</span>
+     fromUIO $ \w -&gt; case c_derefStablePtr (toBang_ x) w of
+         (# w', s #) -&gt; (# w', fromBang_ s #)
+ 
+<span class="ot">+newStablePtrIO :: IO a -&gt; IO (StablePtr (IO a))</span>
+<span class="ot">+newStablePtrIO x = do</span>
+<span class="ot">+    fromUIO $ \w -&gt; case c_newStablePtrIO x w of</span>
+<span class="ot">+        (# w', s #) -&gt; (# w', s #)</span>
+<span class="ot">+</span>
+<span class="ot">+deRefStablePtrIO :: StablePtr (IO a) -&gt; IO (IO a)</span>
+<span class="ot">+deRefStablePtrIO x = do</span>
+<span class="ot">+    fromUIO $ \w -&gt; case c_derefStablePtrIO x w of</span>
+<span class="ot">+        (# w', s #) -&gt; (# w', s #)</span>
+<span class="ot">+</span>
+ foreign import ccall unsafe &quot;rts/stableptr.c c_freeStablePtr&quot;  c_freeStablePtr   :: Bang_ (StablePtr a) -&gt; IO ()
+ foreign import ccall unsafe &quot;rts/stableptr.c c_newStablePtr&quot;   c_newStablePtr    :: Bang_ a -&gt; UIO (Bang_ (StablePtr a))
+ foreign import ccall unsafe &quot;rts/stableptr.c c_derefStablePtr&quot; c_derefStablePtr :: Bang_ (StablePtr a) -&gt; UIO (Bang_ a)
+<span class="ot">+</span>
+<span class="ot">+foreign import ccall unsafe &quot;rts/stableptr.c c_newStablePtr&quot;   c_newStablePtrIO   :: IO a -&gt; UIO (StablePtr (IO a))</span>
+<span class="ot">+foreign import ccall unsafe &quot;rts/stableptr.c c_derefStablePtr&quot; c_derefStablePtrIO :: StablePtr (IO a) -&gt; UIO (IO a)</span></code></pre>
+<p>ajhcのコンパイルでイカのようにエラーになってしまうでゲソ。 どうやらforeign importに渡せる型は限定されているようでゲソ。</p>
+<pre><code>Compiling...
+[1 of 4] Foreign.StablePtr
+lib/haskell-extras/Foreign/StablePtr.hs:56  - Error: Type 'Foreign.StablePtr.StablePtr (IO Foreign.StablePtr.37_a)' cannot be used in a foreign declaration
+lib/haskell-extras/Foreign/StablePtr.hs:57  - Error: Type 'IO Foreign.StablePtr.39_a' cannot be used in a foreign declaration
+make[2]: *** [haskell-extras-0.8.1.hl] エラー 1</code></pre>
+<p>じゃあUIOを経由してStablePtrを作るのはどーなんでゲソ？</p>
+<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">newStablePtrIO ::</span> <span class="dt">IO</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">StablePtr</span> (<span class="dt">UIO</span> a))
+newStablePtrIO x <span class="fu">=</span> newStablePtr (unIO x)
+
+<span class="ot">deRefStablePtrIO ::</span> <span class="dt">StablePtr</span> (<span class="dt">UIO</span> a) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">IO</span> a)
+deRefStablePtrIO x <span class="fu">=</span> <span class="kw">do</span>
+  u <span class="ot">&lt;-</span> deRefStablePtr x
+  return <span class="fu">$</span> fromUIO u</code></pre>
+<p>エラーは変化せず、そりゃそうカー。</p>
+<p>ちょっと立ち返って、StablePtrを経由したIO ()の授受というのは本来どのようなコードになるべきなんでゲソ？ イカのようなコード、つまりIO ()をStablePtrとBang_で二重に包んだような型を作り、 この型をpthread_create()で生成されるスレッドに渡して復元してほしいでゲソ。</p>
+<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Foreign.StablePtr</span>
+<span class="kw">import </span><span class="dt">Jhc.Prim.Rts</span>
+
+<span class="ot">iToB ::</span> <span class="dt">IO</span> () <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Bang_</span> (<span class="dt">StablePtr</span> (<span class="dt">IO</span> ())))
+iToB io <span class="fu">=</span> <span class="kw">do</span>
+  s <span class="ot">&lt;-</span> newStablePtr io
+  return <span class="fu">$</span> toBang_ s
+
+<span class="ot">runB ::</span> <span class="dt">Bang_</span> (<span class="dt">StablePtr</span> (<span class="dt">IO</span> ())) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
+runB b <span class="fu">=</span> <span class="kw">do</span>
+  io <span class="ot">&lt;-</span> deRefStablePtr <span class="fu">$</span> fromBang_ b
+  io
+
+<span class="ot">main ::</span> <span class="dt">IO</span> ()
+main <span class="fu">=</span> <span class="kw">do</span>
+  l <span class="ot">&lt;-</span> getLine
+  b <span class="ot">&lt;-</span> iToB <span class="fu">$</span> print l
+  runB b</code></pre>
+<p>ところが先のエラーがなぜ起きていたかというと予期しないEApがあったからじゃなイカ。 この変なEApだけごまかせばなんとかなるんじゃなイカ？ どうやらこのEApという型はfromAp関数でEVarを剥き出しにしてからパターンマッチされるようでゲソ。</p>
+<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/src/E/Type.hs</span>
+<span class="ot">fromAp ::</span> <span class="dt">E</span> <span class="ot">-&gt;</span> (<span class="dt">E</span>,[<span class="dt">E</span>])
+fromAp e <span class="fu">=</span> f [] e <span class="kw">where</span>
+    f as (<span class="dt">EAp</span> e a) <span class="fu">=</span> f (a<span class="fu">:</span>as) e
+    f as e  <span class="fu">=</span>  (e,as)
+
+<span class="co">-- File: ajhc/src/Grin/FromE.hs</span>
+    ce e <span class="fu">|</span> (<span class="dt">EVar</span> tvr,as) <span class="ot">&lt;-</span> fromAp e <span class="fu">=</span> <span class="kw">do</span>
+        as <span class="ot">&lt;-</span> return <span class="fu">$</span> args as
+        lfunc <span class="ot">&lt;-</span> asks lfuncMap
+        <span class="kw">let</span> fty <span class="fu">=</span> toTypes <span class="dt">TyNode</span> (getType e)
+        <span class="kw">case</span> mlookup (tvrIdent tvr) (ccafMap cenv) <span class="kw">of</span>
+            <span class="dt">Just</span> (<span class="dt">Const</span> c) <span class="ot">-&gt;</span> app fty (<span class="dt">Return</span> [c]) as
+            <span class="dt">Just</span> x<span class="fu">@</span><span class="dt">Var</span> {} <span class="ot">-&gt;</span> app fty (gEval x) as
+            <span class="dt">Nothing</span> <span class="fu">|</span> <span class="dt">Just</span> (v,n,rt) <span class="ot">&lt;-</span> mlookup (tvrIdent tvr) lfunc <span class="ot">-&gt;</span> <span class="kw">do</span>
+                    <span class="kw">let</span> (x,y) <span class="fu">=</span> splitAt n as
+                    app fty (<span class="dt">App</span> v (keepIts x) rt) y
+            <span class="dt">Nothing</span> <span class="ot">-&gt;</span> <span class="kw">case</span> mlookup (tvrIdent tvr) (scMap cenv) <span class="kw">of</span>
+                <span class="dt">Just</span> (v,as',es)
+                    <span class="fu">|</span> length as <span class="fu">&gt;=</span> length as' <span class="ot">-&gt;</span> <span class="kw">do</span>
+                        <span class="kw">let</span> (x,y) <span class="fu">=</span> splitAt (length as') as
+                        app fty (<span class="dt">App</span> v (keepIts x) es) y
+                    <span class="fu">|</span> otherwise <span class="ot">-&gt;</span> <span class="kw">do</span>
+                        <span class="kw">let</span> pt <span class="fu">=</span> partialTag v (length as' <span class="fu">-</span> length as)
+                        return <span class="fu">$</span> dstore (<span class="dt">NodeC</span> pt (keepIts as))
+                <span class="dt">Nothing</span> <span class="fu">|</span> not (isLifted <span class="fu">$</span> <span class="dt">EVar</span> tvr) <span class="ot">-&gt;</span> <span class="kw">do</span>
+                    mtick' <span class="st">&quot;Grin.FromE.app-unlifted&quot;</span>
+                    app fty (<span class="dt">Return</span> [toVal tvr]) as
+                <span class="dt">Nothing</span> <span class="ot">-&gt;</span> <span class="kw">do</span>
+                    <span class="kw">case</span> as <span class="kw">of</span>
+                        [] <span class="ot">-&gt;</span> evalVar fty tvr
+                        _ <span class="ot">-&gt;</span> <span class="kw">do</span>
+                            ee <span class="ot">&lt;-</span> evalVar [<span class="dt">TyNode</span>] tvr
+                            app fty ee as
+            _ <span class="ot">-&gt;</span> error <span class="st">&quot;FromE.ce: bad.&quot;</span></code></pre>
+<p>そこでイカのようなfromBang_プリミティブを抹殺する関数を作ったでゲソ!</p>
+<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">    stripBang ::</span> <span class="dt">E</span> <span class="ot">-&gt;</span> <span class="dt">E</span>
+    stripBang e <span class="fu">=</span> f e <span class="kw">where</span>
+      f (<span class="dt">EAp</span> p a) <span class="fu">=</span> g p a
+      f e <span class="fu">=</span> e
+      g (<span class="dt">EPrim</span> (<span class="dt">PrimPrim</span> <span class="st">&quot;fromBang_&quot;</span>) [b] _) a <span class="fu">=</span> <span class="dt">EAp</span> b a
+      g e a <span class="fu">=</span> <span class="dt">EAp</span> e a</code></pre>
+<p>このstripBangを通してからfromApにeを食わせたところ無事エラーが出なくなったでゲソ。 ちょっと危険な気もするが、大目に見てほしいでゲソ。</p>
+<h2 id="実装">実装</h2>
+<p>ここまで来ればforkOSを実装するのは簡単でゲソ。</p>
+<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/lib/haskell-extras/Control/Concurrent.hs</span>
+<span class="ot">{-# LANGUAGE ForeignFunctionInterface #-}</span>
+<span class="kw">module</span> <span class="dt">Control.Concurrent</span> (forkOS, <span class="dt">ThreadId</span>) <span class="kw">where</span>
+<span class="kw">import </span><span class="dt">Foreign.Ptr</span>
+<span class="kw">import </span><span class="dt">Foreign.StablePtr</span>
+<span class="kw">import </span><span class="dt">Foreign.Storable</span>
+<span class="kw">import </span><span class="dt">Foreign.Marshal.Alloc</span>
+<span class="kw">import </span><span class="dt">Control.Monad</span> (when)
+<span class="kw">import </span><span class="dt">Jhc.Prim.Rts</span>
+
+<span class="kw">data</span> <span class="ot">{-# CTYPE &quot;rts/conc.h jhc_threadid_t&quot; #-}</span> <span class="dt">CthreadIdT</span>
+<span class="kw">data</span> <span class="dt">ThreadId</span> <span class="fu">=</span> <span class="dt">ThreadId</span> <span class="dt">CthreadIdT</span>
+
+foreign <span class="kw">import </span>ccall &quot;rts/conc.h forkOS_createThread&quot; forkOScreateThread ::
+   <span class="dt">FunPtr</span> (<span class="dt">Bang_</span> (<span class="dt">StablePtr</span> (<span class="dt">IO</span> ())) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Ptr</span> ())) <span class="ot">-&gt;</span> <span class="dt">Bang_</span> a <span class="ot">-&gt;</span> <span class="dt">Ptr</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">CthreadIdT</span>
+
+<span class="ot">forkOScreateThreadWrapper ::</span> <span class="dt">Bang_</span> (<span class="dt">StablePtr</span> (<span class="dt">IO</span> ())) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Ptr</span> ())
+forkOScreateThreadWrapper b <span class="fu">=</span> <span class="kw">do</span>
+  <span class="kw">let</span> s <span class="fu">=</span> fromBang_ b
+  d <span class="ot">&lt;-</span> deRefStablePtr s
+  d
+  freeStablePtr s
+  return nullPtr
+
+foreign export ccall <span class="st">&quot;forkOScreateThreadWrapper&quot;</span> forkOScreateThreadWrapper <span class="ot">::</span>
+  <span class="dt">Bang_</span> (<span class="dt">StablePtr</span> (<span class="dt">IO</span> ())) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Ptr</span> ())
+foreign <span class="kw">import </span>ccall &quot;&amp;forkOScreateThreadWrapper&quot; p_forkOScreateThreadWrapper ::
+  <span class="dt">FunPtr</span> (<span class="dt">Bang_</span> (<span class="dt">StablePtr</span> (<span class="dt">IO</span> ())) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Ptr</span> ()))
+
+<span class="ot">forkOS ::</span> <span class="dt">IO</span> () <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">ThreadId</span>
+forkOS f <span class="fu">=</span> alloca <span class="fu">$</span> \ip <span class="ot">-&gt;</span> <span class="kw">do</span>
+  s <span class="ot">&lt;-</span> newStablePtr f
+  pth <span class="ot">&lt;-</span> forkOScreateThread p_forkOScreateThreadWrapper (toBang_ s) ip
+  i <span class="ot">&lt;-</span> peek ip
+  when (i <span class="fu">/=</span> <span class="dv">0</span>) <span class="fu">$</span> fail <span class="st">&quot;Cannot create OS thread.&quot;</span>
+  return <span class="fu">$</span> <span class="dt">ThreadId</span> pth</code></pre>
+<pre class="sourceCode c"><code class="sourceCode c"><span class="co">// File: ajhc/rts/rts/conc.c</span>
+jhc_threadid_t
+forkOS_createThread(<span class="dt">void</span> *(*wrapper) (<span class="dt">void</span> *), <span class="dt">void</span> *entry, <span class="dt">int</span> *err)
+{
+        pthread_t tid;
+        *err = pthread_create(&amp;tid, NULL, wrapper, entry);
+        <span class="kw">if</span> (*err) {
+                pthread_detach(tid);
+        }
+        <span class="kw">return</span> tid;
+}</code></pre>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="http://itpro.nikkeibp.co.jp/article/COLUMN/20080805/312151/?ST=develop&amp;P=4">本物のプログラマはHaskellを使う - 第22回　FFIを使って他の言語の関数を呼び出す：ITpro</a><a href="#fnref1">↩</a></p></li>
+</ol>
+</div>
+<p>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_shortname = 'metasepi';
+    var disqus_identifier = '/posts/2013-06-20-forkos_jhc.html';
+    var disqus_url = 'http://metasepi.org' + '/posts/2013-06-20-forkos_jhc.html';
+    var disqus_title = 'Build forkOS API using pthread.';
+    var disqus_developer = 1;
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>
+    Please enable JavaScript to view the 
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  <a href="http://disqus.com" class="dsq-brlink">
+    blog comments powered by <span.logo-disqus>Disqus</span>
+  </a>
+</p>
+
+    </div>
+
+    <footer>
+      <p>
+        This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
+        <br>
+        Metasepi project is supported by <a href="http://www.itpl.co.jp/en/"><img alt="IT Planning, Inc." style="border-width:0" src="../img/it_planning_108x20.png" /></a> ×
+        <a href="https://github.com/axsh/"><img alt="Axsh Co." style="border-width:0" src="../img/axsh_81x25.png" /></a> ×
+        <a href="../past-supporters.html">Past Supporters</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="/js/libs/jquery-1.6.2.min.js"><\/script>')</script>
+
+  <!-- scripts concatenated and minified via ant build script-->
+  <script defer src="../js/plugins.js"></script>
+  <script defer src="../js/script.js"></script>
+  <!-- end scripts-->
+
+  <script>
+    window._gaq = [['_setAccount','UA-158383-8'],['_trackPageview'],['_trackPageLoadTime']];
+    Modernizr.load({
+      load: ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js'
+    });
+  </script>
+
+  <!--[if lt IE 7 ]>
+    <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js">
+    <script>
+      window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})
+  <![endif]-->
+
+<script type="text/javascript">
+<!--
+(function() {
+var login = '',
+    fpf = true,
+    fpn = '__ulfpc';
+
+// DO NOT ALTER BELOW THIS LINE
+var id = 6008444, h = 'a5fe';
+var rand = rand || Math.floor(Math.random() * 9000000) + 1000000;
+if('http:'==document.location.protocol){var params={id:id,lt:3,h:h,url:document.URL,ref:document.referrer,lg:login,rand:rand,bw:(window.innerWidth?window.innerWidth:(document.documentElement && document.documentElement.clientWidth!=0?document.documentElement.clientWidth:(document.body?document.body.clientWidth:0 ))),bh:(window.innerHeight?window.innerHeight:(document.documentElement && document.documentElement.clientHeight!=0?document.documentElement.clientHeight:(document.body?document.body.clientHeight:0 ))),dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sw:screen.width,sh:screen.height,dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sb:document.title,guid:'ON'};if(fpf){params.fp=getuid(fpn);}params.eflg=1;var a=document.createElement('a');var lg=document.createElement('img');lg.setAttribute('id','_ullogimgltr');lg.setAttribute('width',1);lg.setAttribute('height',1);lg.setAttribute('alt','');var src='http://le.nakanohito.jp/le/1/?';for(var key in params ) src=src.concat(key+'='+encodeURIComponent(params[key] )+'&');lg.src=src.slice(0,-1);a.setAttribute('href','http://smartphone.userlocal.jp/');a.setAttribute('target','_blank');a.appendChild(lg);var s=document.getElementsByTagName('body')[0];s.appendChild(a);}
+function getuid(key){var arr=[],date=new Date(),exp=new Date();exp.setFullYear(exp.getFullYear()+7);if(document.cookie){arr=document.cookie.split(";");for(var i=0; i<arr.length; i++ ){var str=arr[i].replace(/^\s+|\s+

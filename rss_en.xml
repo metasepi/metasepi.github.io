@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <title>Metasepi Blog</title>
+    <link href="http://metasepi.org//rss_en.xml" rel="self" />
+    <link href="http://metasepi.org/" />
+    <id>http://metasepi.org//rss_en.xml</id>
+    <author>
+        <name>Kiwamu Okabe</name>
+        <email>kiwamu@debian.or.jp</email>
+    </author>
+    <updated>2014-09-14T00:00:00Z</updated>
+    <entry>
+    <title>(UnderConstruction) ATS2 internal overview</title>
+    <link href="http://metasepi.org//en/posts/2014-09-14-ats2_internal_overview.html" />
+    <id>http://metasepi.org//en/posts/2014-09-14-ats2_internal_overview.html</id>
+    <published>2014-09-14T00:00:00Z</published>
+    <updated>2014-09-14T00:00:00Z</updated>
+    <summary type="html"><![CDATA[First trying to read source code of ATS2 compiler.]]></summary>
+</entry>
+<entry>
+    <title>Metasepi team meeting #18</title>
+    <link href="http://metasepi.org//en/posts/2014-09-04-haskell-symposium.html" />
+    <id>http://metasepi.org//en/posts/2014-09-04-haskell-symposium.html</id>
+    <published>2014-09-04T00:00:00Z</published>
+    <updated>2014-09-04T00:00:00Z</updated>
+    <summary type="html"><![CDATA[It's showtime at Haskell Symposium 2014!]]></summary>
+</entry>
+<entry>
+    <title>Metasepi team meeting #17</title>
+    <link href="http://metasepi.org//en/posts/2014-08-24-sprosym2014.html" />
+    <id>http://metasepi.org//en/posts/2014-08-24-sprosym2014.html</id>
+    <published>2014-08-24T00:00:00Z</published>
+    <updated>2014-08-24T00:00:00Z</updated>
+    <summary type="html"><![CDATA[Propaganda of ATS lanugage for Japanese researchers.]]></summary>
+</entry>
+<entry>
+    <title>Metasepi team meeting #16</title>
+    <link href="http://metasepi.org//en/posts/2014-08-02-osc2014-kyoto.html" />
+    <id>http://metasepi.org//en/posts/2014-08-02-osc2014-kyoto.html</id>
+    <published>2014-08-02T00:00:00Z</published>
+    <updated>2014-08-02T00:00:00Z</updated>
+    <summary type="html"><![CDATA[Why ATS language is safe?]]></summary>
+</entry>
+<entry>
+    <title>Metasepi team meeting #15</title>
+    <link href="http://metasepi.org//en/posts/2014-07-26-ajhc-tlug.html" />
+    <id>http://metasepi.org//en/posts/2014-07-26-ajhc-tlug.html</id>
+    <published>2014-07-26T00:00:00Z</published>
+    <updated>2014-07-26T00:00:00Z</updated>
+    <summary type="html"><![CDATA[Let's practice presentation for Haskell Symposium 2014!]]></summary>
+</entry>
+<entry>
+    <title>Metasepi team meeting #14</title>
+    <link href="http://metasepi.org//en/posts/2014-07-04-osc-nagoya-ats.html" />
+    <id>http://metasepi.org//en/posts/2014-07-04-osc-nagoya-ats.html</id>
+    <published>2014-07-04T00:00:00Z</published>
+    <updated>2014-07-04T00:00:00Z</updated>
+    <summary type="html"><![CDATA[Functional Nagoya likes ATS language?]]></summary>
+</entry>
+<entry>
+    <title>Start! ATS programming</title>
+    <link href="http://metasepi.org//en/posts/2014-05-11-functional_lt.html" />
+    <id>http://metasepi.org//en/posts/2014-05-11-functional_lt.html</id>
+    <published>2014-05-11T00:00:00Z</published>
+    <updated>2014-05-11T00:00:00Z</updated>
+    <summary type="html"><![CDATA[First try to run ATS code on tiny MCU]]></summary>
+</entry>
+<entry>
+    <title>Metasepi team meeting #13</title>
+    <link href="http://metasepi.org//en/posts/2014-03-01-osc-tokyo.html" />
+    <id>http://metasepi.org//en/posts/2014-03-01-osc-tokyo.html</id>
+    <published>2014-03-01T00:00:00Z</published>
+    <updated>2014-03-01T00:00:00Z</updated>
+    <summary type="html"><![CDATA[A debrief meeting of Arafura iteration]]></summary>
+</entry>
+<entry>
+    <title>Metasepi team meeting #11</title>
+    <link href="http://metasepi.org//en/posts/2014-01-17-11th_wocs2.html" />
+    <id>http://metasepi.org//en/posts/2014-01-17-11th_wocs2.html</id>
+    <published>2014-01-17T00:00:00Z</published>
+    <updated>2014-01-17T00:00:00Z</updated>
+    <summary type="html"><![CDATA[Let's set out on a tour of what's on corporate researcher's mind]]></summary>
+</entry>
+<entry>
+    <title>Metasepi team meeting #10</title>
+    <link href="http://metasepi.org//en/posts/2014-01-10-prosym55.html" />
+    <id>http://metasepi.org//en/posts/2014-01-10-prosym55.html</id>
+    <published>2014-01-10T00:00:00Z</published>
+    <updated>2014-01-10T00:00:00Z</updated>
+    <summary type="html"><![CDATA[Let's promote Metasepi at the programming symposium!]]></summary>
+</entry>
+
+</feed>

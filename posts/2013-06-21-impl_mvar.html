@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>(作成中) Implement MVar. - Metasepi</title>
+
+  <meta name="description" content="metasepi.org">
+  <meta name="author" content="Kiwamu Okabe">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="http://metasepi.org/rss_en.xml" rel="alternate" title="Blog" type="application/rss+xml">
+
+  <!-- CSS concatenated and minified via ant build script-->
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/syntax.css">
+  <link rel="stylesheet" href="../css/calendar.css">
+  <!-- end CSS-->
+
+  <link rel="stylesheet" href="../css/default.css">
+
+  <script src="../js/libs/modernizr-2.0.6.min.js"></script>
+</head>
+
+<body onload="prettyPrint()">
+  <div id="fb-root"></div>
+  <script>
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = '//connect.facebook.net/ja_JP/all.js#xfbml=1';
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
+
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <a href="../">Metasepi</a>
+      </div>
+
+      <div class="nav">
+        <li><a href="../">Home</a></li>
+        <li><a href="../en/posts.html">Blog</a>(<a href="../posts.html">old</a>)</li>
+        <li><a href="../papers.html">Papers</a></li>
+        <li><a href="../map.html">Map</a></li>
+        <li><a href="../memories.html">Memories</a></li>
+        <li><a href="../about.html">About</a></li>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="content clearfix">
+      <h1>(作成中) Implement MVar.</h1>
+<div class="info">Posted on June 21, 2013 / Tags: <a href="../tags/jhc.html">jhc</a>, <a href="../tags/ajhc.html">ajhc</a>, <a href="../tags/thread.html">thread</a>, <a href="../tags/mvar.html">mvar</a></div>
+<h2>Table of contents</h2>
+<ul>
+<li><a href="#ghcの実装を解析するでゲソ">GHCの実装を解析するでゲソ</a><ul>
+<li><a href="#haskell層">Haskell層</a></li>
+<li><a href="#cmm層">cmm層</a></li>
+</ul></li>
+<li><a href="#作戦">作戦</a></li>
+<li><a href="#実装">実装</a></li>
+<li><a href="#テスト">テスト</a></li>
+</ul>
+<hr>
+<p>forkOSを作ったは良いけれど、このままだとスレッド間通信できないでゲソ。 STMをいきなり作りたいところでゲソが、まずはMVarを作らなイカ？ とりあえず <a href="https://github.com/ajhc/ajhc/issues/25">チケット</a> は切ったでゲソ。</p>
+<h2 id="ghcの実装を解析するでゲソ">GHCの実装を解析するでゲソ</h2>
+<h3 id="haskell層">Haskell層</h3>
+<p>haddockの <a href="http://hackage.haskell.org/packages/archive/base/latest/doc/html/Control-Concurrent-MVar.html">Control.Concurrent.MVar</a> から読みはじめようと思うでゲッソ。 GHCのソースコードだとMVarはghc/libraries/base/GHC/MVar.hsで定義されているでゲソ。 まずカラッポのMVarを作ってみようじゃなイカ。</p>
+<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ghc/libraries/base/GHC/MVar.hs</span>
+<span class="kw">data</span> <span class="dt">MVar</span> a <span class="fu">=</span> <span class="dt">MVar</span> (<span class="dt">MVar</span><span class="st"># RealWorld a)</span>
+
+<span class="ot">newEmptyMVar  ::</span> <span class="dt">IO</span> (<span class="dt">MVar</span> a)
+newEmptyMVar <span class="fu">=</span> <span class="dt">IO</span> <span class="fu">$</span> \ s<span class="st"># -&gt;</span>
+    <span class="kw">case</span> newMVar<span class="st"># s# of</span>
+         (<span class="st"># s2#, svar# #) -&gt; (# s2#, MVar svar# #)</span>
+
+<span class="co">-- File: ghc/libraries/ghc-prim/GHC/Types.hs</span>
+<span class="kw">newtype</span> <span class="dt">IO</span> a <span class="fu">=</span> <span class="dt">IO</span> (<span class="dt">State</span><span class="st"># RealWorld -&gt; (# State# RealWorld, a #))</span></code></pre>
+<p>このパターンはAjhcの中でも見かけたでゲソ。UIOじゃなイカ。</p>
+<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/lib/haskell-extras/Foreign/StablePtr.hs</span>
+<span class="ot">newStablePtr ::</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">StablePtr</span> a)
+newStablePtr x <span class="fu">=</span> <span class="kw">do</span>
+    fromUIO <span class="fu">$</span> \w <span class="ot">-&gt;</span> <span class="kw">case</span> c_newStablePtr (toBang_ x) w <span class="kw">of</span>
+        (<span class="st"># w', s #) -&gt; (# w', fromBang_ s #)</span>
+
+<span class="co">-- File: ajhc/lib/jhc/Jhc/IO.hs</span>
+<span class="ot">fromUIO ::</span> <span class="dt">UIO</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> a
+fromUIO x <span class="fu">=</span> <span class="dt">IO</span> (<span class="dt">ST</span> x)
+
+<span class="co">-- File: ajhc/lib/jhc-prim/Jhc/Prim/IO.hs</span>
+<span class="kw">data</span> <span class="dt">State_</span><span class="ot"> ::</span> <span class="fu">*</span> <span class="ot">-&gt;</span> <span class="st">#</span>
+<span class="kw">data</span> <span class="dt">RealWorld</span><span class="ot"> ::</span> <span class="fu">*</span>
+<span class="kw">type</span> <span class="dt">UST</span> s a <span class="fu">=</span> <span class="dt">State_</span> s <span class="ot">-&gt;</span> (<span class="st"># State_ s, a #)</span>
+<span class="kw">type</span> <span class="dt">UIO</span> a <span class="fu">=</span> <span class="dt">UST</span> <span class="dt">RealWorld</span> a
+<span class="kw">newtype</span> <span class="dt">ST</span> s a <span class="fu">=</span> <span class="dt">ST</span> (<span class="dt">UST</span> s a)
+<span class="kw">newtype</span> <span class="dt">IO</span> a <span class="fu">=</span> <span class="dt">IO</span> (<span class="dt">ST</span> <span class="dt">RealWorld</span> a)</code></pre>
+<p>無事MVarが得られたので、なにか入れてみようと思うでゲソ。つまりputMVarを使うでゲソ。</p>
+<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">putMVar  ::</span> <span class="dt">MVar</span> a <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
+putMVar (<span class="dt">MVar</span> mvar<span class="st">#) x = IO $ \ s# -&gt;</span>
+    <span class="kw">case</span> putMVar<span class="st"># mvar# x s# of</span>
+        s2<span class="st"># -&gt; (# s2#, () #)</span></code></pre>
+<p>やはりIOをほどいてプリミティブ関数に内容物をほおりこむでゲソ。</p>
+<p>最後にMVarから内容物を取り出してみるでゲソ。</p>
+<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">takeMVar ::</span> <span class="dt">MVar</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> a
+takeMVar (<span class="dt">MVar</span> mvar<span class="st">#) = IO $ \ s# -&gt; takeMVar# mvar# s#</span></code></pre>
+<h3 id="cmm層">cmm層</h3>
+<p>newMVar#プリミティブはどーなっているでゲソ？ と、これは単にmvarを初期化しているだかのようでゲソ。</p>
+<pre class="sourceCode c"><code class="sourceCode c"><span class="co">// File: ghc/rts/PrimOps.cmm</span>
+stg_newMVarzh
+{
+    <span class="co">/* args: none */</span>
+    W_ mvar;
+
+    ALLOC_PRIM ( SIZEOF_StgMVar, NO_PTRS, stg_newMVarzh );
+  
+    mvar = Hp - SIZEOF_StgMVar + WDS(<span class="dv">1</span>);
+    SET_HDR(mvar,stg_MVAR_DIRTY_info,CCCS);
+        <span class="co">// MVARs start dirty: generation 0 has no mutable list</span>
+    StgMVar_head(mvar)  = stg_END_TSO_QUEUE_closure;
+    StgMVar_tail(mvar)  = stg_END_TSO_QUEUE_closure;
+    StgMVar_value(mvar) = stg_END_TSO_QUEUE_closure;
+    RET_P(mvar);
+}
+
+<span class="co">// File: ghc/rts/StgMiscClosures.cmm</span>
+<span class="co">/* ----------------------------------------------------------------------------</span>
+<span class="co">   END_TSO_QUEUE</span>
+
+<span class="co">   This is a static nullary constructor (like []) that we use to mark the</span>
+<span class="co">   end of a linked TSO queue.</span>
+<span class="co">   ------------------------------------------------------------------------- */</span>
+
+INFO_TABLE_CONSTR(stg_END_TSO_QUEUE,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,CONSTR_NOCAF_STATIC,<span class="st">&quot;END_TSO_QUEUE&quot;</span>,<span class="st">&quot;END_TSO_QUEUE&quot;</span>)
+{ foreign <span class="st">&quot;C&quot;</span> barf(<span class="st">&quot;END_TSO_QUEUE object entered!&quot;</span>) never returns; }
+
+CLOSURE(stg_END_TSO_QUEUE_closure,stg_END_TSO_QUEUE);</code></pre>
+<p>またputMVar#というプリミティブも使っていたでゲソ。 さー長いソースコードでゲソ。気合いで読もうじゃなイカー。</p>
+<pre class="sourceCode c"><code class="sourceCode c"><span class="co">// File: ghc/rts/PrimOps.cmm</span>
+stg_putMVarzh
+{
+    W_ mvar, val, info, tso, q;
+
+    <span class="co">/* args: R1 = MVar, R2 = value */</span>
+    mvar = R1;
+    val  = R2;
+
+<span class="ot">#if defined(THREADED_RTS)</span>
+    (<span class="st">&quot;ptr&quot;</span> info) = foreign <span class="st">&quot;C&quot;</span> lockClosure(mvar <span class="st">&quot;ptr&quot;</span>) [];
+<span class="ot">#else</span>
+    info = GET_INFO(mvar);
+<span class="ot">#endif</span>
+
+    <span class="kw">if</span> (info == stg_MVAR_CLEAN_info) {
+        foreign <span class="st">&quot;C&quot;</span> dirty_MVAR(BaseReg <span class="st">&quot;ptr&quot;</span>, mvar <span class="st">&quot;ptr&quot;</span>);
+    }
+
+    <span class="kw">if</span> (StgMVar_value(mvar) != stg_END_TSO_QUEUE_closure) {
+
+        <span class="co">// see Note [mvar-heap-check] above</span>
+        HP_CHK_GEN_TICKY(SIZEOF_StgMVarTSOQueue, R1_PTR &amp; R2_PTR, stg_putMVarzh);
+        TICK_ALLOC_PRIM(SIZEOF_StgMVarTSOQueue, <span class="dv">0</span>, <span class="dv">0</span>);
+        CCCS_ALLOC(SIZEOF_StgMVarTSOQueue);
+
+        q = Hp - SIZEOF_StgMVarTSOQueue + WDS(<span class="dv">1</span>);
+
+        SET_HDR(q, stg_MVAR_TSO_QUEUE_info, CCS_SYSTEM);
+        StgMVarTSOQueue_link(q) = END_TSO_QUEUE;
+        StgMVarTSOQueue_tso(q)  = CurrentTSO;
+
+	<span class="kw">if</span> (StgMVar_head(mvar) == stg_END_TSO_QUEUE_closure) {
+	    StgMVar_head(mvar) = q;
+	} <span class="kw">else</span> {
+            StgMVarTSOQueue_link(StgMVar_tail(mvar)) = q;
+            foreign <span class="st">&quot;C&quot;</span> recordClosureMutated(MyCapability() <span class="st">&quot;ptr&quot;</span>,
+                                             StgMVar_tail(mvar)) [];
+	}
+	StgTSO__link(CurrentTSO)       = q;
+	StgTSO_block_info(CurrentTSO)  = mvar;
+	StgTSO_why_blocked(CurrentTSO) = BlockedOnMVar::I16;
+	StgMVar_tail(mvar)             = q;
+
+        R1 = mvar;
+        R2 = val;
+	jump stg_block_putmvar;
+    }
+  
+    q = StgMVar_head(mvar);
+loop:
+    <span class="kw">if</span> (q == stg_END_TSO_QUEUE_closure) {
+	<span class="co">/* No further takes, the MVar is now full. */</span>
+	StgMVar_value(mvar) = val;
+    	unlockClosure(mvar, stg_MVAR_DIRTY_info);
+	jump %ENTRY_CODE(Sp(<span class="dv">0</span>));
+    }
+    <span class="kw">if</span> (StgHeader_info(q) == stg_IND_info ||
+        StgHeader_info(q) == stg_MSG_NULL_info) {
+        q = StgInd_indirectee(q);
+        <span class="kw">goto</span> loop;
+    }
+
+    <span class="co">// There are takeMVar(s) waiting: wake up the first one</span>
+    
+    tso = StgMVarTSOQueue_tso(q);
+    StgMVar_head(mvar) = StgMVarTSOQueue_link(q);
+    <span class="kw">if</span> (StgMVar_head(mvar) == stg_END_TSO_QUEUE_closure) {
+        StgMVar_tail(mvar) = stg_END_TSO_QUEUE_closure;
+    }
+
+    ASSERT(StgTSO_why_blocked(tso) == BlockedOnMVar::I16);
+    ASSERT(StgTSO_block_info(tso) == mvar);
+
+    <span class="co">// actually perform the takeMVar</span>
+    W_ stack;
+    stack = StgTSO_stackobj(tso);
+    PerformTake(stack, val);
+
+    <span class="co">// indicate that the MVar operation has now completed.</span>
+    StgTSO__link(tso) = stg_END_TSO_QUEUE_closure;
+
+    <span class="kw">if</span> (TO_W_(StgStack_dirty(stack)) == <span class="dv">0</span>) {
+        foreign <span class="st">&quot;C&quot;</span> dirty_STACK(MyCapability() <span class="st">&quot;ptr&quot;</span>, stack <span class="st">&quot;ptr&quot;</span>) [];
+    }
+    
+    foreign <span class="st">&quot;C&quot;</span> tryWakeupThread(MyCapability() <span class="st">&quot;ptr&quot;</span>, tso) [];
+
+    unlockClosure(mvar, stg_MVAR_DIRTY_info);
+    jump %ENTRY_CODE(Sp(<span class="dv">0</span>));
+}
+
+<span class="ot">#define PerformTake(stack, value)               \</span>
+    W_ sp;                                      \
+    sp = StgStack_sp(stack);                    \
+    W_[sp + WDS(<span class="dv">1</span>)] = value;                    \
+    W_[sp + WDS(<span class="dv">0</span>)] = stg_gc_unpt_r1_info;
+
+<span class="co">// File: ghc/includes/rts/storage/SMPClosureOps.h</span>
+EXTERN_INLINE StgInfoTable *lockClosure(StgClosure *p)
+{
+    StgWord info;
+    <span class="kw">do</span> {
+	nat i = <span class="dv">0</span>;
+	<span class="kw">do</span> {
+	    info = xchg((P_)(<span class="dt">void</span> *)&amp;p-&gt;header.info, (W_)&amp;stg_WHITEHOLE_info);
+	    <span class="kw">if</span> (info != (W_)&amp;stg_WHITEHOLE_info) <span class="kw">return</span> (StgInfoTable *)info;
+	} <span class="kw">while</span> (++i &lt; SPIN_COUNT);
+	yieldThread();
+    } <span class="kw">while</span> (<span class="dv">1</span>);
+}
+
+<span class="co">// File: ghc/rts/sm/Storage.c</span>
+<span class="co">/*</span>
+<span class="co">   This is the write barrier for MVARs.  An MVAR_CLEAN objects is not</span>
+<span class="co">   on the mutable list; a MVAR_DIRTY is.  When written to, a</span>
+<span class="co">   MVAR_CLEAN turns into a MVAR_DIRTY and is put on the mutable list.</span>
+<span class="co">   The check for MVAR_CLEAN is inlined at the call site for speed,</span>
+<span class="co">   this really does make a difference on concurrency-heavy benchmarks</span>
+<span class="co">   such as Chaneneos and cheap-concurrency.</span>
+<span class="co">*/</span>
+<span class="dt">void</span>
+dirty_MVAR(StgRegTable *reg, StgClosure *p)
+{
+    recordClosureMutated(regTableToCapability(reg),p);
+}
+
+<span class="co">// File: ghc/rts/Capability.h</span>
+EXTERN_INLINE <span class="dt">void</span>
+recordMutableCap (StgClosure *p, Capability *cap, nat gen)
+{
+    bdescr *bd;
+
+    <span class="co">// We must own this Capability in order to modify its mutable list.</span>
+    <span class="co">//    ASSERT(cap-&gt;running_task == myTask());</span>
+    <span class="co">// NO: assertion is violated by performPendingThrowTos()</span>
+    bd = cap-&gt;mut_lists[gen];
+    <span class="kw">if</span> (bd-&gt;free &gt;= bd-&gt;start + BLOCK_SIZE_W) {
+	bdescr *new_bd;
+	new_bd = allocBlock_lock();
+	new_bd-&gt;link = bd;
+	bd = new_bd;
+	cap-&gt;mut_lists[gen] = bd;
+    }
+    *bd-&gt;free++ = (StgWord)p;
+}
+
+EXTERN_INLINE <span class="dt">void</span>
+recordClosureMutated (Capability *cap, StgClosure *p)
+{
+    bdescr *bd;
+    bd = Bdescr((StgPtr)p);
+    <span class="kw">if</span> (bd-&gt;gen_no != <span class="dv">0</span>) recordMutableCap(p,cap,bd-&gt;gen_no);
+}
+
+<span class="co">// File: ghc/rts/HeapStackCheck.cmm</span>
+stg_block_putmvar_finally
+{
+    unlockClosure(R3, stg_MVAR_DIRTY_info);
+    jump StgReturn;
+}
+
+stg_block_putmvar
+{
+    Sp_adj(-<span class="dv">3</span>);
+    Sp(<span class="dv">2</span>) = R2;
+    Sp(<span class="dv">1</span>) = R1;
+    Sp(<span class="dv">0</span>) = stg_block_putmvar_info;
+    R3 = R1;
+    BLOCK_BUT_FIRST(stg_block_putmvar_finally);
+}
+
+<span class="co">// File: ghc/rts/Threads.c</span>
+<span class="dt">void</span>
+tryWakeupThread (Capability *cap, StgTSO *tso)
+{
+    traceEventThreadWakeup (cap, tso, tso-&gt;cap-&gt;no);
+
+<span class="ot">#ifdef THREADED_RTS</span>
+    <span class="kw">if</span> (tso-&gt;cap != cap)
+    {
+        MessageWakeup *msg;
+        msg = (MessageWakeup *)allocate(cap,sizeofW(MessageWakeup));
+        SET_HDR(msg, &amp;stg_MSG_TRY_WAKEUP_info, CCS_SYSTEM);
+        msg-&gt;tso = tso;
+        sendMessage(cap, tso-&gt;cap, (Message*)msg);
+        debugTraceCap(DEBUG_sched, cap, <span class="st">&quot;message: try wakeup thread %ld on cap %d&quot;</span>,
+                      (W_)tso-&gt;id, tso-&gt;cap-&gt;no);
+        <span class="kw">return</span>;
+    }
+<span class="ot">#endif</span>
+
+    <span class="kw">switch</span> (tso-&gt;why_blocked)
+    {
+    <span class="kw">case</span> BlockedOnMVar:
+    {
+        <span class="kw">if</span> (tso-&gt;_link == END_TSO_QUEUE) {
+            tso-&gt;block_info.closure = (StgClosure*)END_TSO_QUEUE;
+            <span class="kw">goto</span> unblock;
+        } <span class="kw">else</span> {
+            <span class="kw">return</span>;
+        }
+    }
+
+    <span class="kw">case</span> BlockedOnMsgThrowTo:
+    {
+        <span class="dt">const</span> StgInfoTable *i;
+        
+        i = lockClosure(tso-&gt;block_info.closure);
+        unlockClosure(tso-&gt;block_info.closure, i);
+        <span class="kw">if</span> (i != &amp;stg_MSG_NULL_info) {
+            debugTraceCap(DEBUG_sched, cap, <span class="st">&quot;thread %ld still blocked on throwto (%p)&quot;</span>,
+                          (W_)tso-&gt;id, tso-&gt;block_info.throwto-&gt;header.info);
+            <span class="kw">return</span>;
+        }
+
+        <span class="co">// remove the block frame from the stack</span>
+        ASSERT(tso-&gt;stackobj-&gt;sp[<span class="dv">0</span>] == (StgWord)&amp;stg_block_throwto_info);
+        tso-&gt;stackobj-&gt;sp += <span class="dv">3</span>;
+        <span class="kw">goto</span> unblock;
+    }
+
+    <span class="kw">case</span> BlockedOnBlackHole:
+    <span class="kw">case</span> BlockedOnSTM:
+    <span class="kw">case</span> ThreadMigrating:
+        <span class="kw">goto</span> unblock;
+
+    <span class="kw">default</span>:
+        <span class="co">// otherwise, do nothing</span>
+        <span class="kw">return</span>;
+    }
+
+unblock:
+    <span class="co">// just run the thread now, if the BH is not really available,</span>
+    <span class="co">// we'll block again.</span>
+    tso-&gt;why_blocked = NotBlocked;
+    appendToRunQueue(cap,tso);
+
+    <span class="co">// We used to set the context switch flag here, which would</span>
+    <span class="co">// trigger a context switch a short time in the future (at the end</span>
+    <span class="co">// of the current nursery block).  The idea is that we have just</span>
+    <span class="co">// woken up a thread, so we may need to load-balance and migrate</span>
+    <span class="co">// threads to other CPUs.  On the other hand, setting the context</span>
+    <span class="co">// switch flag here unfairly penalises the current thread by</span>
+    <span class="co">// yielding its time slice too early.</span>
+    <span class="co">//</span>
+    <span class="co">// The synthetic benchmark nofib/smp/chan can be used to show the</span>
+    <span class="co">// difference quite clearly.</span>
+
+    <span class="co">// cap-&gt;context_switch = 1;</span>
+}</code></pre>
+<p>xxx takeMVarについても調べること</p>
+<h2 id="作戦">作戦</h2>
+<p>xxx リメンバーセットのGCのためにファイナライザの実装が必要</p>
+<div class="figure">
+<img src="../draw/2013-06-22-remembered_set.png" />
+</div>
+<h2 id="実装">実装</h2>
+<h2 id="テスト">テスト</h2>
+<p><a href="https://github.com/ghc/testsuite/blob/master/tests/concurrent/should_run/conc069.hs">testsuite/tests/concurrent/should_run/conc069.hs at master · ghc/testsuite</a> が動けばいいんじゃなイカ？ forkIOはforkOSの別名でとりあえず良しとしたいところでゲソ。 というかforkIOと同一視して良いのであればもっと良いテストがころがっていそうなもんでゲソ。</p>
+<p>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_shortname = 'metasepi';
+    var disqus_identifier = '/posts/2013-06-21-impl_mvar.html';
+    var disqus_url = 'http://metasepi.org' + '/posts/2013-06-21-impl_mvar.html';
+    var disqus_title = '(作成中) Implement MVar.';
+    var disqus_developer = 1;
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>
+    Please enable JavaScript to view the 
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  <a href="http://disqus.com" class="dsq-brlink">
+    blog comments powered by <span.logo-disqus>Disqus</span>
+  </a>
+</p>
+
+    </div>
+
+    <footer>
+      <p>
+        This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
+        <br>
+        Metasepi project is supported by <a href="http://www.itpl.co.jp/en/"><img alt="IT Planning, Inc." style="border-width:0" src="../img/it_planning_108x20.png" /></a> ×
+        <a href="https://github.com/axsh/"><img alt="Axsh Co." style="border-width:0" src="../img/axsh_81x25.png" /></a> ×
+        <a href="../past-supporters.html">Past Supporters</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="/js/libs/jquery-1.6.2.min.js"><\/script>')</script>
+
+  <!-- scripts concatenated and minified via ant build script-->
+  <script defer src="../js/plugins.js"></script>
+  <script defer src="../js/script.js"></script>
+  <!-- end scripts-->
+
+  <script>
+    window._gaq = [['_setAccount','UA-158383-8'],['_trackPageview'],['_trackPageLoadTime']];
+    Modernizr.load({
+      load: ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js'
+    });
+  </script>
+
+  <!--[if lt IE 7 ]>
+    <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js">
+    <script>
+      window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})
+  <![endif]-->
+
+<script type="text/javascript">
+<!--
+(function() {
+var login = '',
+    fpf = true,
+    fpn = '__ulfpc';
+
+// DO NOT ALTER BELOW THIS LINE
+var id = 6008444, h = 'a5fe';
+var rand = rand || Math.floor(Math.random() * 9000000) + 1000000;
+if('http:'==document.location.protocol){var params={id:id,lt:3,h:h,url:document.URL,ref:document.referrer,lg:login,rand:rand,bw:(window.innerWidth?window.innerWidth:(document.documentElement && document.documentElement.clientWidth!=0?document.documentElement.clientWidth:(document.body?document.body.clientWidth:0 ))),bh:(window.innerHeight?window.innerHeight:(document.documentElement && document.documentElement.clientHeight!=0?document.documentElement.clientHeight:(document.body?document.body.clientHeight:0 ))),dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sw:screen.width,sh:screen.height,dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sb:document.title,guid:'ON'};if(fpf){params.fp=getuid(fpn);}params.eflg=1;var a=document.createElement('a');var lg=document.createElement('img');lg.setAttribute('id','_ullogimgltr');lg.setAttribute('width',1);lg.setAttribute('height',1);lg.setAttribute('alt','');var src='http://le.nakanohito.jp/le/1/?';for(var key in params ) src=src.concat(key+'='+encodeURIComponent(params[key] )+'&');lg.src=src.slice(0,-1);a.setAttribute('href','http://smartphone.userlocal.jp/');a.setAttribute('target','_blank');a.appendChild(lg);var s=document.getElementsByTagName('body')[0];s.appendChild(a);}
+function getuid(key){var arr=[],date=new Date(),exp=new Date();exp.setFullYear(exp.getFullYear()+7);if(document.cookie){arr=document.cookie.split(";");for(var i=0; i<arr.length; i++ ){var str=arr[i].replace(/^\s+|\s+

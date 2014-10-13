@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>Kickoff Japan ATS User Group (JATS-UG) and Ajhc's future plan - Metasepi</title>
+
+  <meta name="description" content="metasepi.org">
+  <meta name="author" content="Kiwamu Okabe">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="http://metasepi.org/rss_en.xml" rel="alternate" title="Blog" type="application/rss+xml">
+
+  <!-- CSS concatenated and minified via ant build script-->
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="../../css/syntax.css">
+  <link rel="stylesheet" href="../../css/calendar.css">
+  <!-- end CSS-->
+
+  <link rel="stylesheet" href="../../css/default.css">
+
+  <script src="../../js/libs/modernizr-2.0.6.min.js"></script>
+</head>
+
+<body onload="prettyPrint()">
+  <div id="fb-root"></div>
+  <script>
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = '//connect.facebook.net/ja_JP/all.js#xfbml=1';
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
+
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <a href="../../">Metasepi</a>
+      </div>
+
+      <div class="nav">
+        <li><a href="../../">Home</a></li>
+        <li><a href="../../en/posts.html">Blog</a>(<a href="../../posts.html">old</a>)</li>
+        <li><a href="../../papers.html">Papers</a></li>
+        <li><a href="../../map.html">Map</a></li>
+        <li><a href="../../memories.html">Memories</a></li>
+        <li><a href="../../about.html">About</a></li>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="content clearfix">
+      <h1>Kickoff Japan ATS User Group (JATS-UG) and Ajhc's future plan</h1>
+<div class="info">Posted on December 24, 2013 / Tags: <a href="../../en/tags/ats.html">ats</a>, <a href="../../en/tags/translation.html">translation</a>, <a href="../../en/tags/haskell.html">haskell</a>, <a href="../../en/tags/ajhc.html">ajhc</a>, <a href="../../en/tags/jhc.html">jhc</a>, <a href="../../en/tags/netbsd.html">netbsd</a></div>
+<h2>Table of contents</h2>
+<ul>
+<li><a href="#what-is-japan-ats-user-group-jats-ug">What is Japan ATS User Group (JATS-UG)?</a></li>
+<li><a href="#why-need-the-user-group">Why need the user group?</a></li>
+<li><a href="#an-e-mail">An E-mail</a></li>
+</ul>
+<hr>
+<p>This article is a part of <a href="http://qiita.com/advent-calendar/2013/theorem_prover">Theorem Prover Advent Calendar 2013 - Qiita [キータ]</a>.</p>
+<h2 id="what-is-japan-ats-user-group-jats-ug">What is Japan ATS User Group (JATS-UG)?</h2>
+<p>We declare to build “Japan ATS User Group (JATS-UG)”, to pool and discuss ATS infomation in Japanese! The web site is found at <a href="http://jats-ug.metasepi.org/">http://jats-ug.metasepi.org/</a>.</p>
+<p><a href="http://jats-ug.metasepi.org/"><img src="../../img/20131224_jats-ug_website.png" /></a></p>
+<p>Today, the web page only has the summary of ATS language and the link to <a href="https://github.com/jats-ug/translate/blob/master/README.md">translated documents</a>. We will focus translating ATS documents into Japanese, through the end of this year.</p>
+<h2 id="why-need-the-user-group">Why need the user group?</h2>
+<p>I have a motive to research around ATS language recently. We are in <a href="2013-01-09-design_arafura.html">Arafura</a> as the first iteration. The Arafura design is:</p>
+<p>“Rewrite NetBSD kernel using Ajhc Haskell compiler, with Snatch-driven development stype.”</p>
+<p>The next iteration should be planned in parallel, because we have the method to rewrite NetBSD kernel device drivers using Ajhc now. Research is similar to betting that has good result using diversified investment. Arafura iteration’s problem is clear without any KPT (keep, problem, try) framework.</p>
+<p>It’s caused by much time to develop Ajhc. Haskell for embedded is a big challenge in itself. We need the challenge’s success to attain the starting post to write kernel. Furthermore, John as upstream author of jhc doesn’t develop jhc actively. There is many technical puzzles on ATS domain. It’s the “Problem”.</p>
+<p>On the other hand, Snatch-driven development method is relatively doing good. Result fully-applying the method to NetBSD kernel will not be obtained in the first iteration. However, We have found no underlying faults. And we can’t perfectly decide that using NetBSD kernel as base platform is good. We think it causes same result while the other monolithic kernel is used. That is to say that these are clearly “Keep”.</p>
+<p>What is “Try”? I wrote <a href="2013-12-23-ml_guide_to_ats.html">the article</a>, about ATS language has good behavior for embedded such like jhc. However, there are no Japanese infomation about ATS, and no communities about ATS in Japan… Things can’t remain as they are. Then, I would like to construct an ATS community in Japan, while I learn ATS language. It’s first “Try” to start our next iteration.</p>
+<h2 id="an-e-mail">An E-mail</h2>
+<p>While thinking such things, I got an E-mail from ATS language author.</p>
+<pre><code>Date: Mon Dec 23 11:40 JST 2013
+
+Hi Metasepi-chan,
+
+I spent quite some time today browsing metasepi.org.
+
+I am really interested in your Metasepi project, partly because I myself
+wanted to implement NetBSD in ATS about 5 years ago. Unfortunately, I never
+had time to get the project started as I needed to spend so much time on
+ATS2. By the way, I had planned to use the very same approach which you call
+&quot;Snatch&quot;. I had also considered Minix but I chose NetBSD because it was a
+real OS.
+
+I think I know first-handedly the dilemma you are currently in.  On one
+hand, you want to be able to fully focus on writing the kernel.  On the
+other hand, you also need to add features to Ajhc constantly to address all
+kinds of issues that keep popping up, which undoubtedly makes it very
+difficult for you to focus.
+
+I would highly recommend that you use ATS to implement NetBSD kernel.
+Unlike jhc, there is no semantics gap between ATS and C. In particular, they
+both use the same native unboxed data representation.  Once you become
+familiar with ATS, you can readily visualize the C code that your ATS source
+is to be compiled into. ATS is truly an ideal language for the kind of
+&quot;Snatch&quot; approach you want to take to re-write NetBSD. If you take the lead,
+then I will be happy to &quot;chip in&quot; :)
+
+I also spent some time reading documentation on jhc. Personally, I feel that
+there is simply too much uncertainty to use it in real kernel
+implementation. Features like GC could make the kernel highly unpredictable,
+scaring away potential users.
+
+I think that we both believe C is the right language for systems
+programming. The problem with C is that it is too difficult to write correct
+C programs. ATS is designed to allow the programmer to correctly write the
+kind of C programs he or she wanted to write in the first place. While jhc
+generates C code, the kind of C code it generates may not be suited for
+kernel. This is what I call a semantics gap.
+
+I write this message in the hope that we could join effort in doing
+something that has not been done up to now: Writing a real kernel in
+(largely) functional style that can truly deliever safety-wise as well as
+performance-wise.
+
+Cheers,
+
+--Hongwei</code></pre>
+<p>Umm… What I want to say is preoccupied by him. This may be caused by weight of long china history.</p>
+<p>Jhc Haskell compiler also has a good future. ATS’s type is safe, but not rich such like Haskell’s. Haskell has type class. I think that ATS can’t write code that has higher order representation such like Haskell. That is to say, ATS may not be good to write application that use the representation. Haskell’s issue is that the representation strongly depends on GHC language implementation. There is no future on GHC growing to be good for system programming. On the other hand, how about jhc? No, it’s good for system programming, but can’t use most of the representation. So, jhc is currently Haskell implementation that imposes writing a code such like ATS’s on programmer. If the issue is relieved, we can dramatically expand Haskell language’s application range. Problem is who can pay huge man-hours to be needed for research/design/develop/debug them. While even genius such as John gets tired, who can try to solve the challenging problem? In another way, who can support John’s mind? That is, the <a href="http://www.haaretz.com/life/arts-leisure/always-on-the-side-of-the-egg-1.270371">high-solid wall</a> on Haskell for embedded.</p>
+<p>However, this should be a positive step. <a href="https://www.youtube.com/watch?v=ZTe_jhynoCE">While seeing the sunset</a>, <a href="http://lyrics.wikia.com/%E6%9D%B1%E4%BA%AC%E4%BA%8B%E5%A4%89_%28Tokyo_Jihen%29:%E8%90%BD%E6%97%A5">I belive having new sunlight tomorrow.</a> And, Merry Christmas! De-gesso.</p>
+<p>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_shortname = 'metasepi';
+    var disqus_identifier = '/en/posts/2013-12-24-jats-ug.html';
+    var disqus_url = 'http://metasepi.org' + '/en/posts/2013-12-24-jats-ug.html';
+    var disqus_title = 'Kickoff Japan ATS User Group (JATS-UG) and Ajhc's future plan';
+    var disqus_developer = 1;
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>
+    Please enable JavaScript to view the 
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  <a href="http://disqus.com" class="dsq-brlink">
+    blog comments powered by <span.logo-disqus>Disqus</span>
+  </a>
+</p>
+
+    </div>
+
+    <footer>
+      <p>
+        This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
+        <br>
+        Metasepi project is supported by <a href="http://www.itpl.co.jp/en/"><img alt="IT Planning, Inc." style="border-width:0" src="../../img/it_planning_108x20.png" /></a> ×
+        <a href="https://github.com/axsh/"><img alt="Axsh Co." style="border-width:0" src="../../img/axsh_81x25.png" /></a> ×
+        <a href="../../past-supporters.html">Past Supporters</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="/js/libs/jquery-1.6.2.min.js"><\/script>')</script>
+
+  <!-- scripts concatenated and minified via ant build script-->
+  <script defer src="../../js/plugins.js"></script>
+  <script defer src="../../js/script.js"></script>
+  <!-- end scripts-->
+
+  <script>
+    window._gaq = [['_setAccount','UA-158383-8'],['_trackPageview'],['_trackPageLoadTime']];
+    Modernizr.load({
+      load: ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js'
+    });
+  </script>
+
+  <!--[if lt IE 7 ]>
+    <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js">
+    <script>
+      window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})
+  <![endif]-->
+
+<script type="text/javascript">
+<!--
+(function() {
+var login = '',
+    fpf = true,
+    fpn = '__ulfpc';
+
+// DO NOT ALTER BELOW THIS LINE
+var id = 6008444, h = 'a5fe';
+var rand = rand || Math.floor(Math.random() * 9000000) + 1000000;
+if('http:'==document.location.protocol){var params={id:id,lt:3,h:h,url:document.URL,ref:document.referrer,lg:login,rand:rand,bw:(window.innerWidth?window.innerWidth:(document.documentElement && document.documentElement.clientWidth!=0?document.documentElement.clientWidth:(document.body?document.body.clientWidth:0 ))),bh:(window.innerHeight?window.innerHeight:(document.documentElement && document.documentElement.clientHeight!=0?document.documentElement.clientHeight:(document.body?document.body.clientHeight:0 ))),dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sw:screen.width,sh:screen.height,dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sb:document.title,guid:'ON'};if(fpf){params.fp=getuid(fpn);}params.eflg=1;var a=document.createElement('a');var lg=document.createElement('img');lg.setAttribute('id','_ullogimgltr');lg.setAttribute('width',1);lg.setAttribute('height',1);lg.setAttribute('alt','');var src='http://le.nakanohito.jp/le/1/?';for(var key in params ) src=src.concat(key+'='+encodeURIComponent(params[key] )+'&');lg.src=src.slice(0,-1);a.setAttribute('href','http://smartphone.userlocal.jp/');a.setAttribute('target','_blank');a.appendChild(lg);var s=document.getElementsByTagName('body')[0];s.appendChild(a);}
+function getuid(key){var arr=[],date=new Date(),exp=new Date();exp.setFullYear(exp.getFullYear()+7);if(document.cookie){arr=document.cookie.split(";");for(var i=0; i<arr.length; i++ ){var str=arr[i].replace(/^\s+|\s+

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <title>Metasepi Blog (Old & Japanese)</title>
+    <link href="http://metasepi.org//rss.xml" rel="self" />
+    <link href="http://metasepi.org/" />
+    <id>http://metasepi.org//rss.xml</id>
+    <author>
+        <name>Kiwamu Okabe</name>
+        <email>kiwamu@debian.or.jp</email>
+    </author>
+    <updated>2014-05-11T00:00:00Z</updated>
+    <entry>
+    <title>スタート! ATSプログラミング</title>
+    <link href="http://metasepi.org//posts/2014-05-11-functional_lt.html" />
+    <id>http://metasepi.org//posts/2014-05-11-functional_lt.html</id>
+    <published>2014-05-11T00:00:00Z</published>
+    <updated>2014-05-11T00:00:00Z</updated>
+    <summary type="html"><![CDATA[マイコンATSプログラミングのお披露目でゲッソ]]></summary>
+</entry>
+<entry>
+    <title>Metasepi作戦会議 第13回 議事録</title>
+    <link href="http://metasepi.org//posts/2014-03-01-osc-tokyo.html" />
+    <id>http://metasepi.org//posts/2014-03-01-osc-tokyo.html</id>
+    <published>2014-03-01T00:00:00Z</published>
+    <updated>2014-03-01T00:00:00Z</updated>
+    <summary type="html"><![CDATA[Arafuraイテレーションの結果報告会でゲソー]]></summary>
+</entry>
+<entry>
+    <title>Metasepi作戦会議 第12回 議事録</title>
+    <link href="http://metasepi.org//posts/2014-01-18-mbed_fest.html" />
+    <id>http://metasepi.org//posts/2014-01-18-mbed_fest.html</id>
+    <published>2014-01-18T00:00:00Z</published>
+    <updated>2014-01-18T00:00:00Z</updated>
+    <summary type="html"><![CDATA[mbed祭で関数型マイコンプログラミングの布教でゲッソ!]]></summary>
+</entry>
+<entry>
+    <title>Metasepi作戦会議 第11回 議事録</title>
+    <link href="http://metasepi.org//posts/2014-01-17-11th_wocs2.html" />
+    <id>http://metasepi.org//posts/2014-01-17-11th_wocs2.html</id>
+    <published>2014-01-17T00:00:00Z</published>
+    <updated>2014-01-17T00:00:00Z</updated>
+    <summary type="html"><![CDATA[企業の研究者は何を考えているのか、視察に行くでゲソー]]></summary>
+</entry>
+<entry>
+    <title>Metasepi作戦会議 第10回 議事録</title>
+    <link href="http://metasepi.org//posts/2014-01-10-prosym55.html" />
+    <id>http://metasepi.org//posts/2014-01-10-prosym55.html</id>
+    <published>2014-01-10T00:00:00Z</published>
+    <updated>2014-01-10T00:00:00Z</updated>
+    <summary type="html"><![CDATA[プロシンで宣伝しまくるでゲソー]]></summary>
+</entry>
+<entry>
+    <title>Metasepi作戦会議 第9回 議事録</title>
+    <link href="http://metasepi.org//posts/2014-01-05-mbed_fp_0.html" />
+    <id>http://metasepi.org//posts/2014-01-05-mbed_fp_0.html</id>
+    <published>2014-01-05T00:00:00Z</published>
+    <updated>2014-01-05T00:00:00Z</updated>
+    <summary type="html"><![CDATA[「モノのインターネット」(IoT：Internet of Things)を関数型言語で先取りでゲソ!]]></summary>
+</entry>
+<entry>
+    <title>Japan ATS User Group (JATS-UG)の発足とAjhcの今後について</title>
+    <link href="http://metasepi.org//posts/2013-12-24-jats-ug.html" />
+    <id>http://metasepi.org//posts/2013-12-24-jats-ug.html</id>
+    <published>2013-12-24T00:00:00Z</published>
+    <updated>2013-12-24T00:00:00Z</updated>
+    <summary type="html"><![CDATA[ATSの日本語情報をまとめるポータルサイトを作ったでゲソ]]></summary>
+</entry>
+<entry>
+    <title>"ML programmer's guide to ATS" 日本語訳</title>
+    <link href="http://metasepi.org//posts/2013-12-23-ml_guide_to_ats.html" />
+    <id>http://metasepi.org//posts/2013-12-23-ml_guide_to_ats.html</id>
+    <published>2013-12-23T00:00:00Z</published>
+    <updated>2013-12-23T00:00:00Z</updated>
+    <summary type="html"><![CDATA[Haskell以外の言語処理系でスナッチ設計してみたいでゲソ!]]></summary>
+</entry>
+<entry>
+    <title>めたせぴ2013☆ゆく年くる年</title>
+    <link href="http://metasepi.org//posts/2013-12-21-yuku-kuru.html" />
+    <id>http://metasepi.org//posts/2013-12-21-yuku-kuru.html</id>
+    <published>2013-12-21T00:00:00Z</published>
+    <updated>2013-12-21T00:00:00Z</updated>
+    <summary type="html"><![CDATA[めたせぴ☆の今年一年を振り返って、来年の願望や妄想をするでゲソー]]></summary>
+</entry>
+<entry>
+    <title>簡約!? λカ娘 Rock!の紹介とHaskell製Androidアプリの解説</title>
+    <link href="http://metasepi.org//posts/2013-12-17-snatch-droid.html" />
+    <id>http://metasepi.org//posts/2013-12-17-snatch-droid.html</id>
+    <published>2013-12-17T00:00:00Z</published>
+    <updated>2013-12-17T00:00:00Z</updated>
+    <summary type="html"><![CDATA[NDKでHaskellも動くでゲソー]]></summary>
+</entry>
+
+</feed>

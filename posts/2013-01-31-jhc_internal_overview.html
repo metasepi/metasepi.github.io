@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>jhcコンパイルパイプラインの全体像 - Metasepi</title>
+
+  <meta name="description" content="metasepi.org">
+  <meta name="author" content="Kiwamu Okabe">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="http://metasepi.org/rss_en.xml" rel="alternate" title="Blog" type="application/rss+xml">
+
+  <!-- CSS concatenated and minified via ant build script-->
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/syntax.css">
+  <link rel="stylesheet" href="../css/calendar.css">
+  <!-- end CSS-->
+
+  <link rel="stylesheet" href="../css/default.css">
+
+  <script src="../js/libs/modernizr-2.0.6.min.js"></script>
+</head>
+
+<body onload="prettyPrint()">
+  <div id="fb-root"></div>
+  <script>
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = '//connect.facebook.net/ja_JP/all.js#xfbml=1';
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
+
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <a href="../">Metasepi</a>
+      </div>
+
+      <div class="nav">
+        <li><a href="../">Home</a></li>
+        <li><a href="../en/posts.html">Blog</a>(<a href="../posts.html">old</a>)</li>
+        <li><a href="../papers.html">Papers</a></li>
+        <li><a href="../map.html">Map</a></li>
+        <li><a href="../memories.html">Memories</a></li>
+        <li><a href="../about.html">About</a></li>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="content clearfix">
+      <h1>jhcコンパイルパイプラインの全体像</h1>
+<div class="info">Posted on January 31, 2013 / Tags: <a href="../tags/haskell.html">haskell</a>, <a href="../tags/jhc.html">jhc</a>, <a href="../tags/internal.html">internal</a>, <a href="../tags/compiler.html">compiler</a></div>
+<h2>Table of contents</h2>
+<ul>
+<li><a href="#processdecls関数">processDecls関数</a></li>
+<li><a href="#compilewholeprogram関数">compileWholeProgram関数</a></li>
+<li><a href="#compiletogrin関数">compileToGrin関数</a></li>
+<li><a href="#コールグラフ">コールグラフ</a></li>
+<li><a href="#主要な関数の型">主要な関数の型</a></li>
+</ul>
+<hr>
+<p>jhcコンパイルパイプラインの図は <a href="http://repetae.net/computer/jhc/big-picture.pdf">An informal graph of the internal code motion in jhc (pdf)</a> にあるんでゲソがどうにも概念寄りで、実際にソースコードのどの箇所で処理を行なっているのか分かり難いでゲソ。 そこで、上記の図よりも実装寄りの図を描いてみたでゲソ。 だいたいさっきのbig-picture.pdfと対応が取れているでゲソ。</p>
+<div class="figure">
+<img src="../draw/2013-01-25-jhc_compile_flow.png" />
+</div>
+<p>これで地図が手にはいったので、気になる部分を読もうじゃなイカ。 この図の中で最適化を行なっていそうな3つの関数ソースコードから、 最適化してそうな部分をイカに抜き出してみたでゲソ。</p>
+<h2 id="processdecls関数">processDecls関数</h2>
+<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">processDecls ::</span> <span class="dt">CollectedHo</span> <span class="ot">-&gt;</span> <span class="dt">Ho</span> <span class="ot">-&gt;</span> <span class="dt">TiData</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">CollectedHo</span>,<span class="dt">Ho</span>)
+processDecls cho ho' tiData <span class="fu">=</span> <span class="kw">do</span>
+    <span class="kw">let</span> prog <span class="fu">=</span> program {
+            progDataTable <span class="fu">=</span> fullDataTable,
+            progExternalNames <span class="fu">=</span> choExternalNames cho,
+            progModule <span class="fu">=</span> head (fsts <span class="fu">$</span> tiDataModules tiData)
+            }
+    prog <span class="ot">&lt;-</span> return prog { progSeasoning <span class="fu">=</span> seasoning }
+    <span class="dt">Identity</span> prog <span class="ot">&lt;-</span> return <span class="fu">$</span> programMapDs (\ (t,e) <span class="ot">-&gt;</span> return (shouldBeExported (getExports <span class="fu">$</span> hoTcInfo ho') t,e)) <span class="fu">$</span> atomizeApps <span class="dt">False</span> (programSetDs ds prog)
+    prog <span class="ot">&lt;-</span> return <span class="fu">$</span> progCombinators_u (map addRule) prog
+    prog <span class="ot">&lt;-</span> return <span class="fu">$</span> runIdentity <span class="fu">$</span> annotateProgram (choVarMap cho) (idann theProps) letann lamann prog
+    prog <span class="ot">&lt;-</span> return <span class="fu">$</span> prog { progEntry <span class="fu">=</span> entryPoints <span class="ot">`mappend`</span> progSeasoning prog }
+    prog <span class="ot">&lt;-</span> programPrune prog
+    prog <span class="ot">&lt;-</span> transformProgram tparms {
+        transformCategory <span class="fu">=</span> <span class="st">&quot;FloatInward&quot;</span>,
+        transformOperation <span class="fu">=</span> programFloatInward
+        } prog
+    prog <span class="ot">&lt;-</span> programMapProgGroups mempty fint prog
+    prog <span class="ot">&lt;-</span> etaExpandProg <span class="st">&quot;Init-Big-One&quot;</span> prog { progStats <span class="fu">=</span> mempty }
+    prog <span class="ot">&lt;-</span> transformProgram tparms {
+        transformPass <span class="fu">=</span> <span class="st">&quot;Init-Big-One&quot;</span>,
+        transformCategory <span class="fu">=</span> <span class="st">&quot;FloatInward&quot;</span>,
+        transformOperation <span class="fu">=</span> programFloatInward
+        } prog
+    prog <span class="ot">&lt;-</span> Demand.analyzeProgram prog
+    prog <span class="ot">&lt;-</span> simplifyProgram' sopt <span class="st">&quot;Init-Big-One&quot;</span> verbose (<span class="dt">IterateMax</span> <span class="dv">4</span>) prog
+    prog <span class="ot">&lt;-</span> evalStateT (programMapProgGroups mempty optWW prog { progStats <span class="fu">=</span> mempty }) (SS.so_boundVars sopt)
+    prog <span class="ot">&lt;-</span> programPrune prog
+    <span class="kw">let</span> newHoBuild <span class="fu">=</span> (hoBuild ho') {
+        hoDataTable <span class="fu">=</span> dataTable,
+        hoEs <span class="fu">=</span> programDs prog,
+        hoRules <span class="fu">=</span> hoRules (hoBuild ho') <span class="ot">`mappend`</span> rules
+        }
+        newMap <span class="fu">=</span> fmap (\c <span class="ot">-&gt;</span> <span class="dt">Just</span> (<span class="dt">EVar</span> <span class="fu">$</span> combHead c)) <span class="fu">$</span> progCombMap prog
+    return (updateChoHo <span class="fu">$</span> mempty {
+        choHoMap <span class="fu">=</span> Map.singleton (hoModuleGroup ho') ho' { hoBuild <span class="fu">=</span> newHoBuild},
+        choCombinators <span class="fu">=</span> fromList <span class="fu">$</span> [ (combIdent c,c) <span class="fu">|</span> c <span class="ot">&lt;-</span> progCombinators prog ],
+        choExternalNames <span class="fu">=</span> idMapToIdSet newMap
+        } <span class="ot">`mappend`</span> cho,ho' { hoBuild <span class="fu">=</span> newHoBuild })</code></pre>
+<h2 id="compilewholeprogram関数">compileWholeProgram関数</h2>
+<pre class="sourceCode haskell"><code class="sourceCode haskell">    prog <span class="ot">&lt;-</span> return <span class="fu">$</span> programUpdate prog {
+        progMain   <span class="fu">=</span> tvrIdent main,
+        progEntry <span class="fu">=</span> fromList <span class="fu">$</span> map tvrIdent (main<span class="fu">:</span>ffiExportNames),
+        progCombinators <span class="fu">=</span> emptyComb { combHead <span class="fu">=</span> main, combBody <span class="fu">=</span> mainv }<span class="fu">:</span>map (unsetProperty prop_EXPORTED) (progCombinators prog)
+        }
+    prog <span class="ot">&lt;-</span> transformProgram transformParms {
+        transformCategory <span class="fu">=</span> <span class="st">&quot;PruneUnreachable&quot;</span>,
+        transformOperation <span class="fu">=</span> evaluate <span class="fu">.</span> programPruneUnreachable
+        } prog
+    prog <span class="ot">&lt;-</span> programPrune prog
+    prog <span class="ot">&lt;-</span> evaluate <span class="fu">$</span> progCombinators_s ([ p <span class="fu">|</span> p <span class="ot">&lt;-</span> progCombinators prog,
+        combHead p <span class="ot">`notElem`</span> map combHead cmethods] <span class="fu">++</span> cmethods) prog
+    prog <span class="ot">&lt;-</span> annotateProgram mempty (\_ nfo <span class="ot">-&gt;</span> return <span class="fu">$</span> unsetProperty prop_INSTANCE nfo)
+        letann (\_ nfo <span class="ot">-&gt;</span> return nfo) prog
+    prog <span class="ot">&lt;-</span> transformProgram transTypeAnalyze {
+        transformPass <span class="fu">=</span> <span class="st">&quot;Main-AfterMethod&quot;</span>,
+        transformDumpProgress <span class="fu">=</span> verbose } prog
+    prog <span class="ot">&lt;-</span> simplifyProgram SS.emptySimplifyOpts <span class="st">&quot;Main-One&quot;</span> verbose prog
+    prog <span class="ot">&lt;-</span> etaExpandProg <span class="st">&quot;Main-AfterOne&quot;</span> prog
+    prog <span class="ot">&lt;-</span> transformProgram transTypeAnalyze {
+        transformPass <span class="fu">=</span> <span class="st">&quot;Main-AfterSimp&quot;</span>, transformDumpProgress <span class="fu">=</span> verbose } prog
+    prog <span class="ot">&lt;-</span> simplifyProgram SS.emptySimplifyOpts <span class="st">&quot;Main-Two&quot;</span> verbose prog
+    prog <span class="ot">&lt;-</span> return <span class="fu">$</span> runIdentity <span class="fu">$</span> annotateProgram mempty (\_ nfo <span class="ot">-&gt;</span> return <span class="fu">$</span>
+        modifyProperties (flip (foldr S.delete) [prop_HASRULE,prop_WORKER]) nfo)
+        letann (\_ <span class="ot">-&gt;</span> return) prog
+    prog <span class="ot">&lt;-</span> simplifyProgram SS.emptySimplifyOpts { SS.so_finalPhase <span class="fu">=</span> <span class="dt">True</span> }
+        <span class="st">&quot;SuperSimplify no rules&quot;</span> verbose prog
+    prog <span class="ot">&lt;-</span> transformProgram transformParms {
+        transformCategory <span class="fu">=</span> <span class="st">&quot;BoxifyProgram&quot;</span>,
+        transformDumpProgress <span class="fu">=</span> dump <span class="dt">FD.Progress</span>,
+        transformOperation <span class="fu">=</span> boxifyProgram } prog
+    prog <span class="ot">&lt;-</span> programPrune prog
+    prog <span class="ot">&lt;-</span> Demand.analyzeProgram prog
+    prog <span class="ot">&lt;-</span> return <span class="fu">$</span> E.CPR.cprAnalyzeProgram prog
+    prog <span class="ot">&lt;-</span> transformProgram transformParms {
+        transformCategory <span class="fu">=</span> <span class="st">&quot;Boxy WorkWrap&quot;</span>,
+        transformDumpProgress <span class="fu">=</span> dump <span class="dt">FD.Progress</span>,
+        transformOperation <span class="fu">=</span> evaluate <span class="fu">.</span> workWrapProgram } prog
+    prog <span class="ot">&lt;-</span> simplifyProgram SS.emptySimplifyOpts { SS.so_finalPhase <span class="fu">=</span> <span class="dt">True</span> }
+        <span class="st">&quot;SuperSimplify after Boxy WorkWrap&quot;</span> verbose prog
+    prog <span class="ot">&lt;-</span> return <span class="fu">$</span> runIdentity <span class="fu">$</span> programMapBodies (return <span class="fu">.</span> cleanupE) prog
+    prog <span class="ot">&lt;-</span> transformProgram transformParms {
+        transformCategory <span class="fu">=</span> <span class="st">&quot;LambdaLift&quot;</span>,
+        transformDumpProgress <span class="fu">=</span> dump <span class="dt">FD.Progress</span>,
+        transformOperation <span class="fu">=</span> lambdaLift } prog
+    prog <span class="ot">&lt;-</span> Demand.analyzeProgram prog
+    prog <span class="ot">&lt;-</span> return <span class="fu">$</span> E.CPR.cprAnalyzeProgram prog
+    prog <span class="ot">&lt;-</span> simplifyProgram SS.emptySimplifyOpts {
+        SS.so_postLift <span class="fu">=</span> <span class="dt">True</span>, SS.so_finalPhase <span class="fu">=</span> <span class="dt">True</span> } <span class="st">&quot;PostLiftSimplify&quot;</span> verbose prog
+    prog <span class="ot">&lt;-</span> return <span class="fu">$</span> atomizeApps <span class="dt">True</span> prog</code></pre>
+<h2 id="compiletogrin関数">compileToGrin関数</h2>
+<pre class="sourceCode haskell"><code class="sourceCode haskell">    x <span class="ot">&lt;-</span> Grin.FromE.compile prog
+    x <span class="ot">&lt;-</span> transformGrin simplifyParms x
+    x <span class="ot">&lt;-</span> explicitRecurse x
+    lintCheckGrin x
+    x <span class="ot">&lt;-</span> transformGrin deadCodeParms x
+    x <span class="ot">&lt;-</span> transformGrin simplifyParms x
+    x <span class="ot">&lt;-</span> transformGrin pushParms x
+    x <span class="ot">&lt;-</span> transformGrin simplifyParms x
+    x <span class="ot">&lt;-</span> grinSpeculate x
+    lintCheckGrin x
+    x <span class="ot">&lt;-</span> transformGrin deadCodeParms x
+    x <span class="ot">&lt;-</span> transformGrin simplifyParms x
+    x <span class="ot">&lt;-</span> transformGrin pushParms x
+    x <span class="ot">&lt;-</span> transformGrin simplifyParms x
+    x <span class="ot">&lt;-</span> transformGrin nodeAnalyzeParms x
+    x <span class="ot">&lt;-</span> transformGrin simplifyParms x
+    x <span class="ot">&lt;-</span> transformGrin nodeAnalyzeParms x
+    x <span class="ot">&lt;-</span> transformGrin simplifyParms x
+    x <span class="ot">&lt;-</span> createEvalApply x
+    x <span class="ot">&lt;-</span> transformGrin simplifyParms x
+    x <span class="ot">&lt;-</span> transformGrin devolveTransform x
+    x <span class="ot">&lt;-</span> transformGrin simplifyParms x
+    x <span class="ot">&lt;-</span> return <span class="fu">$</span> twiddleGrin x
+    x <span class="ot">&lt;-</span> storeAnalyze x</code></pre>
+<h2 id="コールグラフ">コールグラフ</h2>
+<p>この調査のために一旦コールグラフを書いたので、念の為はりつけておくでゲッソ。 ひょっとすると後日使うかもしれないじゃなイカ？</p>
+<pre><code>main
+=&gt; processFiles
+   =&gt; (_, cho) &lt;- parseFiles
+      =&gt; loadModules
+      =&gt; processCug
+      =&gt; typeCheckGraph
+         =&gt; parseHsSource
+            =&gt; preprocessHs
+            =&gt; runParserWithMode
+         =&gt; doModules
+            =&gt; determineExports
+            =&gt; tiModules # xxx 要調査
+               =&gt; processModule
+                  =&gt; renameModule
+                     =&gt; FrontEnd.Rename.runRename
+                        =&gt; desugarHsModule
+                           =&gt; desugarDecl
+                        =&gt; FrontEnd.Rename.renameDecls
+                        =&gt; driftDerive
+      =&gt; compileCompNode
+         =&gt; processInitialHo
+         =&gt; processDecls # Program型をこねこねする
+         =&gt; recordHoFile
+   =&gt; processCollectedHo cho
+      =&gt; dataTable = choDataTable cho
+      =&gt; combinators = values $ choCombinators cho
+      =&gt; Control.Exception.evaluate dataTable / evaluate combinators
+      =&gt; prog = programUpdate E.Program.program {
+            progCombinators = combinators,
+            progDataTable = dataTable
+            }
+      =&gt; compileWholeProgram prog
+      =&gt; compileToGrin prog
+         =&gt; Grin.FromE.compile
+            =&gt; progEntryPoints
+            =&gt; constantCaf
+            =&gt; compile'
+            =&gt; grin = setGrinFunctions theFuncs emptyGrin {
+                  grinEntryPoints = minsert funcMain (FfiExport &quot;_amain&quot; Safe CCall [] &quot;void&quot;) $
+                                fromList epv,
+                  grinPhase = PhaseInit,
+                  grinTypeEnv = newTyEnv,
+                  grinCafs = [ (x,node) | (x,node) &lt;- cafs]
+                  }
+         =&gt; transformGrin # 色々な種類の変換があるみたい
+         =&gt; explicitRecurse
+         =&gt; lintCheckGrin
+         =&gt; grinSpeculate
+         =&gt; createEvalApply
+         =&gt; twiddleGrin
+         =&gt; storeAnalyze
+         =&gt; compileGrinToC
+            =&gt; compileGrin
+            =&gt; System.system comm # gccでコンパイル</code></pre>
+<h2 id="主要な関数の型">主要な関数の型</h2>
+<p>さらにこの調査のために関数の型を調べる必要があったでゲソ。 どうもjhcの作者のJohnさんはトップレベルの関数に型シグニチャをつけない傾向があるでゲソ…イカンでげゲソ! 主要な関数の型はイカの通りでゲソ。</p>
+<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">parseFiles ::</span> <span class="dt">Opt</span> <span class="ot">-&gt;</span> [<span class="dt">FilePath</span>] <span class="ot">-&gt;</span> [<span class="dt">String</span>] <span class="ot">-&gt;</span> [<span class="dt">Either</span> <span class="dt">Module</span> <span class="dt">FilePath</span>] <span class="ot">-&gt;</span> (<span class="dt">CollectedHo</span> <span class="ot">-&gt;</span> <span class="dt">Ho</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">CollectedHo</span>) <span class="ot">-&gt;</span> (<span class="dt">CollectedHo</span> <span class="ot">-&gt;</span> <span class="dt">Ho</span> <span class="ot">-&gt;</span> <span class="dt">TiData</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">CollectedHo</span>,<span class="dt">Ho</span>)) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">CompNode</span>,<span class="dt">CollectedHo</span>)
+<span class="ot">loadModules ::</span> <span class="dt">Opt</span> <span class="ot">-&gt;</span> [<span class="dt">FilePath</span>] <span class="ot">-&gt;</span> [<span class="dt">String</span>] <span class="ot">-&gt;</span> <span class="dt">SrcLoc</span> <span class="ot">-&gt;</span> [<span class="dt">Either</span> <span class="dt">Module</span> <span class="dt">FilePath</span>] <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Map.Map</span> <span class="dt">SourceHash</span> (<span class="dt">Module</span>,[(<span class="dt">Module</span>,<span class="dt">SrcLoc</span>)]),<span class="dt">HoHash</span>,<span class="dt">CompUnitGraph</span>)
+<span class="ot">processCug ::</span> <span class="dt">CompUnitGraph</span> <span class="ot">-&gt;</span> <span class="dt">HoHash</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">CompNode</span>
+<span class="ot">typeCheckGraph ::</span> <span class="dt">Opt</span> <span class="ot">-&gt;</span> <span class="dt">CompNode</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
+<span class="ot">parseHsSource ::</span> <span class="dt">Opt</span> <span class="ot">-&gt;</span> <span class="dt">FilePath</span> <span class="ot">-&gt;</span> <span class="dt">LBS.ByteString</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">HsModule</span>,<span class="dt">LBS.ByteString</span>)
+<span class="ot">preprocessHs ::</span> <span class="dt">Opt</span> <span class="ot">-&gt;</span> <span class="dt">FilePath</span> <span class="ot">-&gt;</span> <span class="dt">LBS.ByteString</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">LBS.ByteString</span>
+<span class="ot">runParserWithMode ::</span> <span class="dt">ParseMode</span> <span class="ot">-&gt;</span> <span class="dt">P</span> a <span class="ot">-&gt;</span> <span class="dt">String</span> <span class="ot">-&gt;</span> ([<span class="dt">Warning</span>],<span class="dt">ParseResult</span> a)
+<span class="ot">doModules ::</span> <span class="dt">HoTcInfo</span> <span class="ot">-&gt;</span> [<span class="dt">HsModule</span>] <span class="ot">-&gt;</span> <span class="dt">IO</span>  (<span class="dt">HoTcInfo</span>,<span class="dt">Tc.TiData</span>)
+<span class="ot">determineExports ::</span> [(<span class="dt">Name</span>,<span class="dt">SrcLoc</span>,[<span class="dt">Name</span>])] <span class="ot">-&gt;</span> [(<span class="dt">Module</span>,[<span class="dt">Name</span>])] <span class="ot">-&gt;</span> [<span class="dt">ModInfo</span>]  <span class="ot">-&gt;</span> <span class="dt">IO</span> [<span class="dt">ModInfo</span>]
+<span class="ot">tiModules ::</span>  <span class="dt">HoTcInfo</span> <span class="ot">-&gt;</span> [<span class="dt">ModInfo</span>] <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">HoTcInfo</span>,<span class="dt">TiData</span>)
+<span class="ot">processModule ::</span> <span class="dt">FieldMap</span> <span class="ot">-&gt;</span> <span class="dt">ModInfo</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">ModInfo</span>,[<span class="dt">Warning</span>])
+<span class="ot">renameModule ::</span> <span class="dt">MonadWarn</span> m <span class="ot">=&gt;</span> <span class="dt">Opt</span> <span class="ot">-&gt;</span> <span class="dt">FieldMap</span> <span class="ot">-&gt;</span> [(<span class="dt">Name</span>,[<span class="dt">Name</span>])] <span class="ot">-&gt;</span> <span class="dt">HsModule</span> <span class="ot">-&gt;</span> m ((<span class="dt">HsModule</span>,[<span class="dt">HsDecl</span>]),<span class="dt">Map.Map</span> <span class="dt">Name</span> <span class="dt">Name</span>)
+FrontEnd.Rename.runRename<span class="ot"> ::</span> <span class="dt">MonadWarn</span> m <span class="ot">=&gt;</span> (a <span class="ot">-&gt;</span> <span class="dt">RM</span> b) <span class="ot">-&gt;</span> <span class="dt">Opt</span> <span class="ot">-&gt;</span> <span class="dt">Module</span> <span class="ot">-&gt;</span> <span class="dt">FieldMap</span> <span class="ot">-&gt;</span> [(<span class="dt">Name</span>,[<span class="dt">Name</span>])] <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> m (b,<span class="dt">Map.Map</span> <span class="dt">Name</span> <span class="dt">Name</span>)
+<span class="ot">desugarHsModule ::</span> <span class="dt">HsModule</span> <span class="ot">-&gt;</span> <span class="dt">HsModule</span>
+<span class="ot">desugarDecl ::</span> <span class="dt">HsDecl</span> <span class="ot">-&gt;</span> <span class="dt">PatSM</span> [<span class="dt">HsDecl</span>]
+FrontEnd.Rename.hs<span class="fu">.</span><span class="ot">renameDecls ::</span> <span class="dt">HsModule</span> <span class="ot">-&gt;</span> <span class="dt">RM</span> <span class="dt">HsModule</span>
+<span class="ot">driftDerive ::</span> <span class="dt">HsModule</span> <span class="ot">-&gt;</span> [<span class="dt">HsDecl</span>]
+<span class="ot">compileCompNode ::</span> (<span class="dt">CollectedHo</span> <span class="ot">-&gt;</span> <span class="dt">Ho</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">CollectedHo</span>) <span class="ot">-&gt;</span> (<span class="dt">CollectedHo</span> <span class="ot">-&gt;</span> <span class="dt">Ho</span> <span class="ot">-&gt;</span> <span class="dt">TiData</span>  <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">CollectedHo</span>,<span class="dt">Ho</span>)) <span class="ot">-&gt;</span> <span class="dt">Map.Map</span> <span class="dt">SourceHash</span> (<span class="dt">Module</span>,[(<span class="dt">Module</span>,<span class="dt">SrcLoc</span>)]) <span class="ot">-&gt;</span> <span class="dt">CompNode</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">CollectedHo</span>
+<span class="ot">processInitialHo ::</span> <span class="dt">CollectedHo</span> <span class="ot">-&gt;</span> <span class="dt">Ho</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">CollectedHo</span>
+<span class="ot">processDecls ::</span> <span class="dt">CollectedHo</span> <span class="ot">-&gt;</span> <span class="dt">Ho</span> <span class="ot">-&gt;</span> <span class="dt">TiData</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">CollectedHo</span>,<span class="dt">Ho</span>)
+<span class="ot">recordHoFile ::</span> <span class="dt">Ho</span> <span class="ot">-&gt;</span> <span class="dt">HoIDeps</span> <span class="ot">-&gt;</span> [<span class="dt">FilePath</span>] <span class="ot">-&gt;</span> <span class="dt">HoHeader</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
+<span class="ot">processCollectedHo ::</span> <span class="dt">CollectedHo</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
+<span class="ot">choDataTable ::</span> <span class="dt">CollectedHo</span> <span class="ot">-&gt;</span> <span class="dt">DataTable</span>
+<span class="ot">choCombinators ::</span> <span class="dt">CollectedHo</span> <span class="ot">-&gt;</span> <span class="dt">IdMap</span> <span class="dt">Comb</span>
+Control.Exception.evaluate<span class="ot"> ::</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> a
+<span class="ot">programUpdate ::</span> <span class="dt">Program</span> <span class="ot">-&gt;</span> <span class="dt">Program</span>
+<span class="ot">compileWholeProgram ::</span> <span class="dt">Program</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">Program</span>
+<span class="ot">compileToGrin ::</span> <span class="dt">Program</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
+Grin.FromE.compile<span class="ot"> ::</span> <span class="dt">Program</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">Grin</span>
+<span class="ot">progEntryPoints ::</span> <span class="dt">Program</span> <span class="ot">-&gt;</span> [<span class="dt">TVr</span>]
+<span class="ot">constantCaf ::</span> <span class="dt">Program</span> <span class="ot">-&gt;</span> ([(<span class="dt">TVr</span>,<span class="dt">Var</span>,<span class="dt">Val</span>)],[<span class="dt">Var</span>],[(<span class="dt">TVr</span>,<span class="dt">Var</span>,<span class="dt">Val</span>)])
+<span class="ot">compile' ::</span> <span class="dt">CEnv</span> <span class="ot">-&gt;</span> (<span class="dt">TVr</span>,[<span class="dt">TVr</span>],<span class="dt">E</span>) <span class="ot">-&gt;</span> <span class="dt">C</span> (<span class="dt">Atom</span>,<span class="dt">Lam</span>)
+<span class="ot">transformGrin ::</span> <span class="dt">TransformParms</span> <span class="dt">Grin</span> <span class="ot">-&gt;</span> <span class="dt">Grin</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">Grin</span>
+<span class="ot">explicitRecurse ::</span> <span class="dt">Grin</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">Grin</span>
+<span class="ot">lintCheckGrin ::</span> <span class="dt">Grin</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
+<span class="ot">grinSpeculate ::</span> <span class="dt">Grin</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">Grin</span>
+<span class="ot">createEvalApply ::</span> <span class="dt">Grin</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">Grin</span>
+<span class="ot">twiddleGrin ::</span> <span class="dt">Grin</span> <span class="ot">-&gt;</span> <span class="dt">Grin</span>
+<span class="ot">storeAnalyze ::</span> <span class="dt">Grin</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">Grin</span>
+<span class="ot">compileGrinToC ::</span> <span class="dt">Grin</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
+<span class="ot">compileGrin ::</span> <span class="dt">Grin</span> <span class="ot">-&gt;</span> (<span class="dt">LBS.ByteString</span>,<span class="dt">Requires</span>)</code></pre>
+<p>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_shortname = 'metasepi';
+    var disqus_identifier = '/posts/2013-01-31-jhc_internal_overview.html';
+    var disqus_url = 'http://metasepi.org' + '/posts/2013-01-31-jhc_internal_overview.html';
+    var disqus_title = 'jhcコンパイルパイプラインの全体像';
+    var disqus_developer = 1;
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>
+    Please enable JavaScript to view the 
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  <a href="http://disqus.com" class="dsq-brlink">
+    blog comments powered by <span.logo-disqus>Disqus</span>
+  </a>
+</p>
+
+    </div>
+
+    <footer>
+      <p>
+        This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
+        <br>
+        Metasepi project is supported by <a href="http://www.itpl.co.jp/en/"><img alt="IT Planning, Inc." style="border-width:0" src="../img/it_planning_108x20.png" /></a> ×
+        <a href="https://github.com/axsh/"><img alt="Axsh Co." style="border-width:0" src="../img/axsh_81x25.png" /></a> ×
+        <a href="../past-supporters.html">Past Supporters</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="/js/libs/jquery-1.6.2.min.js"><\/script>')</script>
+
+  <!-- scripts concatenated and minified via ant build script-->
+  <script defer src="../js/plugins.js"></script>
+  <script defer src="../js/script.js"></script>
+  <!-- end scripts-->
+
+  <script>
+    window._gaq = [['_setAccount','UA-158383-8'],['_trackPageview'],['_trackPageLoadTime']];
+    Modernizr.load({
+      load: ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js'
+    });
+  </script>
+
+  <!--[if lt IE 7 ]>
+    <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js">
+    <script>
+      window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})
+  <![endif]-->
+
+<script type="text/javascript">
+<!--
+(function() {
+var login = '',
+    fpf = true,
+    fpn = '__ulfpc';
+
+// DO NOT ALTER BELOW THIS LINE
+var id = 6008444, h = 'a5fe';
+var rand = rand || Math.floor(Math.random() * 9000000) + 1000000;
+if('http:'==document.location.protocol){var params={id:id,lt:3,h:h,url:document.URL,ref:document.referrer,lg:login,rand:rand,bw:(window.innerWidth?window.innerWidth:(document.documentElement && document.documentElement.clientWidth!=0?document.documentElement.clientWidth:(document.body?document.body.clientWidth:0 ))),bh:(window.innerHeight?window.innerHeight:(document.documentElement && document.documentElement.clientHeight!=0?document.documentElement.clientHeight:(document.body?document.body.clientHeight:0 ))),dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sw:screen.width,sh:screen.height,dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sb:document.title,guid:'ON'};if(fpf){params.fp=getuid(fpn);}params.eflg=1;var a=document.createElement('a');var lg=document.createElement('img');lg.setAttribute('id','_ullogimgltr');lg.setAttribute('width',1);lg.setAttribute('height',1);lg.setAttribute('alt','');var src='http://le.nakanohito.jp/le/1/?';for(var key in params ) src=src.concat(key+'='+encodeURIComponent(params[key] )+'&');lg.src=src.slice(0,-1);a.setAttribute('href','http://smartphone.userlocal.jp/');a.setAttribute('target','_blank');a.appendChild(lg);var s=document.getElementsByTagName('body')[0];s.appendChild(a);}
+function getuid(key){var arr=[],date=new Date(),exp=new Date();exp.setFullYear(exp.getFullYear()+7);if(document.cookie){arr=document.cookie.split(";");for(var i=0; i<arr.length; i++ ){var str=arr[i].replace(/^\s+|\s+

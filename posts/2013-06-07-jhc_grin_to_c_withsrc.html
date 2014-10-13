@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>(作成中) Jhc compile pipeline: Grin =&gt; C - Metasepi</title>
+
+  <meta name="description" content="metasepi.org">
+  <meta name="author" content="Kiwamu Okabe">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="http://metasepi.org/rss_en.xml" rel="alternate" title="Blog" type="application/rss+xml">
+
+  <!-- CSS concatenated and minified via ant build script-->
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/syntax.css">
+  <link rel="stylesheet" href="../css/calendar.css">
+  <!-- end CSS-->
+
+  <link rel="stylesheet" href="../css/default.css">
+
+  <script src="../js/libs/modernizr-2.0.6.min.js"></script>
+</head>
+
+<body onload="prettyPrint()">
+  <div id="fb-root"></div>
+  <script>
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = '//connect.facebook.net/ja_JP/all.js#xfbml=1';
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
+
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <a href="../">Metasepi</a>
+      </div>
+
+      <div class="nav">
+        <li><a href="../">Home</a></li>
+        <li><a href="../en/posts.html">Blog</a>(<a href="../posts.html">old</a>)</li>
+        <li><a href="../papers.html">Papers</a></li>
+        <li><a href="../map.html">Map</a></li>
+        <li><a href="../memories.html">Memories</a></li>
+        <li><a href="../about.html">About</a></li>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="content clearfix">
+      <h1>(作成中) Jhc compile pipeline: Grin =&gt; C</h1>
+<div class="info">Posted on June  7, 2013 / Tags: <a href="../tags/compiler.html">compiler</a>, <a href="../tags/jhc.html">jhc</a>, <a href="../tags/c.html">c</a>, <a href="../tags/grin.html">grin</a></div>
+<h2>Table of contents</h2>
+<ul>
+<li><a href="#grin-c変換の最上位層">Grin =&gt; C変換の最上位層</a></li>
+<li><a href="#grin型">Grin型</a></li>
+<li><a href="#cモナド">Cモナド?</a></li>
+<li><a href="#ユーティリティ関数">ユーティリティ関数</a></li>
+</ul>
+<hr>
+<p><a href="2013-05-16-jhc_grin_to_c.html">Jhc compile pipeline: Grin =&gt; C (code example)</a> ではjhcのgrinコードのダンプとコンパイル結果のC言語コードを比較することで、 Grin=&gt;Cの変換を理解した気になっていたでゲソ。 しかし、Ajhcを再入可能にするためにはコンパイルパイプラインの吐き出すC言語コードの生成ルールそのものに修正を加える必要があるでゲソ。 まずは落ち着いてjhcのGrin=&gt;Cの変換エンジンを読んでみなイカ？</p>
+<h2 id="grin-c変換の最上位層">Grin =&gt; C変換の最上位層</h2>
+<p>ズバリ <a href="http://hackage.haskell.org/packages/archive/ajhc/0.8.0.6/doc/html/C-FromGrin2.html#v:compileGrin">compileGrin</a> という関数が用意されているでゲソ。</p>
+<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/src/C/FromGrin2.hs</span>
+<span class="ot">compileGrin ::</span> <span class="dt">Grin</span> <span class="ot">-&gt;</span> (<span class="dt">LBS.ByteString</span>,<span class="dt">Requires</span>)
+compileGrin grin <span class="fu">=</span> (LBS.fromChunks code, req)  <span class="kw">where</span>
+    code <span class="fu">=</span> [
+        BS.fromString <span class="st">&quot;#include \&quot;jhc_rts_header.h\&quot;\n&quot;</span>,
+        BS.fromString <span class="fu">$</span> P.render ans,
+        BS.fromString <span class="st">&quot;\n&quot;</span>
+        ]
+    ans <span class="fu">=</span> vcat [
+        vcat jgcs,
+        vcat includes,
+        text <span class="st">&quot;&quot;</span>,
+        enum_tag_t,
+        header,
+        cafs,
+        buildConstants cpr grin finalHcHash,
+        text <span class="st">&quot;&quot;</span>,
+        nh_stuff,
+        text <span class="st">&quot;&quot;</span>,
+        body
+        ]</code></pre>
+<p>Grinという型をC言語のByteStringに変換するというそのまんまの型がcompileGrin関数でゲソ。 ansというのが出力するC言語コードの構造で、 <a href="2013-02-19-jhc_zen.html">jhc禅</a> で調べた最小のHaskellコードをコンパイルした結果と見比べると何がどこに対応するのかすぐにわかるでゲソ。</p>
+<h2 id="grin型">Grin型</h2>
+<p>注目すべきはイカの型でゲソ。</p>
+<ul>
+<li><a href="http://hackage.haskell.org/packages/archive/ajhc/0.8.0.6/doc/html/Grin-Grin.html#t:Grin">Grin型</a></li>
+<li><a href="http://hackage.haskell.org/packages/archive/ajhc/0.8.0.6/doc/html/Grin-Grin.html#t:FuncDef">FuncDef型</a></li>
+<li><a href="http://hackage.haskell.org/packages/archive/ajhc/0.8.0.6/doc/html/Grin-Grin.html#t:Lam">Lam型</a></li>
+<li><a href="http://hackage.haskell.org/packages/archive/ajhc/0.8.0.6/doc/html/Grin-Grin.html#t:Val">Val型</a></li>
+<li><a href="http://hackage.haskell.org/packages/archive/ajhc/0.8.0.6/doc/html/Grin-Grin.html#t:Exp">Exp型</a></li>
+<li><a href="http://hackage.haskell.org/packages/archive/ajhc/0.8.0.6/doc/html/Grin-Grin.html#t:Ty">Ty型</a></li>
+</ul>
+<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/src/Grin/Grin.hs</span>
+<span class="kw">data</span> <span class="dt">Grin</span> <span class="fu">=</span> <span class="dt">Grin</span> {
+<span class="ot">    grinEntryPoints ::</span> <span class="dt">GMap</span> <span class="dt">Atom</span> <span class="dt">FfiExport</span>,
+<span class="ot">    grinPhase ::</span> <span class="fu">!</span><span class="dt">Phase</span>,
+<span class="ot">    grinTypeEnv ::</span> <span class="dt">TyEnv</span>,
+<span class="ot">    grinFunctions ::</span> [<span class="dt">FuncDef</span>],
+<span class="ot">    grinSuspFunctions ::</span> <span class="dt">Set.Set</span> <span class="dt">Atom</span>,
+<span class="ot">    grinPartFunctions ::</span> <span class="dt">Set.Set</span> <span class="dt">Atom</span>,
+<span class="ot">    grinStats ::</span> <span class="fu">!</span><span class="dt">Stats.Stat</span>,
+<span class="ot">    grinCafs ::</span> [(<span class="dt">Var</span>,<span class="dt">Val</span>)]
+}
+<span class="kw">data</span> <span class="dt">Phase</span> <span class="fu">=</span> <span class="dt">PhaseInit</span> <span class="fu">|</span> <span class="dt">PostInlineEval</span> <span class="fu">|</span> <span class="dt">PostAeOptimize</span> <span class="fu">|</span> <span class="dt">PostDevolve</span>
+<span class="kw">data</span> <span class="dt">FuncDef</span> <span class="fu">=</span> <span class="dt">FuncDef</span> {
+<span class="ot">    funcDefName  ::</span> <span class="dt">Atom</span>,
+<span class="ot">    funcDefBody  ::</span> <span class="dt">Lam</span>,
+<span class="ot">    funcDefCall  ::</span> <span class="dt">Val</span>,
+<span class="ot">    funcDefProps ::</span> <span class="dt">FuncProps</span>
+    } <span class="kw">deriving</span>(<span class="dt">Eq</span>,<span class="dt">Ord</span>,<span class="dt">Show</span>)
+<span class="kw">data</span> <span class="dt">Lam</span> <span class="fu">=</span> [<span class="dt">Val</span>] <span class="fu">:-&gt;</span> <span class="dt">Exp</span>
+<span class="kw">data</span> <span class="dt">Val</span> <span class="fu">=</span>
+    <span class="dt">NodeC</span> <span class="fu">!</span><span class="dt">Tag</span> [<span class="dt">Val</span>]          <span class="co">-- ^ Complete node, of type TyNode</span>
+    <span class="fu">|</span> <span class="dt">Const</span> <span class="dt">Val</span>               <span class="co">-- ^ constant data, only Lit, Const and NodeC may be children. of type TyINode</span>
+    <span class="fu">|</span> <span class="dt">Lit</span> <span class="fu">!</span><span class="dt">Number</span> <span class="dt">Ty</span>          <span class="co">-- ^ Literal</span>
+    <span class="fu">|</span> <span class="dt">Var</span> <span class="fu">!</span><span class="dt">Var</span> <span class="dt">Ty</span>             <span class="co">-- ^ Variable</span>
+    <span class="fu">|</span> <span class="dt">Unit</span>                    <span class="co">-- ^ Empty value used as placeholder</span>
+    <span class="fu">|</span> <span class="dt">ValPrim</span> <span class="dt">Prim</span> [<span class="dt">Val</span>] <span class="dt">Ty</span>   <span class="co">-- ^ Primitive value</span>
+    <span class="fu">|</span> <span class="dt">Index</span> <span class="dt">Val</span> <span class="dt">Val</span>           <span class="co">-- ^ A pointer incremented some number of values (Index v 0) == v</span>
+    <span class="fu">|</span> <span class="dt">Item</span> <span class="dt">Atom</span> <span class="dt">Ty</span>            <span class="co">-- ^ Specific named thing. function, global, region, etc..</span>
+    <span class="fu">|</span> <span class="dt">ValUnknown</span> <span class="dt">Ty</span>           <span class="co">-- ^ Unknown or unimportant value</span>
+<span class="kw">data</span> <span class="dt">FuncProps</span> <span class="fu">=</span> <span class="dt">FuncProps</span> {
+<span class="ot">    funcInfo    ::</span> <span class="dt">Info.Info</span>,
+<span class="ot">    funcFreeVars ::</span> <span class="dt">Set.Set</span> <span class="dt">Var</span>,
+<span class="ot">    funcTags    ::</span> <span class="dt">Set.Set</span> <span class="dt">Tag</span>,
+<span class="ot">    funcType    ::</span> ([<span class="dt">Ty</span>],[<span class="dt">Ty</span>]),
+<span class="ot">    funcExits   ::</span> <span class="dt">Perhaps</span>,      <span class="co">-- ^ function quits the program</span>
+<span class="ot">    funcCuts    ::</span> <span class="dt">Perhaps</span>,      <span class="co">-- ^ function cuts to a value</span>
+<span class="ot">    funcAllocs  ::</span> <span class="dt">Perhaps</span>,      <span class="co">-- ^ function allocates memory</span>
+<span class="ot">    funcCreates ::</span> <span class="dt">Perhaps</span>,      <span class="co">-- ^ function allocates memory and stores or returns it</span>
+<span class="ot">    funcLoops   ::</span> <span class="dt">Perhaps</span>       <span class="co">-- ^ function may loop</span>
+    }
+<span class="kw">data</span> <span class="dt">Exp</span> <span class="fu">=</span>
+     <span class="dt">Exp</span> <span class="fu">:&gt;&gt;=</span> <span class="dt">Lam</span>                                                         <span class="co">-- ^ Sequencing - the same as &gt;&gt;= for monads.</span>
+    <span class="fu">|</span> <span class="dt">BaseOp</span>    {<span class="ot"> expBaseOp ::</span> <span class="dt">BaseOp</span>,
+<span class="ot">                  expArgs ::</span> [<span class="dt">Val</span>]
+                }
+    <span class="fu">|</span> <span class="dt">App</span>       {<span class="ot"> expFunction  ::</span> <span class="dt">Atom</span>,
+<span class="ot">                  expArgs ::</span> [<span class="dt">Val</span>],
+<span class="ot">                  expType ::</span> [<span class="dt">Ty</span>] }                                       <span class="co">-- ^ Application of functions and builtins</span>
+    <span class="fu">|</span> <span class="dt">Prim</span>      {<span class="ot"> expPrimitive ::</span> <span class="dt">Prim</span>,
+<span class="ot">                  expArgs ::</span> [<span class="dt">Val</span>],
+<span class="ot">                  expType ::</span> [<span class="dt">Ty</span>] }                                       <span class="co">-- ^ Primitive operation</span>
+    <span class="fu">|</span> <span class="dt">Case</span>      {<span class="ot"> expValue ::</span> <span class="dt">Val</span>,<span class="ot"> expAlts ::</span> [<span class="dt">Lam</span>] }                     <span class="co">-- ^ Case statement</span>
+    <span class="fu">|</span> <span class="dt">Return</span>    {<span class="ot"> expValues ::</span> [<span class="dt">Val</span>] }                                    <span class="co">-- ^ Return a value</span>
+    <span class="fu">|</span> <span class="dt">Error</span>     {<span class="ot"> expError ::</span> <span class="dt">String</span>,<span class="ot"> expType ::</span> [<span class="dt">Ty</span>] }                   <span class="co">-- ^ Abort with an error message, non recoverably.</span>
+    <span class="fu">|</span> <span class="dt">Call</span>      {<span class="ot"> expValue ::</span> <span class="dt">Val</span>,
+<span class="ot">                  expArgs ::</span> [<span class="dt">Val</span>],
+<span class="ot">                  expType ::</span> [<span class="dt">Ty</span>],
+<span class="ot">                  expJump ::</span> <span class="dt">Bool</span>,                                        <span class="co">-- ^ Jump is equivalent to a call except it deallocates the region it resides in before transfering control</span>
+<span class="ot">                  expFuncProps ::</span> <span class="dt">FuncProps</span>,
+<span class="ot">                  expInfo ::</span> <span class="dt">Info.Info</span> }                                  <span class="co">-- ^ Call or jump to a callable</span>
+    <span class="fu">|</span> <span class="dt">NewRegion</span> {<span class="ot"> expLam ::</span> <span class="dt">Lam</span>,<span class="ot"> expInfo ::</span> <span class="dt">Info.Info</span> }                   <span class="co">-- ^ create a new region and pass it to its argument</span>
+    <span class="fu">|</span> <span class="dt">Alloc</span>     {<span class="ot"> expValue ::</span> <span class="dt">Val</span>,
+<span class="ot">                  expCount ::</span> <span class="dt">Val</span>,
+<span class="ot">                  expRegion ::</span> <span class="dt">Val</span>,
+<span class="ot">                  expInfo ::</span> <span class="dt">Info.Info</span> }                                  <span class="co">-- ^ allocate space for a number of values in the given region</span>
+    <span class="fu">|</span> <span class="dt">Let</span>       {<span class="ot"> expDefs ::</span> [<span class="dt">FuncDef</span>],
+<span class="ot">                  expBody ::</span> <span class="dt">Exp</span>,
+<span class="ot">                  expFuncCalls ::</span> (<span class="dt">Set.Set</span> <span class="dt">Atom</span>,<span class="dt">Set.Set</span> <span class="dt">Atom</span>),            <span class="co">-- ^ cache</span>
+<span class="ot">                  expIsNormal ::</span> <span class="dt">Bool</span>,                                    <span class="co">-- ^ cache, True = definitely normal, False = maybe normal</span>
+<span class="ot">                  expNonNormal ::</span> <span class="dt">Set.Set</span> <span class="dt">Atom</span>,                           <span class="co">-- ^ cache, a superset of functions called in non-tail call position.</span>
+<span class="ot">                  expInfo ::</span> <span class="dt">Info.Info</span> }                                  <span class="co">-- ^ A let of local functions</span>
+    <span class="fu">|</span> <span class="dt">MkClosure</span> {<span class="ot"> expValue ::</span> <span class="dt">Val</span>,
+<span class="ot">                  expArgs ::</span> [<span class="dt">Val</span>],
+<span class="ot">                  expRegion ::</span> <span class="dt">Val</span>,
+<span class="ot">                  expType ::</span> [<span class="dt">Ty</span>],
+<span class="ot">                  expInfo ::</span> <span class="dt">Info.Info</span> }                   <span class="co">-- ^ create a closure</span>
+    <span class="fu">|</span> <span class="dt">MkCont</span>    {<span class="ot"> expCont ::</span> <span class="dt">Lam</span>,                          <span class="co">-- ^ the continuation routine</span>
+<span class="ot">                  expLam ::</span> <span class="dt">Lam</span>,                           <span class="co">-- ^ the computation that is passed the newly created computation</span>
+<span class="ot">                  expInfo ::</span> <span class="dt">Info.Info</span> }                   <span class="co">-- ^ Make a continuation, always allocated on region encompasing expLam</span>
+    <span class="fu">|</span> <span class="dt">GcRoots</span>   {<span class="ot"> expValues ::</span> [<span class="dt">Val</span>],                  <span class="co">-- ^ add some new variables to the GC roots for a subcomputation</span>
+<span class="ot">                  expBody ::</span> <span class="dt">Exp</span> }
+<span class="kw">data</span> <span class="dt">Ty</span> <span class="fu">=</span>
+    <span class="dt">TyPtr</span> <span class="dt">Ty</span>                     <span class="co">-- ^ pointer to a memory location which contains its argument</span>
+    <span class="fu">|</span> <span class="dt">TyNode</span>                     <span class="co">-- ^ a whole node</span>
+    <span class="fu">|</span> <span class="dt">TyINode</span>                    <span class="co">-- ^ a whole possibly indirect node</span>
+    <span class="fu">|</span> <span class="dt">TyAttr</span> <span class="dt">Ty</span> <span class="dt">Ty</span>               <span class="co">-- ^ attach an attribute to a type</span>
+    <span class="fu">|</span> <span class="dt">TyAnd</span> <span class="dt">Ty</span> <span class="dt">Ty</span>                <span class="co">-- ^ boolean conjunction of types</span>
+    <span class="fu">|</span> <span class="dt">TyOr</span>  <span class="dt">Ty</span> <span class="dt">Ty</span>                <span class="co">-- ^ boolean disjunction of types</span>
+    <span class="fu">|</span> <span class="dt">TyPrim</span> <span class="dt">Op.Ty</span>               <span class="co">-- ^ a basic type</span>
+    <span class="fu">|</span> <span class="dt">TyUnit</span>                     <span class="co">-- ^ type of Unit</span>
+    <span class="fu">|</span> <span class="dt">TyCall</span> <span class="dt">Callable</span> [<span class="dt">Ty</span>] [<span class="dt">Ty</span>]  <span class="co">-- ^ something call,jump, or cut-to-able</span>
+    <span class="fu">|</span> <span class="dt">TyRegion</span>                   <span class="co">-- ^ a region</span>
+    <span class="fu">|</span> <span class="dt">TyGcContext</span>                <span class="co">-- ^ the context for garbage collection</span>
+    <span class="fu">|</span> <span class="dt">TyRegister</span> <span class="dt">Ty</span>              <span class="co">-- ^ a register contains a mutable value, the register itself cannot be addressed,</span>
+                                 <span class="co">--   hence they may not be returned from functions or passed as arguments.</span>
+    <span class="fu">|</span> <span class="dt">TyComplex</span> <span class="dt">Ty</span>               <span class="co">-- ^ A complex version of a basic type</span>
+    <span class="fu">|</span> <span class="dt">TyVector</span> <span class="fu">!</span><span class="dt">Int</span> <span class="dt">Ty</span>           <span class="co">-- ^ A vector of a basic type</span>
+    <span class="fu">|</span> <span class="dt">TyUnknown</span>                  <span class="co">-- ^ an unknown possibly undefined type, All of these must be eliminated by code generation</span>
+<span class="kw">data</span> <span class="dt">Callable</span> <span class="fu">=</span> <span class="dt">Continuation</span> <span class="fu">|</span> <span class="dt">Function</span> <span class="fu">|</span> <span class="dt">Closure</span> <span class="fu">|</span> <span class="dt">LocalFunction</span> <span class="fu">|</span> <span class="dt">Primitive'</span>
+<span class="kw">data</span> <span class="dt">TyThunk</span>
+    <span class="fu">=</span> <span class="dt">TyNotThunk</span>               <span class="co">-- ^ not the thunk</span>
+    <span class="fu">|</span> <span class="dt">TyPApp</span> (<span class="dt">Maybe</span> <span class="dt">Ty</span>) <span class="dt">Atom</span>   <span class="co">-- ^ can be applied to (possibly) an argument, and what results</span>
+    <span class="fu">|</span> <span class="dt">TySusp</span> <span class="dt">Atom</span>              <span class="co">-- ^ can be evaluated and calls what function</span>
+<span class="kw">data</span> <span class="dt">TyTy</span> <span class="fu">=</span> <span class="dt">TyTy</span> {
+<span class="ot">    tySlots ::</span> [<span class="dt">Ty</span>],
+<span class="ot">    tyReturn ::</span> [<span class="dt">Ty</span>],
+<span class="ot">    tyThunk ::</span> <span class="dt">TyThunk</span>,
+<span class="ot">    tySiblings ::</span> <span class="dt">Maybe</span> [<span class="dt">Atom</span>]
+}
+<span class="kw">newtype</span> <span class="dt">TyEnv</span> <span class="fu">=</span> <span class="dt">TyEnv</span> (<span class="dt">GMap</span> <span class="dt">Atom</span> <span class="dt">TyTy</span>)</code></pre>
+<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/src/StringTable/Atom.hsc</span>
+<span class="kw">newtype</span> <span class="dt">Atom</span> <span class="fu">=</span> <span class="dt">Atom</span> (<span class="st">#type atom_t)</span></code></pre>
+<pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* File: ajhc/src/StringTable/StringTable_cbits.h */</span>
+<span class="kw">typedef</span> <span class="dt">uint32_t</span> atom_t;</code></pre>
+<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/src/C/FFI.hs</span>
+<span class="kw">data</span> <span class="dt">FfiExport</span> <span class="fu">=</span> <span class="dt">FfiExport</span> {
+<span class="ot">    ffiExportCName    ::</span> <span class="dt">CName</span>,
+<span class="ot">    ffiExportSafety   ::</span> <span class="dt">Safety</span>,
+<span class="ot">    ffiExportCallConv ::</span> <span class="dt">CallConv</span>,
+<span class="ot">    ffiExportArgTypes ::</span> [<span class="dt">ExtType</span>],
+<span class="ot">    ffiExportRetType  ::</span> <span class="dt">ExtType</span>
+    }
+<span class="kw">type</span> <span class="dt">CName</span> <span class="fu">=</span> <span class="dt">String</span>
+<span class="co">-- File: ajhc/src/C/Prims.hs</span>
+<span class="kw">data</span> <span class="dt">Safety</span> <span class="fu">=</span> <span class="dt">Safe</span> <span class="fu">|</span> <span class="dt">Unsafe</span> <span class="kw">deriving</span>(<span class="dt">Eq</span>,<span class="dt">Ord</span>,<span class="dt">Show</span>)
+<span class="kw">data</span> <span class="dt">CallConv</span> <span class="fu">=</span> <span class="dt">CCall</span> <span class="fu">|</span> <span class="dt">StdCall</span> <span class="fu">|</span> <span class="dt">CApi</span> <span class="fu">|</span> <span class="dt">Primitive</span> <span class="fu">|</span> <span class="dt">DotNet</span>
+<span class="kw">newtype</span> <span class="dt">ExtType</span> <span class="fu">=</span> <span class="dt">ExtType</span> <span class="dt">PackedString</span></code></pre>
+<p>xxx Op.Ty</p>
+<h2 id="cモナド">Cモナド?</h2>
+<p>ここでも注目すべきはイカの型でゲソ。</p>
+<ul>
+<li><a href="http://hackage.haskell.org/packages/archive/ajhc/0.8.0.6/doc/html/C-Generate.html#t:Expression">Expression型</a></li>
+<li><a href="http://hackage.haskell.org/packages/archive/ajhc/0.8.0.6/doc/html/C-Generate.html#t:Statement">Statement型</a></li>
+<li><a href="http://hackage.haskell.org/packages/archive/ajhc/0.8.0.6/doc/html/C-Generate.html#v:functionCall">functionCall関数</a></li>
+</ul>
+<h2 id="ユーティリティ関数">ユーティリティ関数</h2>
+<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/src/C/FromGrin2.hs</span>
+<span class="ot">runC ::</span> <span class="dt">Grin</span> <span class="ot">-&gt;</span> <span class="dt">C</span> a <span class="ot">-&gt;</span> ((a,<span class="dt">HcHash</span>,<span class="dt">Written</span>),<span class="dt">Map.Map</span> <span class="dt">Atom</span> <span class="dt">TyRep</span>)
+<span class="ot">convertBody ::</span> <span class="dt">Exp</span> <span class="ot">-&gt;</span> <span class="dt">C</span> <span class="dt">Statement</span>
+<span class="ot">convertConst ::</span> <span class="dt">Val</span> <span class="ot">-&gt;</span> <span class="dt">C</span> (<span class="dt">Maybe</span> <span class="dt">Expression</span>)
+<span class="ot">compileGrin ::</span> <span class="dt">Grin</span> <span class="ot">-&gt;</span> (<span class="dt">LBS.ByteString</span>,<span class="dt">Requires</span>)
+<span class="ot">castFunc ::</span> <span class="dt">Op.ConvOp</span> <span class="ot">-&gt;</span> <span class="dt">Op.Ty</span> <span class="ot">-&gt;</span> <span class="dt">Op.Ty</span> <span class="ot">-&gt;</span> <span class="dt">Expression</span> <span class="ot">-&gt;</span> <span class="dt">Expression</span>
+convertPrim p vs ty</code></pre>
+<p>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_shortname = 'metasepi';
+    var disqus_identifier = '/posts/2013-06-07-jhc_grin_to_c_withsrc.html';
+    var disqus_url = 'http://metasepi.org' + '/posts/2013-06-07-jhc_grin_to_c_withsrc.html';
+    var disqus_title = '(作成中) Jhc compile pipeline: Grin => C';
+    var disqus_developer = 1;
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>
+    Please enable JavaScript to view the 
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  <a href="http://disqus.com" class="dsq-brlink">
+    blog comments powered by <span.logo-disqus>Disqus</span>
+  </a>
+</p>
+
+    </div>
+
+    <footer>
+      <p>
+        This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
+        <br>
+        Metasepi project is supported by <a href="http://www.itpl.co.jp/en/"><img alt="IT Planning, Inc." style="border-width:0" src="../img/it_planning_108x20.png" /></a> ×
+        <a href="https://github.com/axsh/"><img alt="Axsh Co." style="border-width:0" src="../img/axsh_81x25.png" /></a> ×
+        <a href="../past-supporters.html">Past Supporters</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="/js/libs/jquery-1.6.2.min.js"><\/script>')</script>
+
+  <!-- scripts concatenated and minified via ant build script-->
+  <script defer src="../js/plugins.js"></script>
+  <script defer src="../js/script.js"></script>
+  <!-- end scripts-->
+
+  <script>
+    window._gaq = [['_setAccount','UA-158383-8'],['_trackPageview'],['_trackPageLoadTime']];
+    Modernizr.load({
+      load: ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js'
+    });
+  </script>
+
+  <!--[if lt IE 7 ]>
+    <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js">
+    <script>
+      window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})
+  <![endif]-->
+
+<script type="text/javascript">
+<!--
+(function() {
+var login = '',
+    fpf = true,
+    fpn = '__ulfpc';
+
+// DO NOT ALTER BELOW THIS LINE
+var id = 6008444, h = 'a5fe';
+var rand = rand || Math.floor(Math.random() * 9000000) + 1000000;
+if('http:'==document.location.protocol){var params={id:id,lt:3,h:h,url:document.URL,ref:document.referrer,lg:login,rand:rand,bw:(window.innerWidth?window.innerWidth:(document.documentElement && document.documentElement.clientWidth!=0?document.documentElement.clientWidth:(document.body?document.body.clientWidth:0 ))),bh:(window.innerHeight?window.innerHeight:(document.documentElement && document.documentElement.clientHeight!=0?document.documentElement.clientHeight:(document.body?document.body.clientHeight:0 ))),dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sw:screen.width,sh:screen.height,dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sb:document.title,guid:'ON'};if(fpf){params.fp=getuid(fpn);}params.eflg=1;var a=document.createElement('a');var lg=document.createElement('img');lg.setAttribute('id','_ullogimgltr');lg.setAttribute('width',1);lg.setAttribute('height',1);lg.setAttribute('alt','');var src='http://le.nakanohito.jp/le/1/?';for(var key in params ) src=src.concat(key+'='+encodeURIComponent(params[key] )+'&');lg.src=src.slice(0,-1);a.setAttribute('href','http://smartphone.userlocal.jp/');a.setAttribute('target','_blank');a.appendChild(lg);var s=document.getElementsByTagName('body')[0];s.appendChild(a);}
+function getuid(key){var arr=[],date=new Date(),exp=new Date();exp.setFullYear(exp.getFullYear()+7);if(document.cookie){arr=document.cookie.split(";");for(var i=0; i<arr.length; i++ ){var str=arr[i].replace(/^\s+|\s+

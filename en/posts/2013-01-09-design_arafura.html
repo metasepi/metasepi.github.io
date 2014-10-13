@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>Arafura Design - Metasepi</title>
+
+  <meta name="description" content="metasepi.org">
+  <meta name="author" content="Kiwamu Okabe">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="http://metasepi.org/rss_en.xml" rel="alternate" title="Blog" type="application/rss+xml">
+
+  <!-- CSS concatenated and minified via ant build script-->
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="../../css/syntax.css">
+  <link rel="stylesheet" href="../../css/calendar.css">
+  <!-- end CSS-->
+
+  <link rel="stylesheet" href="../../css/default.css">
+
+  <script src="../../js/libs/modernizr-2.0.6.min.js"></script>
+</head>
+
+<body onload="prettyPrint()">
+  <div id="fb-root"></div>
+  <script>
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = '//connect.facebook.net/ja_JP/all.js#xfbml=1';
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
+
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <a href="../../">Metasepi</a>
+      </div>
+
+      <div class="nav">
+        <li><a href="../../">Home</a></li>
+        <li><a href="../../en/posts.html">Blog</a>(<a href="../../posts.html">old</a>)</li>
+        <li><a href="../../papers.html">Papers</a></li>
+        <li><a href="../../map.html">Map</a></li>
+        <li><a href="../../memories.html">Memories</a></li>
+        <li><a href="../../about.html">About</a></li>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="content clearfix">
+      <h1>Arafura Design</h1>
+<div class="info">Posted on January  9, 2013 / Tags: <a href="../../en/tags/haskell.html">haskell</a>, <a href="../../en/tags/design.html">design</a>, <a href="../../en/tags/specification.html">specification</a>, <a href="../../en/tags/bootloader.html">bootloader</a></div>
+<h2>Table of contents</h2>
+<ul>
+<li><a href="#first-design">First design</a></li>
+<li><a href="#just-do-it">Just do it!</a></li>
+<li><a href="#known-problems">Known problems</a></li>
+</ul>
+<hr>
+<p>Can’t get design, even repeating the research. It might be a good idea to make something at first step? Let’s decide a rough sketch before writing the code. This blog entry will be rewritten some times.</p>
+<h2 id="first-design">First design</h2>
+<p>We discuss “<a href="2012-08-18-haskell-or-ocaml-os.html">Are there OS designed with Haskell/OCaml?</a>” already. The person living in real world has no time to get clean design of Functional OS, that be eaten as dog food. <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> It may be better than it to rewrite a just monolithic kernel with functional language.</p>
+<p>We selected the NetBSD as a monolithic kernel for rewriting. There is my hobby simply reasons, such as easy-to-read source code.</p>
+<p>The rewrite from scratch in typed language suddenly the NetBSD kernel written in the C language also is still severe. I want a little more comfortable? So but not all suddenly, and re-implement the same functionality in the typed language a little bit at a time while keeping a compilable / executable state. If you go with the type little by little, all the code I might be to work with typed language one day?</p>
+<div class="figure">
+<img src="../../draw/2012-12-27-arafura_design.png" />
+</div>
+<p>I think it tries to call the Arafura this design of “snatch little by little in the typed language NetBSD kernel”. That’s good to sail the name of the sea starting from “A”, the first! (Also, small squid to change the color is a type of cuttlefish, Metasepia pfefferi is lived, Arafura of the Portuguese, which means “free man” But. is the origin so the archaic word “shallow consisting of a coral reef in many cases, where a failure of navigation also have a large number” when you fail to sail in this sea if …) Yes, the sea that begins with “B” this time it’s okay if you choose (design). I’m “Never give up” the watchword!</p>
+<h2 id="just-do-it">Just do it!</h2>
+<p>We have known jhc may be useful to develop Metasepi kernel. If snatch NetBSD kernel, we should write interrupt handler with Haskell language. It’s so difficult for us, today. Then, let’s snatch bootloader that has more easy design than NetBSD kernel. Everything starts at training.</p>
+<div class="figure">
+<img src="../../draw/2012-12-27-loader.png" />
+</div>
+<p>Structure of the module of NetBSD bootloader is as shown in the above figure. Following code is the boot2.c command line loop rewrited with jhc and Haskell language. <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
+<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Control.Monad</span>
+<span class="kw">import </span><span class="dt">Data.Maybe</span>
+<span class="kw">import </span><span class="dt">Data.Map</span> (<span class="dt">Map</span>)
+<span class="kw">import qualified</span> <span class="dt">Data.Map</span> <span class="kw">as</span> <span class="dt">Map</span>
+<span class="kw">import </span><span class="dt">Foreign.C.Types</span>
+<span class="kw">import </span><span class="dt">Foreign.Ptr</span>
+
+foreign <span class="kw">import </span>ccall &quot;glue_netbsdstand.h command_boot&quot; c_command_boot :: <span class="dt">Ptr</span>
+a <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
+
+<span class="ot">commands ::</span> <span class="dt">Map</span> <span class="dt">String</span> (<span class="dt">IO</span> ())
+commands <span class="fu">=</span> Map.fromList [(<span class="st">&quot;help&quot;</span>, command_help),
+                         (<span class="st">&quot;?&quot;</span>, command_help),
+                         (<span class="st">&quot;boot&quot;</span>, c_command_boot nullPtr)]
+
+<span class="ot">command_help ::</span> <span class="dt">IO</span> ()
+command_help <span class="fu">=</span> putStr <span class="fu">$</span> <span class="st">&quot;\</span>
+<span class="st">\commands are:\n\</span>
+<span class="st">\boot [xdNx:][filename] [-12acdqsvxz]\n\</span>
+<span class="st">\     (ex. \&quot;hd0a:netbsd.old -s\&quot;\n\</span>
+<span class="st">--snip--</span>
+<span class="st">\help|?\n\</span>
+<span class="st">\quit\n&quot;</span>
+
+<span class="ot">main ::</span> <span class="dt">IO</span> ()
+main <span class="fu">=</span> <span class="kw">do</span>
+  putStrLn <span class="st">&quot;Haskell bootmenu&quot;</span>
+  forever <span class="fu">$</span> <span class="kw">do</span>
+    putStr <span class="st">&quot;&gt; &quot;</span>
+    s <span class="ot">&lt;-</span> getLine
+    fromMaybe (putStr s) <span class="fu">$</span> Map.lookup s commands</code></pre>
+<p>Display of help is as good Well, I’m throwing circle at FFI to existing code reads + boot kernel. Let’s compiled in such a way of utilizing these source code.</p>
+<div class="figure">
+<img src="../../draw/2012-12-27-compile.png" />
+</div>
+<p>Let’s run Metasepi arafura version of bootloader on qemu (2:15 at following video)!</p>
+<iframe width="420" height="315" src="//www.youtube.com/embed/0DPA7GC0_-0" frameborder="0" allowfullscreen></iframe>
+
+<p>Starting the kernel and display of help seems to be. First I do not want to misunderstand earnestly by the way!’s Successful experiment, 99% of the bootloader that I made this time but that it’s still made ​​by C language. It is as shown in the figure below and try to draw a sequence diagram the movement of this bootloader.</p>
+<div class="figure">
+<img src="../../draw/2013-01-09-sequence_diagram.png" />
+</div>
+<p>Part sorry! Bottom line remains the C language source code of existing what. But by repeating snatch little by little from now, be described in typed language like Haskell many parts of the sequence shown above and not something a dream?</p>
+<h2 id="known-problems">Known problems</h2>
+<p>Snatch of bootloader has just begun. Not yet snatch kernel, we can find many problems with snatching the small module such as bootloader.</p>
+<ol style="list-style-type: lower-alpha">
+<li>Be able to handle command-line arguments.</li>
+<li>Should be able to debug custom RTS in user space. We have found problems at custom RTS side frequently.</li>
+<li>Use the fixed memory area for GC heap allocator. <a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></li>
+<li>Isolate malloc’s heap and Haskell’s heap. Haskell’s heap press malloc’s heap with the RTS implementation in this article.</li>
+</ol>
+<p>Next action item is surveying more detail of jhc internel. But, more snatching this bootloader may be also good idea to understand more problems.</p>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="http://en.wikipedia.org/wiki/Eating_your_own_dog_food">Eating your own dog food - Wikipedia</a><a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p><a href="https://gitorious.org/metasepi/netbsd-arafura/blobs/52c9e9c31425bdf983d0850b4e503c899a511edc/metasepi-arafura/sys/arch/i386/stand/boot/Boot2Ara.hs">Source code</a><a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>We can use extended memory (more than 1 MB) on Intel arch. But it’s useful running in conventional memory (less than 1 MB) for the other use case<a href="#fnref3">↩</a></p></li>
+</ol>
+</div>
+<p>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_shortname = 'metasepi';
+    var disqus_identifier = '/en/posts/2013-01-09-design_arafura.html';
+    var disqus_url = 'http://metasepi.org' + '/en/posts/2013-01-09-design_arafura.html';
+    var disqus_title = 'Arafura Design';
+    var disqus_developer = 1;
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>
+    Please enable JavaScript to view the 
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  <a href="http://disqus.com" class="dsq-brlink">
+    blog comments powered by <span.logo-disqus>Disqus</span>
+  </a>
+</p>
+
+    </div>
+
+    <footer>
+      <p>
+        This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
+        <br>
+        Metasepi project is supported by <a href="http://www.itpl.co.jp/en/"><img alt="IT Planning, Inc." style="border-width:0" src="../../img/it_planning_108x20.png" /></a> ×
+        <a href="https://github.com/axsh/"><img alt="Axsh Co." style="border-width:0" src="../../img/axsh_81x25.png" /></a> ×
+        <a href="../../past-supporters.html">Past Supporters</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="/js/libs/jquery-1.6.2.min.js"><\/script>')</script>
+
+  <!-- scripts concatenated and minified via ant build script-->
+  <script defer src="../../js/plugins.js"></script>
+  <script defer src="../../js/script.js"></script>
+  <!-- end scripts-->
+
+  <script>
+    window._gaq = [['_setAccount','UA-158383-8'],['_trackPageview'],['_trackPageLoadTime']];
+    Modernizr.load({
+      load: ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js'
+    });
+  </script>
+
+  <!--[if lt IE 7 ]>
+    <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js">
+    <script>
+      window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})
+  <![endif]-->
+
+<script type="text/javascript">
+<!--
+(function() {
+var login = '',
+    fpf = true,
+    fpn = '__ulfpc';
+
+// DO NOT ALTER BELOW THIS LINE
+var id = 6008444, h = 'a5fe';
+var rand = rand || Math.floor(Math.random() * 9000000) + 1000000;
+if('http:'==document.location.protocol){var params={id:id,lt:3,h:h,url:document.URL,ref:document.referrer,lg:login,rand:rand,bw:(window.innerWidth?window.innerWidth:(document.documentElement && document.documentElement.clientWidth!=0?document.documentElement.clientWidth:(document.body?document.body.clientWidth:0 ))),bh:(window.innerHeight?window.innerHeight:(document.documentElement && document.documentElement.clientHeight!=0?document.documentElement.clientHeight:(document.body?document.body.clientHeight:0 ))),dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sw:screen.width,sh:screen.height,dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sb:document.title,guid:'ON'};if(fpf){params.fp=getuid(fpn);}params.eflg=1;var a=document.createElement('a');var lg=document.createElement('img');lg.setAttribute('id','_ullogimgltr');lg.setAttribute('width',1);lg.setAttribute('height',1);lg.setAttribute('alt','');var src='http://le.nakanohito.jp/le/1/?';for(var key in params ) src=src.concat(key+'='+encodeURIComponent(params[key] )+'&');lg.src=src.slice(0,-1);a.setAttribute('href','http://smartphone.userlocal.jp/');a.setAttribute('target','_blank');a.appendChild(lg);var s=document.getElementsByTagName('body')[0];s.appendChild(a);}
+function getuid(key){var arr=[],date=new Date(),exp=new Date();exp.setFullYear(exp.getFullYear()+7);if(document.cookie){arr=document.cookie.split(";");for(var i=0; i<arr.length; i++ ){var str=arr[i].replace(/^\s+|\s+

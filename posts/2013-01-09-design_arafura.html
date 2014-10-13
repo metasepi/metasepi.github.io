@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>デザインArafura - Metasepi</title>
+
+  <meta name="description" content="metasepi.org">
+  <meta name="author" content="Kiwamu Okabe">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="http://metasepi.org/rss_en.xml" rel="alternate" title="Blog" type="application/rss+xml">
+
+  <!-- CSS concatenated and minified via ant build script-->
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/syntax.css">
+  <link rel="stylesheet" href="../css/calendar.css">
+  <!-- end CSS-->
+
+  <link rel="stylesheet" href="../css/default.css">
+
+  <script src="../js/libs/modernizr-2.0.6.min.js"></script>
+</head>
+
+<body onload="prettyPrint()">
+  <div id="fb-root"></div>
+  <script>
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = '//connect.facebook.net/ja_JP/all.js#xfbml=1';
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
+
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <a href="../">Metasepi</a>
+      </div>
+
+      <div class="nav">
+        <li><a href="../">Home</a></li>
+        <li><a href="../en/posts.html">Blog</a>(<a href="../posts.html">old</a>)</li>
+        <li><a href="../papers.html">Papers</a></li>
+        <li><a href="../map.html">Map</a></li>
+        <li><a href="../memories.html">Memories</a></li>
+        <li><a href="../about.html">About</a></li>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="content clearfix">
+      <h1>デザインArafura</h1>
+<div class="info">Posted on January  9, 2013 / Tags: <a href="../tags/haskell.html">haskell</a>, <a href="../tags/design.html">design</a>, <a href="../tags/specification.html">specification</a>, <a href="../tags/bootloader.html">bootloader</a></div>
+<h2>Table of contents</h2>
+<ul>
+<li><a href="#最初のデザイン">最初のデザイン</a></li>
+<li><a href="#やってみよう">やってみよう!</a></li>
+<li><a href="#今見えている課題">今見えている課題</a></li>
+</ul>
+<hr>
+<p>調査を繰り返していても、設計は進まないでゲソ。 まずは第一歩、なにか作ってみればわかることもあるんじゃなイカ？ まずコードを書く前におおざっぱな設計を決めるでゲソ。 このエントリは何度も書き直すかもしれないでゲソ。</p>
+<h2 id="最初のデザイン">最初のデザイン</h2>
+<p><a href="2012-08-18-haskell-or-ocaml-os.html">Haskell/OCaml製のOSって何があるんでゲソ？</a> でも書いたでゲソが、短時間でドッグフード可能 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> なkernelを得るには、関数型言語としてキレイな設計を考えている時間はないでゲソ。 むしろ純朴な実装で良いから、モノリシックkernelを関数型言語の設計に写像してしまった方が良いのではなイカ？</p>
+<p>ここでは写像するモノリシックkernelとしてNetBSDを選定するでゲソ。 ソースコードが読みやすい、などの理由があるでゲソが、単にワシの趣味でゲソ。</p>
+<p>このC言語で書かれたNetBSD kernelをいきなり型付き言語でスクラッチから書き直すのもやはりシンドイでゲソ。 もう少し楽できなイカ？ そこでいきなり全部ではなく、コンパイル可能/実行可能な状態を保ちながら少しずつ型付き言語で同じ機能を再実装するでゲソ。 少しずつ型をつけていけば、 いつかは全てのコードが型付き言語で動くようになるんじゃなイカ？</p>
+<div class="figure">
+<img src="../draw/2012-12-27-arafura_design.png" />
+</div>
+<p>この「NetBSD kernelを型付き言語で少しずつ <a href="http://ja.wikipedia.org/wiki/%E3%82%B9%E3%83%8A%E3%83%83%E3%83%81%E3%83%A3%E3%83%BC">スナッチ</a> する」というデザインを <a href="http://ja.wikipedia.org/wiki/%E3%82%A2%E3%83%A9%E3%83%95%E3%83%A9%E6%B5%B7">アラフラ</a> (<a href="http://en.wikipedia.org/wiki/Arafura_Sea">Arafura</a>)と呼ぼうと思うでゲソ。 “A”からはじまる海の名前、最初の船出にはぴったりじゃなイカ! <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> もしこの海で航海に失敗しても、今度は“B”で始まる海(デザイン)を選べばいいんでゲソ。 合言葉は“ネバーギブアップ”でゲッソ!!!</p>
+<h2 id="やってみよう">やってみよう!</h2>
+<p>これまでの調査でjhcがMetasepiの設計に使えそうなことが判明したでゲソ。 NetBSD kernelは割り込みハンドラを作ったりしなければならないので、 もっと簡単なNetBSD bootloaderを手始めにjhcを使ってスナッチしてみるでゲソ。 何事もトレーニングでゲッソ。</p>
+<div class="figure">
+<img src="../draw/2012-12-27-loader.png" />
+</div>
+<p>NetBSD bootloaderのモジュールの構造は上図のようになっているでゲソ。 とりあえずboot2.cの中にあるコマンドラインループをjhcを使って書いてみたでゲソ。 <a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></p>
+<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Control.Monad</span>
+<span class="kw">import </span><span class="dt">Data.Maybe</span>
+<span class="kw">import </span><span class="dt">Data.Map</span> (<span class="dt">Map</span>)
+<span class="kw">import qualified</span> <span class="dt">Data.Map</span> <span class="kw">as</span> <span class="dt">Map</span>
+<span class="kw">import </span><span class="dt">Foreign.C.Types</span>
+<span class="kw">import </span><span class="dt">Foreign.Ptr</span>
+
+foreign <span class="kw">import </span>ccall &quot;glue_netbsdstand.h command_boot&quot; c_command_boot :: <span class="dt">Ptr</span> a -&gt; <span class="dt">IO</span> ()
+
+<span class="ot">commands ::</span> <span class="dt">Map</span> <span class="dt">String</span> (<span class="dt">IO</span> ())
+commands <span class="fu">=</span> Map.fromList [(<span class="st">&quot;help&quot;</span>, command_help),
+                         (<span class="st">&quot;?&quot;</span>, command_help),
+                         (<span class="st">&quot;boot&quot;</span>, c_command_boot nullPtr)]
+
+<span class="ot">command_help ::</span> <span class="dt">IO</span> ()
+command_help <span class="fu">=</span> putStr <span class="fu">$</span> <span class="st">&quot;\</span>
+<span class="st">\commands are:\n\</span>
+<span class="st">\boot [xdNx:][filename] [-12acdqsvxz]\n\</span>
+<span class="st">\     (ex. \&quot;hd0a:netbsd.old -s\&quot;\n\</span>
+<span class="st">--snip--</span>
+<span class="st">\help|?\n\</span>
+<span class="st">\quit\n&quot;</span>
+
+<span class="ot">main ::</span> <span class="dt">IO</span> ()
+main <span class="fu">=</span> <span class="kw">do</span>
+  putStrLn <span class="st">&quot;Haskell bootmenu&quot;</span>
+  forever <span class="fu">$</span> <span class="kw">do</span>
+    putStr <span class="st">&quot;&gt; &quot;</span>
+    s <span class="ot">&lt;-</span> getLine
+    fromMaybe (putStr s) <span class="fu">$</span> Map.lookup s commands</code></pre>
+<p>helpの表示はまぁいいとして、 kernelの読み込み+起動は既存コードにFFIで丸投げでゲソ。 このソースコードをイカのような方法でコンパイルしてみるでゲソ。</p>
+<div class="figure">
+<img src="../draw/2012-12-27-compile.png" />
+</div>
+<p>ほいでもってコンパイルして生成されたbootloaderバイナリをqemuで動かしてみるでゲッソ! (動画だと2:15ぐらいからMetasepi arafura版bootloaderをqemu上で起動しているでゲソ。)</p>
+<script type="text/javascript" src="http://ext.nicovideo.jp/thumb_watch/sm19788831"></script><noscript>
+<a href="http://www.nicovideo.jp/watch/sm19788831">【ニコニコ動画】Metasepi arafura first boot.</a>
+</noscript>
+
+<p>うん、helpの表示とkernelの起動はできているようでゲソ。まずは実験成功でゲソ! ところでくれぐれも勘違いしてほしくないのは、 今回作ったbootloaderの99%はまだC言語製だということでゲソ。 このbootloaderの動きをシーケンス図で描いてみるとイカのようになるでゲソ。</p>
+<div class="figure">
+<img src="../draw/2013-01-09-sequence_diagram.png" />
+</div>
+<p>なんと残念!かんじんの部分は既存のC言語ソースコードのままでゲソ。 でもこれから少しずつスナッチを繰り返すことで、 上図のシーケンスの多くの部分をHaskellのような型付き言語で記述することも夢ではないんじゃなイカ？</p>
+<h2 id="今見えている課題">今見えている課題</h2>
+<p>まだbootloaderのスナッチははじまったばかりでゲソ。 kernelのことはまぁ置いといて、こんな小さなモジュールをスナッチしてみるだけでも色々な課題が見えてくるでゲソ。</p>
+<ol style="list-style-type: lower-alpha">
+<li>コマンドライン引数を扱えるように</li>
+<li>カスタムRTSに起因する問題が頻発している。ユーザ空間でカスタムRTSをデバッグできた方がいい</li>
+<li>GCの使うヒープをallocで確保するのをやめて固定値に<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></li>
+<li>bootloaderのヒープをRTSのヒープと共用すると、RTSがヒープを圧迫する。分割管理すべき</li>
+</ol>
+<p>今年いっぱいはjhc本体の調査と平行して、 このbootloaderのスナッチは継続してやってみると色々な問題を洗い出せて面白いかもしれないでゲソ。</p>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>開発対象のkernelの上で当該kernelの開発/コンパイルができるようになること<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>また、コウイカの一種で色を変える小さなイカ <a href="http://en.wikipedia.org/wiki/Metasepia_pfefferi">Metasepia pfefferi</a> が住んでいて、アラフラは「自由人」を意味するポルトガル語の古語に由来そうでゲソ。 でも“珊瑚礁からなる浅瀬が多く、航行の障害となる箇所も多数ある”そうでゲソ…<a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p><a href="https://gitorious.org/metasepi/netbsd-arafura/blobs/52c9e9c31425bdf983d0850b4e503c899a511edc/metasepi-arafura/sys/arch/i386/stand/boot/Boot2Ara.hs">元ソース</a><a href="#fnref3">↩</a></p></li>
+<li id="fn4"><p>最悪1MB以降のメモリをヒープのために使っても良いが、他への応用を考えるとコンベンショナルメモリだけで挑戦する価値はある<a href="#fnref4">↩</a></p></li>
+</ol>
+</div>
+<p>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_shortname = 'metasepi';
+    var disqus_identifier = '/posts/2013-01-09-design_arafura.html';
+    var disqus_url = 'http://metasepi.org' + '/posts/2013-01-09-design_arafura.html';
+    var disqus_title = 'デザインArafura';
+    var disqus_developer = 1;
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>
+    Please enable JavaScript to view the 
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  <a href="http://disqus.com" class="dsq-brlink">
+    blog comments powered by <span.logo-disqus>Disqus</span>
+  </a>
+</p>
+
+    </div>
+
+    <footer>
+      <p>
+        This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
+        <br>
+        Metasepi project is supported by <a href="http://www.itpl.co.jp/en/"><img alt="IT Planning, Inc." style="border-width:0" src="../img/it_planning_108x20.png" /></a> ×
+        <a href="https://github.com/axsh/"><img alt="Axsh Co." style="border-width:0" src="../img/axsh_81x25.png" /></a> ×
+        <a href="../past-supporters.html">Past Supporters</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="/js/libs/jquery-1.6.2.min.js"><\/script>')</script>
+
+  <!-- scripts concatenated and minified via ant build script-->
+  <script defer src="../js/plugins.js"></script>
+  <script defer src="../js/script.js"></script>
+  <!-- end scripts-->
+
+  <script>
+    window._gaq = [['_setAccount','UA-158383-8'],['_trackPageview'],['_trackPageLoadTime']];
+    Modernizr.load({
+      load: ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js'
+    });
+  </script>
+
+  <!--[if lt IE 7 ]>
+    <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js">
+    <script>
+      window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})
+  <![endif]-->
+
+<script type="text/javascript">
+<!--
+(function() {
+var login = '',
+    fpf = true,
+    fpn = '__ulfpc';
+
+// DO NOT ALTER BELOW THIS LINE
+var id = 6008444, h = 'a5fe';
+var rand = rand || Math.floor(Math.random() * 9000000) + 1000000;
+if('http:'==document.location.protocol){var params={id:id,lt:3,h:h,url:document.URL,ref:document.referrer,lg:login,rand:rand,bw:(window.innerWidth?window.innerWidth:(document.documentElement && document.documentElement.clientWidth!=0?document.documentElement.clientWidth:(document.body?document.body.clientWidth:0 ))),bh:(window.innerHeight?window.innerHeight:(document.documentElement && document.documentElement.clientHeight!=0?document.documentElement.clientHeight:(document.body?document.body.clientHeight:0 ))),dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sw:screen.width,sh:screen.height,dpr:(window.devicePixelRatio!=undefined?window.devicePixelRatio:0),sb:document.title,guid:'ON'};if(fpf){params.fp=getuid(fpn);}params.eflg=1;var a=document.createElement('a');var lg=document.createElement('img');lg.setAttribute('id','_ullogimgltr');lg.setAttribute('width',1);lg.setAttribute('height',1);lg.setAttribute('alt','');var src='http://le.nakanohito.jp/le/1/?';for(var key in params ) src=src.concat(key+'='+encodeURIComponent(params[key] )+'&');lg.src=src.slice(0,-1);a.setAttribute('href','http://smartphone.userlocal.jp/');a.setAttribute('target','_blank');a.appendChild(lg);var s=document.getElementsByTagName('body')[0];s.appendChild(a);}
+function getuid(key){var arr=[],date=new Date(),exp=new Date();exp.setFullYear(exp.getFullYear()+7);if(document.cookie){arr=document.cookie.split(";");for(var i=0; i<arr.length; i++ ){var str=arr[i].replace(/^\s+|\s+
