@@ -8,8 +8,16 @@
         <name>Kiwamu Okabe</name>
         <email>kiwamu@debian.or.jp</email>
     </author>
-    <updated>2014-09-14T00:00:00Z</updated>
+    <updated>2014-10-19T00:00:00Z</updated>
     <entry>
+    <title>Metasepi team meeting #19</title>
+    <link href="http://metasepi.org//en/posts/2014-10-19-osc-tokyo.html" />
+    <id>http://metasepi.org//en/posts/2014-10-19-osc-tokyo.html</id>
+    <published>2014-10-19T00:00:00Z</published>
+    <updated>2014-10-19T00:00:00Z</updated>
+    <summary type="html"><![CDATA[ATS application on Arduino Uno]]></summary>
+</entry>
+<entry>
     <title>(UnderConstruction) ATS2 internal overview</title>
     <link href="http://metasepi.org//en/posts/2014-09-14-ats2_internal_overview.html" />
     <id>http://metasepi.org//en/posts/2014-09-14-ats2_internal_overview.html</id>
@@ -80,14 +88,6 @@
     <published>2014-01-17T00:00:00Z</published>
     <updated>2014-01-17T00:00:00Z</updated>
     <summary type="html"><![CDATA[Let's set out on a tour of what's on corporate researcher's mind]]></summary>
-</entry>
-<entry>
-    <title>Metasepi team meeting #10</title>
-    <link href="http://metasepi.org//en/posts/2014-01-10-prosym55.html" />
-    <id>http://metasepi.org//en/posts/2014-01-10-prosym55.html</id>
-    <published>2014-01-10T00:00:00Z</published>
-    <updated>2014-01-10T00:00:00Z</updated>
-    <summary type="html"><![CDATA[Let's promote Metasepi at the programming symposium!]]></summary>
 </entry>
 
 </feed>
