@@ -8,8 +8,16 @@
         <name>Kiwamu Okabe</name>
         <email>kiwamu@debian.or.jp</email>
     </author>
-    <updated>2014-10-19T00:00:00Z</updated>
+    <updated>2015-03-06T00:00:00Z</updated>
     <entry>
+    <title>ATS Programming Tutorial at PPL 2015</title>
+    <link href="http://metasepi.org//en/posts/2015-03-06-ppl2015.html" />
+    <id>http://metasepi.org//en/posts/2015-03-06-ppl2015.html</id>
+    <published>2015-03-06T00:00:00Z</published>
+    <updated>2015-03-06T00:00:00Z</updated>
+    <summary type="html"><![CDATA[An ATS Programming Tutorial for beginner.]]></summary>
+</entry>
+<entry>
     <title>Metasepi team meeting #19</title>
     <link href="http://metasepi.org//en/posts/2014-10-19-osc-tokyo.html" />
     <id>http://metasepi.org//en/posts/2014-10-19-osc-tokyo.html</id>
@@ -80,14 +88,6 @@
     <published>2014-03-01T00:00:00Z</published>
     <updated>2014-03-01T00:00:00Z</updated>
     <summary type="html"><![CDATA[A debrief meeting of Arafura iteration]]></summary>
-</entry>
-<entry>
-    <title>Metasepi team meeting #11</title>
-    <link href="http://metasepi.org//en/posts/2014-01-17-11th_wocs2.html" />
-    <id>http://metasepi.org//en/posts/2014-01-17-11th_wocs2.html</id>
-    <published>2014-01-17T00:00:00Z</published>
-    <updated>2014-01-17T00:00:00Z</updated>
-    <summary type="html"><![CDATA[Let's set out on a tour of what's on corporate researcher's mind]]></summary>
 </entry>
 
 </feed>
