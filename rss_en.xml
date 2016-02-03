@@ -8,8 +8,16 @@
         <name>Kiwamu Okabe</name>
         <email>kiwamu@debian.or.jp</email>
     </author>
-    <updated>2015-12-31T00:00:00Z</updated>
+    <updated>2016-01-30T00:00:00Z</updated>
     <entry>
+    <title>Functional IoT Meetup #0</title>
+    <link href="http://metasepi.org//en/posts/2016-01-30-fpiot_0.html" />
+    <id>http://metasepi.org//en/posts/2016-01-30-fpiot_0.html</id>
+    <published>2016-01-30T00:00:00Z</published>
+    <updated>2016-01-30T00:00:00Z</updated>
+    <summary type="html"><![CDATA[First meetup to talk about Functional programming on embedded device.]]></summary>
+</entry>
+<entry>
     <title>Metasepi's going year and coming year, 2015</title>
     <link href="http://metasepi.org//en/posts/2015-12-31-yuku-kuru.html" />
     <id>http://metasepi.org//en/posts/2015-12-31-yuku-kuru.html</id>
@@ -80,14 +88,6 @@
     <published>2014-07-04T00:00:00Z</published>
     <updated>2014-07-04T00:00:00Z</updated>
     <summary type="html"><![CDATA[Functional Nagoya likes ATS language?]]></summary>
-</entry>
-<entry>
-    <title>Start! ATS programming</title>
-    <link href="http://metasepi.org//en/posts/2014-05-11-functional_lt.html" />
-    <id>http://metasepi.org//en/posts/2014-05-11-functional_lt.html</id>
-    <published>2014-05-11T00:00:00Z</published>
-    <updated>2014-05-11T00:00:00Z</updated>
-    <summary type="html"><![CDATA[First try to run ATS code on tiny MCU]]></summary>
 </entry>
 
 </feed>

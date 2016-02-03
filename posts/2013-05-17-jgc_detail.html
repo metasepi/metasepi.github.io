@@ -72,7 +72,8 @@
 </ul>
 <hr>
 <p>AjhcのデフォルトのGCはjgcでゲソ。 このjgcについての解説は <a href="https://twitter.com/dec9ue">@dec9ue</a> 氏のプレゼン資料が詳しかったでゲソ。</p>
-<iframe src="http://www.slideshare.net/slideshow/embed_code/16298437" width="427" height="356" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC;border-width:1px 1px 0;margin-bottom:5px" allowfullscreen webkitallowfullscreen mozallowfullscreen> </iframe> 
+<iframe src="http://www.slideshare.net/slideshow/embed_code/16298437" width="427" height="356" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC;border-width:1px 1px 0;margin-bottom:5px" allowfullscreen webkitallowfullscreen mozallowfullscreen>
+</iframe>
 <div style="margin-bottom:5px">
 <strong> <a href="http://www.slideshare.net/dec9ue/gc-16298437" title="小二病でもGCやりたい" target="_blank">小二病でもGCやりたい</a> </strong> from <strong><a href="http://www.slideshare.net/dec9ue" target="_blank">dec9ue</a></strong>
 </div>
@@ -86,7 +87,7 @@
 <p>とすると、jgcに対してもう少し突っ込んだ理解を今しておいた方が良さそうでゲソ。</p>
 <h2 id="gcのルート">GCのルート</h2>
 <p>gc_perform_gc関数の前半でヒープにマーキングしているはずなので、読めばわかるはずじゃなイカ。</p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="dt">void</span> A_STD
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="dt">void</span> A_STD
 gc_perform_gc(gc_t gc)
 {
         profile_push(&amp;gc_gc_time);
@@ -110,7 +111,7 @@ gc_perform_gc(gc_t gc)
         LIST_FOREACH(sp, &amp;root_StablePtrs, link) {
             gc_add_grey(&amp;stack, (entry_t *)sp);
             debugf(<span class="st">&quot; %p&quot;</span>, root_stack.stack[i]);
-        }</code></pre>
+        }</code></pre></div>
 <p>gc_perform_gc関数が開始すると…</p>
 <ol style="list-style-type: decimal">
 <li>stack一時変数を初期化</li>
@@ -128,7 +129,7 @@ gc_perform_gc(gc_t gc)
 <p>ところでちょっと気になるんでゲソが、 root_StablePtrsをgc_add_grey関数にかける前にstack_checkをもう一度呼び出してstack一時変数のサイズが足りてるかチェックした方がいいんじゃなイカ… このままだとStablePtrの個数が多い場合にはふっとぶ気がするでゲソ。</p>
 <h3 id="root_stackとは何か">root_stackとは何か</h3>
 <p>これはふつーのプログラムでは使われないようでゲソ。 jhcのGrinがgc_add_root関数を使うコード吐き出すことがあるようでゲソ。</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/src/C/FromGrin2.hs</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/src/C/FromGrin2.hs</span>
 declareEvalFunc isCAF n <span class="fu">=</span> <span class="kw">do</span>
     fn <span class="ot">&lt;-</span> tagToFunction n
     grin <span class="ot">&lt;-</span> asks rGrin
@@ -145,27 +146,27 @@ declareEvalFunc isCAF n <span class="fu">=</span> <span class="kw">do</span>
         body' <span class="fu">=</span> <span class="kw">if</span> not isCAF <span class="fu">&amp;&amp;</span> fopts <span class="dt">FO.Jgc</span> <span class="kw">then</span> subBlock (gc_roots [f_MKLAZY(variable aname)] <span class="fu">&amp;</span> rest) <span class="kw">else</span> rest
         rest <span class="fu">=</span> body <span class="fu">&amp;</span> update <span class="fu">&amp;</span> addroot <span class="fu">&amp;</span> creturn rvar
     tellFunctions [function fname wptr_t (mgct [(aname,atype)]) [a_STD, a_FALIGNED] body']
-    return fname</code></pre>
+    return fname</code></pre></div>
 <p>ちょっとコードの意図が取りにくいでゲソが“E_”ではじまる関数はサンクの評価関数であるはずなので、 スタティックサンクだとGCルートになるんじゃなイカ？ その時に“E_”ではじまる評価関数の中にgc_add_root関数が埋め込まれるはずでゲソ。 …でもなんかそのケースは稀な気がするでゲソ。 grinの最適化の中でほとんどのスタティックサンクは使用元の関数の中に展開されてしまいそうでゲソ。 簡単な例を作ってみてもgc_add_root関数が埋め込まれたC言語コードをajhcは吐き出さないようでゲソ。 まぁここではこんなものがGCルートになる可能性があるよ、ということでいいんじゃなイカ？</p>
 <h3 id="root_stableptrsとは何か">root_StablePtrsとは何か</h3>
 <p><a href="http://www.haskell.org/ghc/docs/latest/html/libraries/base/Foreign-StablePtr.html#v:newStablePtr">Foreign.StablePtr.newStablePtr(これはGHCのAPI)</a> をHaskellコードから呼ぶとstruct StablePtrがstableptr.cでmalloc確保されて、 root_StablePtrsに繋がれるんでゲソ。 つまりStablePtrを保管する器ということじゃなイカ。リストより木構造の方が良い気もするでゲソ…</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- | newStablePtr will seq its argument to get rid of nasty GC issues and be</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- | newStablePtr will seq its argument to get rid of nasty GC issues and be</span>
 <span class="co">-- compatible with FFI calling conventions, if this is an issue, you can put an</span>
 <span class="co">-- extra box around it.</span>
 <span class="ot">newStablePtr ::</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">StablePtr</span> a)
 newStablePtr x <span class="fu">=</span> <span class="kw">do</span>
     fromUIO <span class="fu">$</span> \w <span class="ot">-&gt;</span> <span class="kw">case</span> c_newStablePtr (toBang_ x) w <span class="kw">of</span>
-        (<span class="st"># w', s #) -&gt; (# w', fromBang_ s #)</span></code></pre>
-<pre class="sourceCode c"><code class="sourceCode c">wptr_t c_newStablePtr(sptr_t c) {
+        (<span class="fu">#</span> w', s <span class="fu">#</span>) <span class="ot">-&gt;</span> (<span class="fu">#</span> w', fromBang_ s <span class="fu">#</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c">wptr_t c_newStablePtr(sptr_t c) {
     <span class="kw">struct</span> StablePtr* sp = malloc(<span class="kw">sizeof</span>(<span class="kw">struct</span> StablePtr));
     sp-&gt;contents = c;
     LIST_INSERT_HEAD(&amp;root_StablePtrs, sp, link);
     assert(GET_PTYPE(sp) == <span class="dv">0</span>);
     <span class="kw">return</span> (wptr_t)TO_SPTR(P_VALUE,(wptr_t)sp);
-}</code></pre>
+}</code></pre></div>
 <h3 id="他にgcルートになるものは">他にGCルートになるものは？</h3>
 <p>さすがに上の2つだけがGCルートのはずないでゲソ。根っこがスカスカじゃなイカ。 もう一つGCルートがあり、それはC言語のミューテターがコツコツ作るGCスタックでゲソ。 gc_perform_gc関数の続きを読むと…</p>
-<pre class="sourceCode c"><code class="sourceCode c">        stack_check(&amp;stack, gc - gc_stack_base);
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c">        stack_check(&amp;stack, gc - gc_stack_base);
         number_stack = gc - gc_stack_base;
         <span class="kw">for</span>(<span class="dt">unsigned</span> i = <span class="dv">0</span>; i &lt; number_stack; i++) {
                 debugf(<span class="st">&quot; |&quot;</span>);
@@ -191,9 +192,9 @@ newStablePtr x <span class="fu">=</span> <span class="kw">do</span>
                 entry_t *e = TO_GCPTR(ptr);
                 debugf(<span class="st">&quot; %p&quot;</span>,(<span class="dt">void</span> *)e);
                 gc_add_grey(&amp;stack, e);
-        }</code></pre>
+        }</code></pre></div>
 <p>このコードはgcからgc_stack_baseまでの領域の差す先を entry_tポインタとしてgc_add_grey関数に食わせるでゲソ。 gcとgc_stack_baseはプログラム起動時には同じ場所を指しているでゲソ。</p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="dt">void</span>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="dt">void</span>
 jhc_alloc_init(<span class="dt">void</span>) {
         VALGRIND_PRINTF(<span class="st">&quot;Jhc-Valgrind mode active.</span><span class="ch">\n</span><span class="st">&quot;</span>);
 <span class="ot">#ifdef _JHC_JGC_FIXED_MEGABLOCK</span>
@@ -201,12 +202,12 @@ jhc_alloc_init(<span class="dt">void</span>) {
 <span class="ot">#else</span>
         saved_gc = gc_stack_base = malloc((1UL &lt;&lt; <span class="dv">18</span>)*<span class="kw">sizeof</span>(gc_stack_base[<span class="dv">0</span>]));
 <span class="ot">#endif</span>
-        arena = new_arena();</code></pre>
+        arena = new_arena();</code></pre></div>
 <p>ところがミューテターの中にgc_frame0関数というのがよくあらわれるでゲソ。</p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="dt">static</span> wptr_t A_STD A_MALLOC
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="dt">static</span> wptr_t A_STD A_MALLOC
 fR$__fJhc_Basics_$pp(gc_t gc,sptr_t v80776080,sptr_t v58800110)
 {
-        {   gc_frame0(gc,1,v58800110); <span class="co">// &lt;= GCルートにv58800110を登録</span>
+        {   gc_frame0(gc,<span class="dv">1</span>,v58800110); <span class="co">// &lt;= GCルートにv58800110を登録</span>
             wptr_t v100444 = eval(gc,v80776080);
             <span class="kw">if</span> (SET_RAW_TAG(CJhc_Prim_Prim_$BE) == v100444) {
                 <span class="kw">return</span> eval(gc,v58800110);
@@ -216,13 +217,13 @@ fR$__fJhc_Basics_$pp(gc_t gc,sptr_t v80776080,sptr_t v58800110)
                 <span class="co">/* (&quot;CJhc.Prim.Prim.:&quot; ni106 ni108) */</span>
                 v106 = ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)v100444)-&gt;a1;
                 v108 = ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)v100444)-&gt;a2;
-                {   gc_frame0(gc,2,v106,v108); <span class="co">// &lt;= GCルートにv106とv108を登録</span>
+                {   gc_frame0(gc,<span class="dv">2</span>,v106,v108); <span class="co">// &lt;= GCルートにv106とv108を登録</span>
                     sptr_t x7 = s_alloc(gc,cFR$__fJhc_Basics_$pp);
                     ((<span class="kw">struct</span> sFR$__fJhc_Basics_$pp*)x7)-&gt;head = TO_FPTR(&amp;E__fR$__fJhc_Basics_$pp);
                     ((<span class="kw">struct</span> sFR$__fJhc_Basics_$pp*)x7)-&gt;a1 = v108;
                     ((<span class="kw">struct</span> sFR$__fJhc_Basics_$pp*)x7)-&gt;a2 = v58800110;
                     sptr_t v69834446 = MKLAZY(x7);
-                    {   gc_frame0(gc,1,v69834446); <span class="co">// &lt;= GCルートにv69834446を登録</span>
+                    {   gc_frame0(gc,<span class="dv">1</span>,v69834446); <span class="co">// &lt;= GCルートにv69834446を登録</span>
                         wptr_t x8 = s_alloc(gc,cCJhc_Prim_Prim_$x3a);
                         ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x8)-&gt;a1 = v106;
                         ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x8)-&gt;a2 = v69834446;
@@ -231,7 +232,7 @@ fR$__fJhc_Basics_$pp(gc_t gc,sptr_t v80776080,sptr_t v58800110)
                 }
             }
         }
-}</code></pre>
+}</code></pre></div>
 <p>このgc_frame0関数はイカのような実装で、つまり上のミューテターはGCルートに</p>
 <ul>
 <li>v58800110: 関数の引数の一つ</li>
@@ -239,9 +240,9 @@ fR$__fJhc_Basics_$pp(gc_t gc,sptr_t v80776080,sptr_t v58800110)
 <li>v69834446: s_alloc関数で確保したx7スマートポインタに遅延ビットを立てたもの</li>
 </ul>
 <p>の4つを登録しているでゲソ。</p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="ot">#define gc_frame0(gc,n,...) void *ptrs[n] = { __VA_ARGS__ }; \</span>
-        <span class="kw">for</span>(<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; n; i++) gc[i] = (sptr_t)ptrs[i]; \
-        gc_t sgc = gc;  gc_t gc = sgc + n;</code></pre>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="ot">#define gc_frame0(gc,n,...) void *ptrs[n] = { __VA_ARGS__ }; \</span>
+<span class="ot">        for(int i = 0; i &lt; n; i++) gc[i] = (sptr_t)ptrs[i]; \</span>
+<span class="ot">        gc_t sgc = gc;  gc_t gc = sgc + n;</span></code></pre></div>
 <p>どーせs_alloc関数を呼ばないかぎりはGCは走らないので、 GCルートに追加するタイミングはs_alloc関数の直前まではあんまり厳密にしなくても良いはずでゲソ。 また、eval関数はサンクの評価を行なう可能性があり、その中でs_alloc関数を呼び出す可能性があるので、 その直前でGCルートを最新の情報に更新しておく必要があるはずでゲソ。</p>
 <p>ミューテターをC言語で書いていても、コンパイルパイプラインで自動生成するようにすれば、 gc_frame0関数の挿入のようなアイデアも実装漏れが起きることを気にしないで実現できるでゲソ。 いいじゃなイカ! しかもこの“gc”という参照でゲソが、スコープを抜けると元の位置を自動的に指すようになっているでゲソ。 C言語のスコープを使った上手いスタックの実現方法でゲソ。</p>
 <p>ただしこのjgcのGCスタックはC言語のスタックに強く紐づいているため、 再入を実現するためにはGCスタックもコンテキスト分持つ必要があるでゲソ。 例えばLWP毎に一つ必要になるはずでゲソ。 さらに多重割り込みを考慮すると割り込み毎に一つ必要になるはずじゃなイカ。</p>

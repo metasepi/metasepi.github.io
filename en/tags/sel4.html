@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-  <title>Metasepi team meeting #19 - Metasepi</title>
+  <title>sel4 - Metasepi</title>
 
   <meta name="description" content="metasepi.org">
   <meta name="author" content="Kiwamu Okabe">
@@ -57,68 +57,17 @@
 
   <div class="container">
     <div class="content clearfix">
-      <h1>Metasepi team meeting #19</h1>
-<div class="info">Posted on October 19, 2014 / Tags: <a href="../../en/tags/meeting.html">meeting</a>, <a href="../../en/tags/ats.html">ats</a></div>
-<h2>Table of contents</h2>
+      <h1>Posts tagged sel4</h1>
 <ul>
-<li><a href="#slide">Slide</a></li>
-<li><a href="#demo-video-ats-programming-demo-on-arduino-uno-lcd">Demo video (ATS programming demo on Arduino Uno + LCD)</a></li>
-<li><a href="#scene-photographs">Scene Photographs</a></li>
+    <li>
+    <a style="font-size: 110%" href="../../en/posts/2016-01-30-fpiot_0.html">Functional IoT Meetup #0</a>
+    &nbsp;‒ <span class="soft">January 30, 2016</span>
+    <div>
+        First meetup to talk about Functional programming on embedded device.
+    </div>
+</li>
+
 </ul>
-<hr>
-<p>We had “Metasepi team meeting #19” at <a href="http://www.ospn.jp/osc2014-fall/">Open Source Conference 2014 Tokyo/Fall</a>. I explained ATS2 demo application running on Arduino Uno hardware at the meeting.</p>
-<p><a href="http://arduino.cc/en/Main/arduinoBoardUno"><img src="../../img/ArduinoUnoR3.png" alt /></a></p>
-<p>I think you know the Arduino Uno. It has following specification.</p>
-<ul>
-<li>Microcontroller: ATmega328 (Harvard architecture 8-bit RISC)</li>
-<li>Flash Memory: 32 kB</li>
-<li>SRAM: 2 kB</li>
-<li>Clock Speed: 16 MHz</li>
-</ul>
-<p>The Arduino architecture is hard for functional programming, with following reason.</p>
-<ul>
-<li>We can’t use smart pointer on the Harvard architecture.</li>
-<li>16-bit address bus is bad for smart pointer.</li>
-<li>2 kB memory is too small for GC or malloc heap.</li>
-<li>We can’t construct any dynamics values without malloc heap.</li>
-</ul>
-<p>However, <a href="http://www.ats-lang.org/">ATS2 language</a> is easy to write code for the architecture, and the ATS2 functional program running on it is safe using dependent type and linear type. Also ATS2’s linear type realizes safe programming without any GC and any malloc. We believe this ATS2 characteristics is good to <a href="http://fpiot.metasepi.org/">design IoT devices</a>.</p>
-<p>The demo application source code is found at <a href="https://github.com/fpiot/arduino-ats" class="uri">https://github.com/fpiot/arduino-ats</a>. Let’s discuss safer IoT future at <a href="http://forum.arduino.cc/index.php?topic=273459.msg1927112">Arduino Forum</a>. De-gesso.</p>
-<h2 id="slide">Slide</h2>
-<iframe src="//www.slideshare.net/slideshow/embed_code/40449441" width="425" height="355" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC; border-width:1px; margin-bottom:5px; max-width: 100%;" allowfullscreen>
-</iframe>
-<div style="margin-bottom:5px">
-<strong> <a href="//www.slideshare.net/master_q/20141019-osc-tokyoats" title="Metasepi team meeting #19: ATS application on Arduino" target="_blank">Metasepi team meeting #19: ATS application on Arduino</a> </strong> from <strong><a href="//www.slideshare.net/master_q" target="_blank">Kiwamu Okabe</a></strong>
-</div>
-<h2 id="demo-video-ats-programming-demo-on-arduino-uno-lcd">Demo video (ATS programming demo on Arduino Uno + LCD)</h2>
-<script type="text/javascript" src="http://ext.nicovideo.jp/thumb_watch/sm24680530"></script>
-<noscript>
-<a href="http://www.nicovideo.jp/watch/sm24680530">[niconico] Functional programming on 8-bit Arduino! (with ATS language)</a>
-</noscript>
-<h2 id="scene-photographs">Scene Photographs</h2>
-<p><img src="../../img/20141010_no_more.jpg" alt /> <img src="../../img/20141010_R1099184.jpg" alt /></p>
-<p>
-  <div id="disqus_thread"></div>
-  <script type="text/javascript">
-    var disqus_shortname = 'metasepi';
-    var disqus_identifier = '/en/posts/2014-10-19-osc-tokyo.html';
-    var disqus_url = 'http://metasepi.org' + '/en/posts/2014-10-19-osc-tokyo.html';
-    var disqus_title = 'Metasepi team meeting #19';
-    var disqus_developer = 1;
-    (function() {
-        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
-        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-    })();
-  </script>
-  <noscript>
-    Please enable JavaScript to view the 
-    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
-  </noscript>
-  <a href="http://disqus.com" class="dsq-brlink">
-    blog comments powered by <span.logo-disqus>Disqus</span>
-  </a>
-</p>
 
     </div>
 

@@ -92,7 +92,7 @@ dot -Tpng hs.out_grin.dot &gt; hs.out_grin.dot.png</code></pre>
 <li><a href="https://gitorious.org/metasepi/jhc-arafura/blobs/arafura/metasepi-arafura/misc/jhc_dump_fib/hs.out_code.c">hs.out_code.c</a> - 最終的なC言語ソース</li>
 </ul>
 <p>一応、上記のダンプが所望のものかどうかjhc本体のソースコードでチェックしてきるでゲソ。</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- jhc/src/Grin/Main.hs</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- jhc/src/Grin/Main.hs</span>
 compileToGrin prog <span class="fu">=</span> <span class="kw">do</span>
     stats <span class="ot">&lt;-</span> Stats.new
     putProgressLn <span class="st">&quot;Converting to Grin...&quot;</span>
@@ -101,7 +101,7 @@ compileToGrin prog <span class="fu">=</span> <span class="kw">do</span>
     <span class="ot">=&gt;</span> dumpFinalGrin x
        writeFile (outputName <span class="fu">++</span> <span class="st">&quot;_grin.dot&quot;</span>) (graphGrin grin)
        dumpGrin <span class="st">&quot;final&quot;</span> grin
-    compileGrinToC x</code></pre>
+    compileGrinToC x</code></pre></div>
 <p>うん。ちゃんとC言語に変換する直前のダンプでゲソ。 先のhs.out_final.grinを見てみるとグローバルから辿れる要素はイカのようでゲソ。</p>
 <ol style="list-style-type: decimal">
 <li>Caf: v-930757141</li>
@@ -117,14 +117,14 @@ compileToGrin prog <span class="fu">=</span> <span class="kw">do</span>
 <li>Func: ftheMain :: () -&gt; ()</li>
 </ol>
 <p>また、上記の関数は-dgrin-graphが吐いた図によるとイカのような関係にあるらしいでゲソ。</p>
-<p><a href="https://gitorious.org/metasepi/jhc-arafura/blobs/raw/4c932225363068e235d211ad9340c94d2be45907/metasepi-arafura/misc/jhc_dump_fib/hs.out_grin.dot.png"><img src="https://gitorious.org/metasepi/jhc-arafura/blobs/raw/4c932225363068e235d211ad9340c94d2be45907/metasepi-arafura/misc/jhc_dump_fib/hs.out_grin.dot.png" /></a></p>
+<p><a href="https://gitorious.org/metasepi/jhc-arafura/blobs/raw/4c932225363068e235d211ad9340c94d2be45907/metasepi-arafura/misc/jhc_dump_fib/hs.out_grin.dot.png"><img src="https://gitorious.org/metasepi/jhc-arafura/blobs/raw/4c932225363068e235d211ad9340c94d2be45907/metasepi-arafura/misc/jhc_dump_fib/hs.out_grin.dot.png" alt /></a></p>
 <p>これらがどのようにC言語に写像されているか、 また逆にC言語ソースコードで上記由来ではない部分が存在するかどうかチェックしてみなイカ？</p>
 <h2 id="ダンプ解析-例による理解">ダンプ解析 (例による理解)</h2>
 <h3 id="caf-v-930757141">1. Caf: v-930757141</h3>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Grin --</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Grin --</span>
 <span class="co">-- Cafs</span>
-v<span class="fu">-</span><span class="dv">930757141</span> <span class="fu">:=</span> (<span class="dt">FtheMain</span><span class="fu">$</span><span class="dv">3</span>)</code></pre>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* C言語 */</span>
+v<span class="fu">-</span><span class="dv">930757141</span> <span class="fu">:=</span> (<span class="dt">FtheMain</span><span class="fu">$</span><span class="dv">3</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* C言語 */</span>
 <span class="kw">typedef</span> <span class="kw">struct</span> fptr * fptr_t;
 <span class="kw">typedef</span> <span class="kw">struct</span> sptr * sptr_t;
 <span class="kw">typedef</span> <span class="kw">struct</span> node {
@@ -144,17 +144,18 @@ v<span class="fu">-</span><span class="dv">930757141</span> <span class="fu">:=<
 <span class="co">/* CAFS */</span>
 <span class="co">/* v-930757141 = (FtheMain$3)*/</span>
 <span class="dt">static</span> node_t _g930757141 = { .head = TO_FPTR(&amp;E__ftheMain$d3) };
-<span class="ot">#define g930757141 (MKLAZY_C(&amp;_g930757141))</span></code></pre>
+<span class="ot">#define g930757141 (MKLAZY_C(&amp;_g930757141))</span></code></pre></div>
 <p>これを図にまとめると、イカのようになるでゲソ。 CAF(Constant Applicative Form) というのは 「一度実行したら、その結果をメモ化して使いまわせるもの」のことでゲソ。 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> ということはg930757141というのは未評価のサンクで、 このサンクの値を評価して確定させるためにはCode pointerの先にある E__ftheMain$d3()関数を実行する必要があるということが予想できるじゃなイカ。</p>
 <div class="figure">
-<img src="../draw/2013-02-14-jhc_grin_to_c_1_v-930757141.png" />
+<img src="../draw/2013-02-14-jhc_grin_to_c_1_v-930757141.png" alt />
+
 </div>
 <p>ではこのサンクg930757141はどのように使われるんでゲソ？</p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="dt">const</span> <span class="dt">void</span> * <span class="dt">const</span> nh_stuff[] = {
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="dt">const</span> <span class="dt">void</span> * <span class="dt">const</span> nh_stuff[] = {
 &amp;_g930757141, &amp;_c1, &amp;_c2, &amp;_c3, NULL
-};</code></pre>
+};</code></pre></div>
 <p>まずnh_stuff配列から参照されているでゲソ。 これはGCルートのようでゲソ。 グローバルから見えるサンクは当然解放することができないので、 GCルートになるはずでゲソ。</p>
-<pre class="sourceCode c"><code class="sourceCode c">ftheMain
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c">ftheMain
 =&gt; eval(gc,g930757141)
    <span class="dt">void</span> *ds = FROM_SPTR(g930757141); <span class="co">// (uintptr_t)(x) &amp; ~0x3)</span>
    sptr_t h = (sptr_t)(GETHEAD(ds)); <span class="co">// ((node_t *)(x))-&gt;head</span>
@@ -166,15 +167,15 @@ v<span class="fu">-</span><span class="dv">930757141</span> <span class="fu">:=<
          GETHEAD(_g930757141) = (fptr_t)r2;
       gc_add_root(gc,(sptr_t)r2);
       <span class="kw">return</span> r2;
-   <span class="kw">return</span> r;</code></pre>
+   <span class="kw">return</span> r;</code></pre></div>
 <p>さらg930757141はevel()関数を通して評価され、 最終的に_g930757141のheadメンバーをftheMain$d3()関数の実行結果で上書きしているでゲソ。 結局eval()関数を通したことで、g930757141は未評価サンクから評価済みサンクに変化したんでゲソ。 このeval()関数、場合によってはさらにその子供のサンクを評価するために一度実行に入ると長い時間滞留する可能性があるでゲソ。 jhcのコンパイル結果にeval()を使っている箇所があったら注意して確認する必要があるということになるでゲソ。</p>
 <h3 id="func-b_main--">2. Func: b_main :: () -&gt; ()</h3>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Grin --</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Grin --</span>
 <span class="co">-- Functions</span>
 <span class="ot">b_main ::</span> () <span class="ot">-&gt;</span> ()
 b_main  <span class="fu">=</span> <span class="kw">do</span>
-  ftheMain</code></pre>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* C言語 */</span>
+  ftheMain</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* C言語 */</span>
 <span class="dt">void</span>
 _amain(<span class="dt">void</span>)
 {
@@ -185,10 +186,10 @@ _amain(<span class="dt">void</span>)
 b__main(gc_t gc)
 {
         <span class="kw">return</span> ftheMain(gc);
-}</code></pre>
+}</code></pre></div>
 <p>うむ。これはなんかそのままでゲソ。 あえて違うところを挙げるとするならsaved_gcを引数で取り回すということでゲソ。 saved_gcはjgcの機能なので、別のGCを選択した場合には当然この出力も変化するはずでゲソ。</p>
 <h3 id="func-fw.fjhc.inst.show.showword-bits32i---n">3. Func: fW@.fJhc.Inst.Show.showWord :: (bits32,I) -&gt; (N)</h3>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Grin --</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Grin --</span>
 fW<span class="fu">@.</span>fJhc<span class="fu">.</span>Inst.Show.showWord<span class="ot"> ::</span> (bits32,<span class="dt">I</span>) <span class="ot">-&gt;</span> (<span class="dt">N</span>)
 fW<span class="fu">@.</span>fJhc<span class="fu">.</span>Inst.Show.showWord w1540496947 ni1826240557 <span class="fu">=</span> <span class="kw">do</span>
   <span class="kw">let</span>
@@ -210,8 +211,8 @@ fW<span class="fu">@.</span>fJhc<span class="fu">.</span>Inst.Show.showWord w154
               ni1829124143 <span class="ot">&lt;-</span> demote nd15
               fW<span class="fu">@.</span>fR<span class="fu">@.</span>fJhc<span class="fu">.</span>Inst.Show.showWord w40405746 ni1829124143
    <span class="kw">in</span>
-    fW<span class="fu">@.</span>fR<span class="fu">@.</span>fJhc<span class="fu">.</span>Inst.Show.showWord w1540496947 ni1826240557</code></pre>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* C言語 */</span>
+    fW<span class="fu">@.</span>fR<span class="fu">@.</span>fJhc<span class="fu">.</span>Inst.Show.showWord w1540496947 ni1826240557</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* C言語 */</span>
 <span class="dt">static</span> wptr_t A_STD A_MALLOC
 fW$__fJhc_Inst_Show_showWord(gc_t gc,<span class="dt">uint32_t</span> v1540496947,sptr_t v1826240557)
 {
@@ -252,22 +253,22 @@ fW$__fJhc_Inst_Show_showWord(gc_t gc,<span class="dt">uint32_t</span> v154049694
                 }
             }
         }
-}</code></pre>
+}</code></pre></div>
 <p>C言語側にGrinコード断片をコメントで入れてみたでゲソ。 だいたい1対1に対応が取れているじゃなイカ。 ここではGrinとC言語の違いに着目して、そのしくみを詳しく見てみるでゲソ。</p>
 <p>まず第一にdstore (CJhc.Type.Basic.Char,x)がRAW_SET_UF(x)になることがあるでゲソ。 このRAW_SET_UF()はイカのような定義で、即値のWHNFに変換してくれるでゲソ。 CJhc.Type.Basic.Charは即値なので、RAW_SET_UF()を使ってスマートポインタに埋め込まれるんじゃなイカ。</p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="ot">#define RAW_SET_UF(n)  ((wptr_t)(((uintptr_t)(n) &lt;&lt; 2) | P_VALUE))</span></code></pre>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="ot">#define RAW_SET_UF(n)  ((wptr_t)(((uintptr_t)(n) &lt;&lt; 2) | P_VALUE))</span></code></pre></div>
 <p>ところがdstore (CJhc.Prim.Prim.: x y) のような場合にはイカのようにs_alloc()でヒープへのスマートポインタを作って、 格納するでゲソ。 これはHaskellの(:)演算子を思いうかべればすぐわかるでゲソ。 (:)演算子は2つの要素をconsし、 そのconsした結果がstruct sCJhc_Prim_Prim_$x3aなんでゲソ。 つまりconsする旅にヒープの領域を消費するということでゲソ。</p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="kw">struct</span> sCJhc_Prim_Prim_$x3a {
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="kw">struct</span> sCJhc_Prim_Prim_$x3a {
     sptr_t a1;
     sptr_t a2;
 };
 
 wptr_t x4 = s_alloc(gc,cCJhc_Prim_Prim_$x3a);
 ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x4)-&gt;a1 = x;
-((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x4)-&gt;a2 = y;</code></pre>
+((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x4)-&gt;a2 = y;</code></pre></div>
 <p>最後にfW@.fR@.fJhc.Inst.Show.showWord関数の再帰がgotoループになっているでゲソ。 たまたまこの関数の例はすぐにループ化できる再帰だから良かったでゲソ。 しかし、原理的に全ての再帰がループ化されるのカ？少し不安でゲソ…</p>
 <h3 id="func-fjhc.show.shows-ii---n">4. Func: fJhc.Show.shows :: (I,I) -&gt; (N)</h3>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Grin --</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Grin --</span>
 fJhc<span class="fu">.</span><span class="dt">Show</span><span class="fu">.</span>shows<span class="ot"> ::</span> (<span class="dt">I</span>,<span class="dt">I</span>) <span class="ot">-&gt;</span> (<span class="dt">N</span>)
 fJhc<span class="fu">.</span><span class="dt">Show</span><span class="fu">.</span>shows ni29375120 ni44000678 <span class="fu">=</span> <span class="kw">do</span>
   withRoots(ni44000678)
@@ -285,8 +286,8 @@ fJhc<span class="fu">.</span><span class="dt">Show</span><span class="fu">.</spa
       <span class="dv">0</span> <span class="ot">-&gt;</span> <span class="kw">do</span>
         bm220263214 <span class="ot">&lt;-</span> (bits<span class="fu">&lt;</span>max<span class="fu">&gt;</span>)<span class="dt">ConvOp</span> <span class="dt">Sx</span> bits32 w216085094
         w110207578 <span class="ot">&lt;-</span> (bits32)<span class="dt">ConvOp</span> <span class="dt">Lobits</span> bits<span class="fu">&lt;</span>max<span class="fu">&gt;</span> bm220263214
-        fW<span class="fu">@.</span>fJhc<span class="fu">.</span>Inst.Show.showWord w110207578 ni44000678</code></pre>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* C言語 */</span>
+        fW<span class="fu">@.</span>fJhc<span class="fu">.</span>Inst.Show.showWord w110207578 ni44000678</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* C言語 */</span>
 <span class="dt">static</span> wptr_t A_STD A_MALLOC
 fJhc_Show_shows(gc_t gc,sptr_t v29375120,sptr_t v44000678)
 {
@@ -318,9 +319,9 @@ fJhc_Show_shows(gc_t gc,sptr_t v29375120,sptr_t v44000678)
                 }
             }
         }
-}</code></pre>
+}</code></pre></div>
 <p>これもほぼ1対1に対応しているでゲソが、唯一の例外が istore (FW@.fJhc.Inst.Show.showWord x y) がs_alloc()によるヒープの確保に化けることでゲソ。</p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="kw">struct</span> sFW$__fJhc_Inst_Show_showWord {
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="kw">struct</span> sFW$__fJhc_Inst_Show_showWord {
     fptr_t head;
     sptr_t a2;
     <span class="dt">uint32_t</span> a1;
@@ -330,15 +331,15 @@ sptr_t x5 = s_alloc(gc,cFW$__fJhc_Inst_Show_showWord);
 ((<span class="kw">struct</span> sFW$__fJhc_Inst_Show_showWord*)x5)-&gt;head = TO_FPTR(&amp;E__fW$__fJhc_Inst_Show_showWord);
 ((<span class="kw">struct</span> sFW$__fJhc_Inst_Show_showWord*)x5)-&gt;a1 = x;
 ((<span class="kw">struct</span> sFW$__fJhc_Inst_Show_showWord*)x5)-&gt;a2 = y;
-sptr_t v244126258 = MKLAZY(x5);</code></pre>
+sptr_t v244126258 = MKLAZY(x5);</code></pre></div>
 <p>この謎はjhcのjhcライブラリのソース見れば理解できるでゲソ。 showWord関数はイカのように通常のLazyな関数じゃなイカ。 ということはここでは未評価サンクだけ作り後で誰かがforceしてくれるのを待てばいいんでゲソ。 ここで作成する未評価サンクの実体がstruct sFW$__fJhc_Inst_Show_showWordで、 やはりヒープに確保されるでゲソ。</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- jhc/lib/jhc/Jhc/Inst/Show.hs</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- jhc/lib/jhc/Jhc/Inst/Show.hs</span>
 <span class="ot">showWord ::</span> <span class="dt">Word</span> <span class="ot">-&gt;</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">String</span>
 showWord w rest <span class="fu">=</span> w <span class="ot">`seq`</span> <span class="kw">case</span> quotRem w <span class="dv">10</span> <span class="kw">of</span>
     (n',d) <span class="ot">-&gt;</span> n' <span class="ot">`seq`</span> d <span class="ot">`seq`</span> rest' <span class="ot">`seq`</span> <span class="kw">if</span> n' <span class="fu">==</span> <span class="dv">0</span> <span class="kw">then</span> rest' <span class="kw">else</span> showWord n' rest'
-        <span class="kw">where</span> rest' <span class="fu">=</span> chr (fromIntegral d <span class="fu">+</span> ord <span class="ch">'0'</span>) <span class="fu">:</span> rest</code></pre>
+        <span class="kw">where</span> rest' <span class="fu">=</span> chr (fromIntegral d <span class="fu">+</span> ord <span class="ch">'0'</span>) <span class="fu">:</span> rest</code></pre></div>
 <h3 id="func-fr.fjhc.show.11_showl-in---n">5. Func: fR@.fJhc.Show.11_showl :: (I,N) -&gt; (N)</h3>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Grin --</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Grin --</span>
 fR<span class="fu">@.</span>fJhc<span class="fu">.</span><span class="dt">Show</span><span class="fu">.</span>11_<span class="ot">showl ::</span> (<span class="dt">I</span>,<span class="dt">N</span>) <span class="ot">-&gt;</span> (<span class="dt">N</span>)
 fR<span class="fu">@.</span>fJhc<span class="fu">.</span><span class="dt">Show</span><span class="fu">.</span>11_showl ni108431528 nd267777212 <span class="fu">=</span> <span class="kw">do</span>
   ni267777293 <span class="ot">&lt;-</span> demote nd267777212
@@ -352,8 +353,8 @@ fR<span class="fu">@.</span>fJhc<span class="fu">.</span><span class="dt">Show</
           return (<span class="fu">&amp;</span>(<span class="dt">CJhc.Type.Basic.Char</span> <span class="dv">44</span>),ni215884490)
       [] <span class="ot">-&gt;</span> return (<span class="fu">&amp;</span>(<span class="dt">CJhc.Type.Basic.Char</span> <span class="dv">93</span>),ni267777293)
     withRoots(ni95,ni126)
-      dstore (<span class="fu">CJhc.Prim.Prim.:</span> ni126 ni95)</code></pre>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* C言語 */</span>
+      dstore (<span class="fu">CJhc.Prim.Prim.:</span> ni126 ni95)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* C言語 */</span>
 <span class="dt">static</span> wptr_t A_STD A_MALLOC
 fR$__fJhc_Show_11__showl(gc_t gc,sptr_t v108431528,wptr_t v267777212)
 {
@@ -398,15 +399,15 @@ fR$__fJhc_Show_11__showl(gc_t gc,sptr_t v108431528,wptr_t v267777212)
                 <span class="kw">return</span> x10;
             }
         }
-}</code></pre>
+}</code></pre></div>
 <p>ここまで来るとほぼこれまで仕入れた知識で読めるでゲソ! 新しく出てきた表現をあえて挙げるならタプルでゲソ。</p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="kw">struct</span> tup1 {
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="kw">struct</span> tup1 {
     sptr_t t0;
     sptr_t t1;
-};</code></pre>
+};</code></pre></div>
 <p>これはもう見たままでゲソ。タプルじゃなイカ。 ところでなんでいきなりタプルを使うことになったんでゲソ？</p>
 <p>この関数はjhcライブラリのshowList関数の中にあるshowlローカル関数に由来しているでゲソ。 どうもShowS型の合成を (文字,サンク) というタプルでの表現に変換しているようじゃなイカ。 コンパイルパイプラインの最適化のどこでこの変換が行なわれるのか興味が出てきたでゲソ。</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- jhc/lib/jhc/Jhc/Show.hs</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- jhc/lib/jhc/Jhc/Show.hs</span>
 <span class="kw">type</span>  <span class="dt">ShowS</span>    <span class="fu">=</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">String</span>
 
 <span class="kw">class</span>  <span class="dt">Show</span> a  <span class="kw">where</span>
@@ -417,9 +418,9 @@ fR$__fJhc_Show_11__showl(gc_t gc,sptr_t v108431528,wptr_t v267777212)
     showList (x<span class="fu">:</span>xs)   <span class="fu">=</span> showChar <span class="ch">'['</span> <span class="fu">.</span> shows x <span class="fu">.</span> showl xs
                         <span class="kw">where</span> showl []     <span class="fu">=</span> showChar <span class="ch">']'</span>
                               showl (x<span class="fu">:</span>xs) <span class="fu">=</span> showChar <span class="ch">','</span> <span class="fu">.</span> shows x <span class="fu">.</span>
-                                             showl xs</code></pre>
+                                             showl xs</code></pre></div>
 <h3 id="func-fthemain2-ii---n">6. Func: ftheMain$2 :: (I,I) -&gt; (N)</h3>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Grin --</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Grin --</span>
 ftheMain<span class="fu">$</span><span class="dv">2</span><span class="ot"> ::</span> (<span class="dt">I</span>,<span class="dt">I</span>) <span class="ot">-&gt;</span> (<span class="dt">N</span>)
 ftheMain<span class="fu">$</span><span class="dv">2</span> ni38 ni42 <span class="fu">=</span> <span class="kw">do</span>
   withRoots(ni42)
@@ -429,8 +430,8 @@ ftheMain<span class="fu">$</span><span class="dv">2</span> ni38 ni42 <span class
       (<span class="dt">CJhc.Type.Word.Int</span> w239029634) <span class="ot">&lt;-</span> return nd100032
       (<span class="dt">CJhc.Type.Word.Int</span> w242159974) <span class="ot">&lt;-</span> return nd100092
       w215350916 <span class="ot">&lt;-</span> w239029634 <span class="fu">+</span> w242159974
-      dstore (<span class="dt">CJhc.Type.Word.Int</span> w215350916)</code></pre>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* C言語 */</span>
+      dstore (<span class="dt">CJhc.Type.Word.Int</span> w215350916)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* C言語 */</span>
 <span class="dt">static</span> wptr_t A_STD A_MALLOC
 ftheMain$d2(gc_t gc,sptr_t v38,sptr_t v42)
 {
@@ -448,16 +449,16 @@ ftheMain$d2(gc_t gc,sptr_t v38,sptr_t v42)
                 <span class="kw">return</span> x11;
             }
         }
-}</code></pre>
+}</code></pre></div>
 <p>ここではじめて“+”演算子を使っているでゲソ。 中間に変数をはさんでいるのでわかりにくいでゲソが、全部展開するとイカのような処理のはずでゲソ。 jhcではプリミティブ型が則、C言語のプリミティブ型に落ちるので、こんな芸当ができるんでゲソ!</p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="kw">struct</span> sCJhc_Type_Word_Int {
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="kw">struct</span> sCJhc_Type_Word_Int {
     <span class="dt">uint32_t</span> a1;
 };
 
 ((<span class="kw">struct</span> sCJhc_Type_Word_Int*)x11)-&gt;a1 =
-  ((<span class="kw">struct</span> sCJhc_Type_Word_Int*)v100032)-&gt;a1 + ((<span class="kw">struct</span> sCJhc_Type_Word_Int*)v100092)-&gt;a1;</code></pre>
+  ((<span class="kw">struct</span> sCJhc_Type_Word_Int*)v100032)-&gt;a1 + ((<span class="kw">struct</span> sCJhc_Type_Word_Int*)v100092)-&gt;a1;</code></pre></div>
 <h3 id="func-fr.fjhc.basics.-in---n">7. Func: fR@.fJhc.Basics.++ :: (I,N) -&gt; (N)</h3>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Grin --</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Grin --</span>
 fR<span class="fu">@.</span>fJhc<span class="fu">.Basics.++</span><span class="ot"> ::</span> (<span class="dt">I</span>,<span class="dt">N</span>) <span class="ot">-&gt;</span> (<span class="dt">N</span>)
 fR<span class="fu">@.</span>fJhc<span class="fu">.Basics.++</span> ni29534742 nd29534740 <span class="fu">=</span> <span class="kw">do</span>
   withRoots(nd29534740)
@@ -467,8 +468,8 @@ fR<span class="fu">@.</span>fJhc<span class="fu">.Basics.++</span> ni29534742 nd
         ni69834446 <span class="ot">&lt;-</span> istore (<span class="dt">FR</span><span class="fu">@.</span>fJhc<span class="fu">.Basics.++</span> ni108 nd29534740)
         withRoots(ni69834446)
           dstore (<span class="fu">CJhc.Prim.Prim.:</span> ni106 ni69834446)
-      [] <span class="ot">-&gt;</span> return nd29534740</code></pre>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* C言語 */</span>
+      [] <span class="ot">-&gt;</span> return nd29534740</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* C言語 */</span>
 <span class="dt">static</span> wptr_t A_STD A_MALLOC
 fR$__fJhc_Basics_$pp(gc_t gc,sptr_t v29534742,wptr_t v29534740)
 {
@@ -497,14 +498,14 @@ fR$__fJhc_Basics_$pp(gc_t gc,sptr_t v29534742,wptr_t v29534740)
                 }
             }
         }
-}</code></pre>
+}</code></pre></div>
 <p>この関数はこれまでの調査結果で理解できるでゲソ。</p>
 <h3 id="func-fthemain3---n">8. Func: ftheMain$3 :: () -&gt; (N)</h3>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Grin --</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Grin --</span>
 ftheMain<span class="fu">$</span><span class="dv">3</span><span class="ot"> ::</span> () <span class="ot">-&gt;</span> (<span class="dt">N</span>)
 ftheMain<span class="fu">$</span><span class="dv">3</span>  <span class="fu">=</span> <span class="kw">do</span>
-  fR<span class="fu">@.</span>fJhc<span class="fu">.Basics.++</span> <span class="fu">&amp;</span><span class="st">&quot;[]&quot;</span> []</code></pre>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* C言語 */</span>
+  fR<span class="fu">@.</span>fJhc<span class="fu">.Basics.++</span> <span class="fu">&amp;</span><span class="st">&quot;[]&quot;</span> []</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* C言語 */</span>
 <span class="kw">struct</span> sCJhc_Prim_Prim_$x3a {
     sptr_t a1;
     sptr_t a2;
@@ -533,14 +534,15 @@ ftheMain<span class="fu">$</span><span class="dv">3</span>  <span class="fu">=</
 ftheMain$d3(gc_t gc)
 {
         <span class="kw">return</span> fR$__fJhc_Basics_$pp(gc,c2,SET_RAW_TAG(CJhc_Prim_Prim_$BE));
-}</code></pre>
+}</code></pre></div>
 <p>いきなりc2というグローバル変数が出てきたじゃなイカ。これはなんでゲソ？</p>
 <div class="figure">
-<img src="../draw/2013-02-17-jhc_grin_to_c_c2.png" />
+<img src="../draw/2013-02-17-jhc_grin_to_c_c2.png" alt />
+
 </div>
 <p>なるほどたしかに fR@.fJhc.Basics.++ &amp;“[]” [] とあったので“[]”という文字列が欲しかったんでゲソね。</p>
 <h3 id="func-fr.fjhc.basics.zipwith-ii---n">9. Func: fR@.fJhc.Basics.zipWith :: (I,I) -&gt; (N)</h3>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Grin --</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Grin --</span>
 fR<span class="fu">@.</span>fJhc<span class="fu">.</span>Basics.zipWith<span class="ot"> ::</span> (<span class="dt">I</span>,<span class="dt">I</span>) <span class="ot">-&gt;</span> (<span class="dt">N</span>)
 fR<span class="fu">@.</span>fJhc<span class="fu">.</span>Basics.zipWith ni182639120 ni132127014 <span class="fu">=</span> <span class="kw">do</span>
   withRoots(ni132127014)
@@ -556,8 +558,8 @@ fR<span class="fu">@.</span>fJhc<span class="fu">.</span>Basics.zipWith ni182639
               withRoots(ni229109160)
                 dstore (<span class="fu">CJhc.Prim.Prim.:</span> ni229109160 ni248061794)
           [] <span class="ot">-&gt;</span> return []
-      [] <span class="ot">-&gt;</span> return []</code></pre>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* C言語 */</span>
+      [] <span class="ot">-&gt;</span> return []</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* C言語 */</span>
 <span class="dt">static</span> wptr_t A_STD A_MALLOC
 fR$__fJhc_Basics_zipWith(gc_t gc,sptr_t v182639120,sptr_t v132127014)
 {
@@ -605,10 +607,10 @@ fR$__fJhc_Basics_zipWith(gc_t gc,sptr_t v182639120,sptr_t v132127014)
                 }
             }
         }
-}</code></pre>
+}</code></pre></div>
 <p>うむ。これも今の知識で読めるでゲソ。次の人!っでゲッソ。</p>
 <h3 id="func-fw.fr.fjhc.list.387_f-bits32i---n">10. Func: fW@.fR@.fJhc.List.387_f :: (bits32,I) -&gt; (N)</h3>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Grin --</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Grin --</span>
 fW<span class="fu">@.</span>fR<span class="fu">@.</span>fJhc<span class="fu">.</span><span class="dt">List</span><span class="fu">.</span>387_<span class="ot">f ::</span> (bits32,<span class="dt">I</span>) <span class="ot">-&gt;</span> (<span class="dt">N</span>)
 fW<span class="fu">@.</span>fR<span class="fu">@.</span>fJhc<span class="fu">.</span><span class="dt">List</span><span class="fu">.</span>387_f w115160438 ni124940224 <span class="fu">=</span> <span class="kw">do</span>
   h100024 <span class="ot">&lt;-</span> <span class="dv">0</span> <span class="ot">`Gte`</span> w115160438
@@ -623,8 +625,8 @@ fW<span class="fu">@.</span>fR<span class="fu">@.</span>fJhc<span class="fu">.</
             ni131889104 <span class="ot">&lt;-</span> istore (<span class="dt">FW</span><span class="fu">@.</span>fR<span class="fu">@.</span>fJhc<span class="fu">.</span><span class="dt">List</span><span class="fu">.</span>387_f w194508206 ni306)
             withRoots(ni131889104)
               dstore (<span class="fu">CJhc.Prim.Prim.:</span> ni304 ni131889104)
-        [] <span class="ot">-&gt;</span> return []</code></pre>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* C言語 */</span>
+        [] <span class="ot">-&gt;</span> return []</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* C言語 */</span>
 <span class="dt">static</span> wptr_t A_STD A_MALLOC
 fW$__fR$__fJhc_List_387__f(gc_t gc,<span class="dt">uint32_t</span> v115160438,sptr_t v124940224)
 {
@@ -659,10 +661,10 @@ fW$__fR$__fJhc_List_387__f(gc_t gc,<span class="dt">uint32_t</span> v115160438,s
             assert(<span class="dv">1</span> == v100024);
             <span class="kw">return</span> SET_RAW_TAG(CJhc_Prim_Prim_$BE); <span class="co">// return []</span>
         }
-}</code></pre>
+}</code></pre></div>
 <p>これも今までのパターンと同じでゲソ。もはや楽勝でゲソー。</p>
 <h3 id="func-fthemain--">11. Func: ftheMain :: () -&gt; ()</h3>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Grin --</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Grin --</span>
 <span class="ot">ftheMain ::</span> () <span class="ot">-&gt;</span> ()
 ftheMain  <span class="fu">=</span> <span class="kw">do</span>
   nd163 <span class="ot">&lt;-</span> dstore (<span class="fu">CJhc.Prim.Prim.:</span> <span class="fu">?::</span><span class="dt">I</span> <span class="fu">?::</span><span class="dt">I</span>)
@@ -700,8 +702,8 @@ ftheMain  <span class="fu">=</span> <span class="kw">do</span>
               [] <span class="ot">-&gt;</span> return (<span class="dt">CJhc.Prim.Prim</span><span class="fu">.</span>())
        <span class="kw">in</span>
         fJhc<span class="fu">.</span><span class="dt">Monad</span><span class="fu">.</span>72_go ni81465164
-      (void)jhc_utf8_putchar(int) <span class="dv">10</span></code></pre>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* C言語 */</span>
+      (void)jhc_utf8_putchar(int) <span class="dv">10</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* C言語 */</span>
 <span class="dt">static</span> <span class="dt">void</span> A_STD
 ftheMain(gc_t gc)
 {
@@ -786,16 +788,16 @@ ftheMain(gc_t gc)
                 <span class="kw">return</span> (<span class="dt">void</span>)jhc_utf8_putchar((<span class="dt">int</span>)<span class="dv">10</span>); <span class="co">// (void)jhc_utf8_putchar(int) 10</span>
             }
         }
-}</code></pre>
+}</code></pre></div>
 <p>overwriteという不吉なキーワードはなんでゲソ？ “overwrite ni856819231 (CJhc.Prim.Prim.: &amp;(CJhc.Type.Word.Int 1) ni220263216)”に着目すると、 元のコードは…</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell">  nd163 <span class="ot">&lt;-</span> dstore (<span class="fu">CJhc.Prim.Prim.:</span> <span class="fu">?::</span><span class="dt">I</span> <span class="fu">?::</span><span class="dt">I</span>)
-  ni856819231 &lt;- demote nd163 // 一度目の束縛
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  nd163 <span class="ot">&lt;-</span> dstore (<span class="fu">CJhc.Prim.Prim.:</span> <span class="fu">?::</span><span class="dt">I</span> <span class="fu">?::</span><span class="dt">I</span>)
+  ni856819231 <span class="ot">&lt;-</span> demote nd163 <span class="fu">//</span> 一度目の束縛
   withRoots(ni856819231)
     nd168 <span class="ot">&lt;-</span> dstore (<span class="fu">CJhc.Prim.Prim.:</span> <span class="fu">?::</span><span class="dt">I</span> <span class="fu">?::</span><span class="dt">I</span>)
     ni220263216 <span class="ot">&lt;-</span> demote nd168
-    overwrite ni856819231 (CJhc.Prim.Prim.: &amp;(CJhc.Type.Word.<span class="dt">Int</span> 1) ni220263216) // 二度目の束縛</code></pre>
+    overwrite ni856819231 (<span class="fu">CJhc.Prim.Prim.:</span> <span class="fu">&amp;</span>(<span class="dt">CJhc.Type.Word.Int</span> <span class="dv">1</span>) ni220263216) <span class="fu">//</span> 二度目の束縛</code></pre></div>
 <p>これがC言語に変換されると…</p>
-<pre class="sourceCode c"><code class="sourceCode c">        wptr_t x19 = s_alloc(gc,cCJhc_Prim_Prim_$x3a); <span class="co">// スマートポインタを埋めずallocだけ</span>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c">        wptr_t x19 = s_alloc(gc,cCJhc_Prim_Prim_$x3a); <span class="co">// スマートポインタを埋めずallocだけ</span>
         wptr_t v163 = x19;
         sptr_t v856819231 = demote(v163); <span class="co">// 一度目のスマートポインタ代入</span>
         {   gc_frame0(gc,<span class="dv">1</span>,v856819231);
@@ -803,10 +805,10 @@ ftheMain(gc_t gc)
             wptr_t v168 = x20;
             sptr_t v220263216 = demote(v168);
             ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)FROM_SPTR(v856819231))-&gt;a1 = c3; <span class="co">// alloc済みスマートポインタに代入</span>
-            ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)FROM_SPTR(v856819231))-&gt;a2 = v220263216;</code></pre>
+            ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)FROM_SPTR(v856819231))-&gt;a2 = v220263216;</code></pre></div>
 <p>ということはoverwriteキーワードはdstoreなどと異なりヒープ領域を確保せず、 第一引数で指定されたスマートポインタを上書きすると考えられるじゃなイカ。 なんとなく上記の例ではoverwriteを使わず一回のdstoreにしてしまっても問題なさそうでゲソが、 コンストラクタと初期化を分割したり、再帰の中で次々に値を更新して結果を得たい場合などに重宝しそうでゲソ。</p>
 <p>もう一つ気になるのは“saved_gc = gc”でゲソ。Grinにはなかった行がC言語にいきなり現われるでゲソ… saved_gcはb__main関数から第一引数として取り回されるので、 同じものだと思っていたでゲソ。ここはよくわからなかったでゲソ。</p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="dt">void</span> 
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="dt">void</span> 
 _amain(<span class="dt">void</span>)
 {
         <span class="kw">return</span> (<span class="dt">void</span>)b__main(saved_gc);
@@ -816,19 +818,19 @@ _amain(<span class="dt">void</span>)
 b__main(gc_t gc)
 {
         <span class="kw">return</span> ftheMain(gc);
-}</code></pre>
+}</code></pre></div>
 <h3 id="grin由来ではないc言語コード">Grin由来ではないC言語コード</h3>
 <p>さて。Grinの関数がC言語にどう変換されたか見てきたでゲソ。 でも、とりこぼした要素はないか気にならなイカ？ チェックでゲソ!</p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="kw">enum</span> {
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="kw">enum</span> {
     CJhc_Prim_Prim_$BE = <span class="dv">1</span>,
     CJhc_Prim_Prim_$LR = <span class="dv">0</span>,
     CJhc_Prim_Prim_$x3a = <span class="dv">0</span>,
     CJhc_Type_Basic_Char = <span class="dv">0</span>,
     CJhc_Type_Word_Int = <span class="dv">0</span>
-};</code></pre>
+};</code></pre></div>
 <p>このenumは有意に使われるのは CJhc_Prim_Prim_$BE だけで、 残りは全く使われていないでゲソ。</p>
 <p>CJhc_Prim_Prim_$BE はこれまで見た通り、 リストの終端である [] を表わしていたでゲソ。 どこからでも参照され、中身のない要素はこのようにenumで表わされるようでゲソ。 …しかし16bitしか幅がないので、場合によっては足りなく… ってそんなにNilみたいな要素をばかすか作りっこないでゲッソ。</p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="kw">struct</span> sCJhc_Prim_Prim_$x3a {
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="kw">struct</span> sCJhc_Prim_Prim_$x3a {
     sptr_t a1;
     sptr_t a2;
 };
@@ -881,9 +883,9 @@ b__main(gc_t gc)
 
 <span class="kw">struct</span> sFtheMain$d3 {
     fptr_t head;
-};</code></pre>
+};</code></pre></div>
 <p>これらのstructはこれまで見てきた通り、ヒープに確保される要素群でゲソ。 特にstructの先頭メンバーがfptr_tになっているstructはサンクでゲソ。 structのメンバーを見ればサンクかどうか分かるのは fptr_tを特別なスマートポインタとして扱っている恩恵でゲッソー。</p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="dt">void</span> 
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="dt">void</span> 
 jhc_hs_init(<span class="dt">void</span>)
 {
         find_cache(&amp;cCJhc_Prim_Prim_$x3a,arena,TO_BLOCKS(<span class="kw">sizeof</span>(<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a)),<span class="dv">2</span>);
@@ -895,16 +897,16 @@ jhc_hs_init(<span class="dt">void</span>)
         find_cache(&amp;cFR$__fJhc_Show_11__showl,arena,TO_BLOCKS(<span class="kw">sizeof</span>(<span class="kw">struct</span> sFR$__fJhc_Show_11__showl)),<span class="dv">3</span>);
         find_cache(&amp;cFJhc_Show_shows,arena,TO_BLOCKS(<span class="kw">sizeof</span>(<span class="kw">struct</span> sFJhc_Show_shows)),<span class="dv">3</span>);
         find_cache(&amp;cFW$__fJhc_Inst_Show_showWord,arena,TO_BLOCKS(<span class="kw">sizeof</span>(<span class="kw">struct</span> sFW$__fJhc_Inst_Show_showWord)),<span class="dv">2</span>);
-}</code></pre>
+}</code></pre></div>
 <p>このjhc_hs_init関数はHaskellのRTSを初期化するお約束のhs_init関数から呼び出されるようでゲソ。</p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="dt">void</span>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="dt">void</span>
 hs_init(<span class="dt">int</span> *argc, <span class="dt">char</span> **argv[])
 {
         <span class="kw">if</span>(!hs_init_count++) {
                 jhc_alloc_init();
-                jhc_hs_init();</code></pre>
+                jhc_hs_init();</code></pre></div>
 <p>find_cache関数とは何者なのでゲソ？</p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="kw">struct</span> s_cache *
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="kw">struct</span> s_cache *
 find_cache(<span class="kw">struct</span> s_cache **rsc, <span class="kw">struct</span> s_arena *arena,
            <span class="dt">unsigned</span> <span class="dt">short</span> size, <span class="dt">unsigned</span> <span class="dt">short</span> num_ptrs)
 {
@@ -939,9 +941,9 @@ new_cache(<span class="kw">struct</span> s_arena *arena, <span class="dt">unsign
         SLIST_INIT(&amp;sc-&gt;full_blocks);
         SLIST_INSERT_HEAD(&amp;arena-&gt;caches,sc,next);
         <span class="kw">return</span> sc;
-}</code></pre>
+}</code></pre></div>
 <p>struct s_arenaのcachesメンバーには、 サイズとポインタの数で種類分けされたcacheと呼ばれるエントリが列になっているでゲソ。 find_cache関数の第三引数はサイズ、第四引数はポインタの数で、 呼び元が欲しいcacheが既にcachesメンバーに確保されているのかチェックするのがfind_cache関数のでゲソ。 もし対応するエントリがcachesに入ってなかった場合、 find_cache関数はnew_cache関数を呼び出して新しいエントリを確保するんじゃなイカ。 …でもこのcachesメンバーはコンパイル時に静的に確保してしまうこともできそうなもんでゲソ。 ここらへんは改善できそうでゲソ。</p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="dt">static</span> wptr_t A_STD A_FALIGNED
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="dt">static</span> wptr_t A_STD A_FALIGNED
 E__fJhc_Show_shows(gc_t gc,<span class="kw">struct</span> sFJhc_Show_shows* arg)
 {
         {   wptr_t r;
@@ -1026,7 +1028,7 @@ E__ftheMain$d3(gc_t gc,<span class="kw">struct</span> sFtheMain$d3* arg)
         update(arg,r);
         gc_add_root(gc,(sptr_t)r);
         <span class="kw">return</span> r;
-}</code></pre>
+}</code></pre></div>
 <p>この“E__f“で始まる関数群はほぼ同じことをしているでゲソ。</p>
 <ol style="list-style-type: decimal">
 <li>gc_frame0(gc,1,MKLAZY(arg));</li>
@@ -1035,22 +1037,23 @@ E__ftheMain$d3(gc_t gc,<span class="kw">struct</span> sFtheMain$d3* arg)
 <li>return r;</li>
 </ol>
 <p>まず最初のgc_frame0はイカのようなマクロで、 引数argはポインタで、lazy locationフラグを立ててGCルートに追加するでゲソ。</p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="ot">#define TO_SPTR(t,x)   (typeof (x))((uintptr_t)(x) | (t))</span>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="ot">#define TO_SPTR(t,x)   (typeof (x))((uintptr_t)(x) | (t))</span>
 <span class="ot">#define MKLAZY(fn)    TO_SPTR(P_LAZY,(sptr_t)fn)</span>
 <span class="ot">#define gc_frame0(gc,n,...) void *ptrs[n] = { __VA_ARGS__ }; \</span>
-        <span class="kw">for</span>(<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; n; i++) gc[i] = (sptr_t)ptrs[i]; \
-        gc_t sgc = gc;  gc_t gc = sgc + n;</code></pre>
+<span class="ot">        for(int i = 0; i &lt; n; i++) gc[i] = (sptr_t)ptrs[i]; \</span>
+<span class="ot">        gc_t sgc = gc;  gc_t gc = sgc + n;</span></code></pre></div>
 <p>update関数は“E__f“プレフィックスを除いた関数の返値でargのhead、 つまりfptr_tを上書きするでゲソ。 これは未評価サンクの評価を行なっているんじゃなイカ？</p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="kw">typedef</span> <span class="kw">struct</span> node {
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="kw">typedef</span> <span class="kw">struct</span> node {
         fptr_t head;
         sptr_t rest[];
 } A_MAYALIAS node_t;
 <span class="ot">#define NODEP(x)     ((node_t *)(x))</span>
 <span class="ot">#define GETHEAD(x)   (NODEP(x)-&gt;head)</span>
-<span class="kw">inline</span> <span class="dt">static</span> <span class="dt">void</span> update(<span class="dt">void</span> *t, wptr_t n) { GETHEAD(t) = (fptr_t)n; }</code></pre>
+<span class="kw">inline</span> <span class="dt">static</span> <span class="dt">void</span> update(<span class="dt">void</span> *t, wptr_t n) { GETHEAD(t) = (fptr_t)n; }</code></pre></div>
 <p>もう一度、“1. Caf: v-930757141”を振り替えってみるでゲソ。 詳細に図を描いてみたら未評価サンクが評価される動作がはっきり解ったじゃなイカ!</p>
 <div class="figure">
-<img src="../draw/2013-02-14-jhc_grin_to_c_E__f.png" />
+<img src="../draw/2013-02-14-jhc_grin_to_c_E__f.png" alt />
+
 </div>
 <p>うん。なんとなくGrin=&gt;Cがどんな変換なのかイメージがつかめたでゲソ。 次は例による理解ではなく、jhcのソースコードそのものを理解することもできるんじゃなイカ？</p>
 <div class="footnotes">

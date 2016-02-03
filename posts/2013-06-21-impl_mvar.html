@@ -74,46 +74,46 @@
 <h2 id="ghcの実装を解析するでゲソ">GHCの実装を解析するでゲソ</h2>
 <h3 id="haskell層">Haskell層</h3>
 <p>haddockの <a href="http://hackage.haskell.org/packages/archive/base/latest/doc/html/Control-Concurrent-MVar.html">Control.Concurrent.MVar</a> から読みはじめようと思うでゲッソ。 GHCのソースコードだとMVarはghc/libraries/base/GHC/MVar.hsで定義されているでゲソ。 まずカラッポのMVarを作ってみようじゃなイカ。</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ghc/libraries/base/GHC/MVar.hs</span>
-<span class="kw">data</span> <span class="dt">MVar</span> a <span class="fu">=</span> <span class="dt">MVar</span> (<span class="dt">MVar</span><span class="st"># RealWorld a)</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ghc/libraries/base/GHC/MVar.hs</span>
+<span class="kw">data</span> <span class="dt">MVar</span> a <span class="fu">=</span> <span class="dt">MVar</span> (<span class="dt">MVar</span><span class="fu">#</span> <span class="dt">RealWorld</span> a)
 
 <span class="ot">newEmptyMVar  ::</span> <span class="dt">IO</span> (<span class="dt">MVar</span> a)
-newEmptyMVar <span class="fu">=</span> <span class="dt">IO</span> <span class="fu">$</span> \ s<span class="st"># -&gt;</span>
-    <span class="kw">case</span> newMVar<span class="st"># s# of</span>
-         (<span class="st"># s2#, svar# #) -&gt; (# s2#, MVar svar# #)</span>
+newEmptyMVar <span class="fu">=</span> <span class="dt">IO</span> <span class="fu">$</span> \ s<span class="fu">#</span> <span class="ot">-&gt;</span>
+    <span class="kw">case</span> newMVar<span class="fu">#</span> s<span class="fu">#</span> <span class="kw">of</span>
+         (<span class="fu">#</span> s2<span class="fu">#</span>, svar<span class="fu">#</span> <span class="fu">#</span>) <span class="ot">-&gt;</span> (<span class="fu">#</span> s2<span class="fu">#</span>, <span class="dt">MVar</span> svar<span class="fu">#</span> <span class="fu">#</span>)
 
 <span class="co">-- File: ghc/libraries/ghc-prim/GHC/Types.hs</span>
-<span class="kw">newtype</span> <span class="dt">IO</span> a <span class="fu">=</span> <span class="dt">IO</span> (<span class="dt">State</span><span class="st"># RealWorld -&gt; (# State# RealWorld, a #))</span></code></pre>
+<span class="kw">newtype</span> <span class="dt">IO</span> a <span class="fu">=</span> <span class="dt">IO</span> (<span class="dt">State</span><span class="fu">#</span> <span class="dt">RealWorld</span> <span class="ot">-&gt;</span> (<span class="fu">#</span> <span class="dt">State</span><span class="fu">#</span> <span class="dt">RealWorld</span>, a <span class="fu">#</span>))</code></pre></div>
 <p>このパターンはAjhcの中でも見かけたでゲソ。UIOじゃなイカ。</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/lib/haskell-extras/Foreign/StablePtr.hs</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/lib/haskell-extras/Foreign/StablePtr.hs</span>
 <span class="ot">newStablePtr ::</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">StablePtr</span> a)
 newStablePtr x <span class="fu">=</span> <span class="kw">do</span>
     fromUIO <span class="fu">$</span> \w <span class="ot">-&gt;</span> <span class="kw">case</span> c_newStablePtr (toBang_ x) w <span class="kw">of</span>
-        (<span class="st"># w', s #) -&gt; (# w', fromBang_ s #)</span>
+        (<span class="fu">#</span> w', s <span class="fu">#</span>) <span class="ot">-&gt;</span> (<span class="fu">#</span> w', fromBang_ s <span class="fu">#</span>)
 
 <span class="co">-- File: ajhc/lib/jhc/Jhc/IO.hs</span>
 <span class="ot">fromUIO ::</span> <span class="dt">UIO</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> a
 fromUIO x <span class="fu">=</span> <span class="dt">IO</span> (<span class="dt">ST</span> x)
 
 <span class="co">-- File: ajhc/lib/jhc-prim/Jhc/Prim/IO.hs</span>
-<span class="kw">data</span> <span class="dt">State_</span><span class="ot"> ::</span> <span class="fu">*</span> <span class="ot">-&gt;</span> <span class="st">#</span>
+<span class="kw">data</span> <span class="dt">State_</span><span class="ot"> ::</span> <span class="fu">*</span> <span class="ot">-&gt;</span> <span class="fu">#</span>
 <span class="kw">data</span> <span class="dt">RealWorld</span><span class="ot"> ::</span> <span class="fu">*</span>
-<span class="kw">type</span> <span class="dt">UST</span> s a <span class="fu">=</span> <span class="dt">State_</span> s <span class="ot">-&gt;</span> (<span class="st"># State_ s, a #)</span>
+<span class="kw">type</span> <span class="dt">UST</span> s a <span class="fu">=</span> <span class="dt">State_</span> s <span class="ot">-&gt;</span> (<span class="fu">#</span> <span class="dt">State_</span> s, a <span class="fu">#</span>)
 <span class="kw">type</span> <span class="dt">UIO</span> a <span class="fu">=</span> <span class="dt">UST</span> <span class="dt">RealWorld</span> a
 <span class="kw">newtype</span> <span class="dt">ST</span> s a <span class="fu">=</span> <span class="dt">ST</span> (<span class="dt">UST</span> s a)
-<span class="kw">newtype</span> <span class="dt">IO</span> a <span class="fu">=</span> <span class="dt">IO</span> (<span class="dt">ST</span> <span class="dt">RealWorld</span> a)</code></pre>
+<span class="kw">newtype</span> <span class="dt">IO</span> a <span class="fu">=</span> <span class="dt">IO</span> (<span class="dt">ST</span> <span class="dt">RealWorld</span> a)</code></pre></div>
 <p>無事MVarが得られたので、なにか入れてみようと思うでゲソ。つまりputMVarを使うでゲソ。</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">putMVar  ::</span> <span class="dt">MVar</span> a <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
-putMVar (<span class="dt">MVar</span> mvar<span class="st">#) x = IO $ \ s# -&gt;</span>
-    <span class="kw">case</span> putMVar<span class="st"># mvar# x s# of</span>
-        s2<span class="st"># -&gt; (# s2#, () #)</span></code></pre>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">putMVar  ::</span> <span class="dt">MVar</span> a <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
+putMVar (<span class="dt">MVar</span> mvar<span class="fu">#</span>) x <span class="fu">=</span> <span class="dt">IO</span> <span class="fu">$</span> \ s<span class="fu">#</span> <span class="ot">-&gt;</span>
+    <span class="kw">case</span> putMVar<span class="fu">#</span> mvar<span class="fu">#</span> x s<span class="fu">#</span> <span class="kw">of</span>
+        s2<span class="fu">#</span> <span class="ot">-&gt;</span> (<span class="fu">#</span> s2<span class="fu">#</span>, () <span class="fu">#</span>)</code></pre></div>
 <p>やはりIOをほどいてプリミティブ関数に内容物をほおりこむでゲソ。</p>
 <p>最後にMVarから内容物を取り出してみるでゲソ。</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">takeMVar ::</span> <span class="dt">MVar</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> a
-takeMVar (<span class="dt">MVar</span> mvar<span class="st">#) = IO $ \ s# -&gt; takeMVar# mvar# s#</span></code></pre>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">takeMVar ::</span> <span class="dt">MVar</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> a
+takeMVar (<span class="dt">MVar</span> mvar<span class="fu">#</span>) <span class="fu">=</span> <span class="dt">IO</span> <span class="fu">$</span> \ s<span class="fu">#</span> <span class="ot">-&gt;</span> takeMVar<span class="fu">#</span> mvar<span class="fu">#</span> s<span class="fu">#</span></code></pre></div>
 <h3 id="cmm層">cmm層</h3>
 <p>newMVar#プリミティブはどーなっているでゲソ？ と、これは単にmvarを初期化しているだかのようでゲソ。</p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="co">// File: ghc/rts/PrimOps.cmm</span>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">// File: ghc/rts/PrimOps.cmm</span>
 stg_newMVarzh
 {
     <span class="co">/* args: none */</span>
@@ -141,9 +141,9 @@ stg_newMVarzh
 INFO_TABLE_CONSTR(stg_END_TSO_QUEUE,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,CONSTR_NOCAF_STATIC,<span class="st">&quot;END_TSO_QUEUE&quot;</span>,<span class="st">&quot;END_TSO_QUEUE&quot;</span>)
 { foreign <span class="st">&quot;C&quot;</span> barf(<span class="st">&quot;END_TSO_QUEUE object entered!&quot;</span>) never returns; }
 
-CLOSURE(stg_END_TSO_QUEUE_closure,stg_END_TSO_QUEUE);</code></pre>
+CLOSURE(stg_END_TSO_QUEUE_closure,stg_END_TSO_QUEUE);</code></pre></div>
 <p>またputMVar#というプリミティブも使っていたでゲソ。 さー長いソースコードでゲソ。気合いで読もうじゃなイカー。</p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="co">// File: ghc/rts/PrimOps.cmm</span>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">// File: ghc/rts/PrimOps.cmm</span>
 stg_putMVarzh
 {
     W_ mvar, val, info, tso, q;
@@ -236,10 +236,10 @@ loop:
 }
 
 <span class="ot">#define PerformTake(stack, value)               \</span>
-    W_ sp;                                      \
-    sp = StgStack_sp(stack);                    \
-    W_[sp + WDS(<span class="dv">1</span>)] = value;                    \
-    W_[sp + WDS(<span class="dv">0</span>)] = stg_gc_unpt_r1_info;
+<span class="ot">    W_ sp;                                      \</span>
+<span class="ot">    sp = StgStack_sp(stack);                    \</span>
+<span class="ot">    W_[sp + WDS(1)] = value;                    \</span>
+<span class="ot">    W_[sp + WDS(0)] = stg_gc_unpt_r1_info;</span>
 
 <span class="co">// File: ghc/includes/rts/storage/SMPClosureOps.h</span>
 EXTERN_INLINE StgInfoTable *lockClosure(StgClosure *p)
@@ -393,12 +393,13 @@ unblock:
     <span class="co">// difference quite clearly.</span>
 
     <span class="co">// cap-&gt;context_switch = 1;</span>
-}</code></pre>
+}</code></pre></div>
 <p>xxx takeMVarについても調べること</p>
 <h2 id="作戦">作戦</h2>
 <p>xxx リメンバーセットのGCのためにファイナライザの実装が必要</p>
 <div class="figure">
-<img src="../draw/2013-06-22-remembered_set.png" />
+<img src="../draw/2013-06-22-remembered_set.png" alt />
+
 </div>
 <h2 id="実装">実装</h2>
 <h2 id="テスト">テスト</h2>

@@ -72,16 +72,18 @@
 <p>We selected the NetBSD as a monolithic kernel for rewriting. There is my hobby simply reasons, such as easy-to-read source code.</p>
 <p>The rewrite from scratch in typed language suddenly the NetBSD kernel written in the C language also is still severe. I want a little more comfortable? So but not all suddenly, and re-implement the same functionality in the typed language a little bit at a time while keeping a compilable / executable state. If you go with the type little by little, all the code I might be to work with typed language one day?</p>
 <div class="figure">
-<img src="../../draw/2012-12-27-arafura_design.png" />
+<img src="../../draw/2012-12-27-arafura_design.png" alt />
+
 </div>
 <p>I think it tries to call the Arafura this design of “snatch little by little in the typed language NetBSD kernel”. That’s good to sail the name of the sea starting from “A”, the first! (Also, small squid to change the color is a type of cuttlefish, Metasepia pfefferi is lived, Arafura of the Portuguese, which means “free man” But. is the origin so the archaic word “shallow consisting of a coral reef in many cases, where a failure of navigation also have a large number” when you fail to sail in this sea if …) Yes, the sea that begins with “B” this time it’s okay if you choose (design). I’m “Never give up” the watchword!</p>
 <h2 id="just-do-it">Just do it!</h2>
 <p>We have known jhc may be useful to develop Metasepi kernel. If snatch NetBSD kernel, we should write interrupt handler with Haskell language. It’s so difficult for us, today. Then, let’s snatch bootloader that has more easy design than NetBSD kernel. Everything starts at training.</p>
 <div class="figure">
-<img src="../../draw/2012-12-27-loader.png" />
+<img src="../../draw/2012-12-27-loader.png" alt />
+
 </div>
 <p>Structure of the module of NetBSD bootloader is as shown in the above figure. Following code is the boot2.c command line loop rewrited with jhc and Haskell language. <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Control.Monad</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Control.Monad</span>
 <span class="kw">import </span><span class="dt">Data.Maybe</span>
 <span class="kw">import </span><span class="dt">Data.Map</span> (<span class="dt">Map</span>)
 <span class="kw">import qualified</span> <span class="dt">Data.Map</span> <span class="kw">as</span> <span class="dt">Map</span>
@@ -111,17 +113,19 @@ main <span class="fu">=</span> <span class="kw">do</span>
   forever <span class="fu">$</span> <span class="kw">do</span>
     putStr <span class="st">&quot;&gt; &quot;</span>
     s <span class="ot">&lt;-</span> getLine
-    fromMaybe (putStr s) <span class="fu">$</span> Map.lookup s commands</code></pre>
+    fromMaybe (putStr s) <span class="fu">$</span> Map.lookup s commands</code></pre></div>
 <p>Display of help is as good Well, I’m throwing circle at FFI to existing code reads + boot kernel. Let’s compiled in such a way of utilizing these source code.</p>
 <div class="figure">
-<img src="../../draw/2012-12-27-compile.png" />
+<img src="../../draw/2012-12-27-compile.png" alt />
+
 </div>
 <p>Let’s run Metasepi arafura version of bootloader on qemu (2:15 at following video)!</p>
-<iframe width="420" height="315" src="//www.youtube.com/embed/0DPA7GC0_-0" frameborder="0" allowfullscreen></iframe>
-
+<iframe width="420" height="315" src="//www.youtube.com/embed/0DPA7GC0_-0" frameborder="0" allowfullscreen>
+</iframe>
 <p>Starting the kernel and display of help seems to be. First I do not want to misunderstand earnestly by the way!’s Successful experiment, 99% of the bootloader that I made this time but that it’s still made ​​by C language. It is as shown in the figure below and try to draw a sequence diagram the movement of this bootloader.</p>
 <div class="figure">
-<img src="../../draw/2013-01-09-sequence_diagram.png" />
+<img src="../../draw/2013-01-09-sequence_diagram.png" alt />
+
 </div>
 <p>Part sorry! Bottom line remains the C language source code of existing what. But by repeating snatch little by little from now, be described in typed language like Haskell many parts of the sequence shown above and not something a dream?</p>
 <h2 id="known-problems">Known problems</h2>

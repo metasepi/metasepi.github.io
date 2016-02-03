@@ -70,7 +70,7 @@
 <p><a href="2013-05-16-jhc_grin_to_c.html">Jhc compile pipeline: Grin =&gt; C (code example)</a> ではjhcのgrinコードのダンプとコンパイル結果のC言語コードを比較することで、 Grin=&gt;Cの変換を理解した気になっていたでゲソ。 しかし、Ajhcを再入可能にするためにはコンパイルパイプラインの吐き出すC言語コードの生成ルールそのものに修正を加える必要があるでゲソ。 まずは落ち着いてjhcのGrin=&gt;Cの変換エンジンを読んでみなイカ？</p>
 <h2 id="grin-c変換の最上位層">Grin =&gt; C変換の最上位層</h2>
 <p>ズバリ <a href="http://hackage.haskell.org/packages/archive/ajhc/0.8.0.6/doc/html/C-FromGrin2.html#v:compileGrin">compileGrin</a> という関数が用意されているでゲソ。</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/src/C/FromGrin2.hs</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/src/C/FromGrin2.hs</span>
 <span class="ot">compileGrin ::</span> <span class="dt">Grin</span> <span class="ot">-&gt;</span> (<span class="dt">LBS.ByteString</span>,<span class="dt">Requires</span>)
 compileGrin grin <span class="fu">=</span> (LBS.fromChunks code, req)  <span class="kw">where</span>
     code <span class="fu">=</span> [
@@ -90,7 +90,7 @@ compileGrin grin <span class="fu">=</span> (LBS.fromChunks code, req)  <span cla
         nh_stuff,
         text <span class="st">&quot;&quot;</span>,
         body
-        ]</code></pre>
+        ]</code></pre></div>
 <p>Grinという型をC言語のByteStringに変換するというそのまんまの型がcompileGrin関数でゲソ。 ansというのが出力するC言語コードの構造で、 <a href="2013-02-19-jhc_zen.html">jhc禅</a> で調べた最小のHaskellコードをコンパイルした結果と見比べると何がどこに対応するのかすぐにわかるでゲソ。</p>
 <h2 id="grin型">Grin型</h2>
 <p>注目すべきはイカの型でゲソ。</p>
@@ -102,7 +102,7 @@ compileGrin grin <span class="fu">=</span> (LBS.fromChunks code, req)  <span cla
 <li><a href="http://hackage.haskell.org/packages/archive/ajhc/0.8.0.6/doc/html/Grin-Grin.html#t:Exp">Exp型</a></li>
 <li><a href="http://hackage.haskell.org/packages/archive/ajhc/0.8.0.6/doc/html/Grin-Grin.html#t:Ty">Ty型</a></li>
 </ul>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/src/Grin/Grin.hs</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/src/Grin/Grin.hs</span>
 <span class="kw">data</span> <span class="dt">Grin</span> <span class="fu">=</span> <span class="dt">Grin</span> {
 <span class="ot">    grinEntryPoints ::</span> <span class="dt">GMap</span> <span class="dt">Atom</span> <span class="dt">FfiExport</span>,
 <span class="ot">    grinPhase ::</span> <span class="fu">!</span><span class="dt">Phase</span>,
@@ -211,12 +211,12 @@ compileGrin grin <span class="fu">=</span> (LBS.fromChunks code, req)  <span cla
 <span class="ot">    tyThunk ::</span> <span class="dt">TyThunk</span>,
 <span class="ot">    tySiblings ::</span> <span class="dt">Maybe</span> [<span class="dt">Atom</span>]
 }
-<span class="kw">newtype</span> <span class="dt">TyEnv</span> <span class="fu">=</span> <span class="dt">TyEnv</span> (<span class="dt">GMap</span> <span class="dt">Atom</span> <span class="dt">TyTy</span>)</code></pre>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/src/StringTable/Atom.hsc</span>
-<span class="kw">newtype</span> <span class="dt">Atom</span> <span class="fu">=</span> <span class="dt">Atom</span> (<span class="st">#type atom_t)</span></code></pre>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* File: ajhc/src/StringTable/StringTable_cbits.h */</span>
-<span class="kw">typedef</span> <span class="dt">uint32_t</span> atom_t;</code></pre>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/src/C/FFI.hs</span>
+<span class="kw">newtype</span> <span class="dt">TyEnv</span> <span class="fu">=</span> <span class="dt">TyEnv</span> (<span class="dt">GMap</span> <span class="dt">Atom</span> <span class="dt">TyTy</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/src/StringTable/Atom.hsc</span>
+<span class="kw">newtype</span> <span class="dt">Atom</span> <span class="fu">=</span> <span class="dt">Atom</span> (<span class="fu">#</span>type atom_t)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* File: ajhc/src/StringTable/StringTable_cbits.h */</span>
+<span class="kw">typedef</span> <span class="dt">uint32_t</span> atom_t;</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/src/C/FFI.hs</span>
 <span class="kw">data</span> <span class="dt">FfiExport</span> <span class="fu">=</span> <span class="dt">FfiExport</span> {
 <span class="ot">    ffiExportCName    ::</span> <span class="dt">CName</span>,
 <span class="ot">    ffiExportSafety   ::</span> <span class="dt">Safety</span>,
@@ -228,7 +228,7 @@ compileGrin grin <span class="fu">=</span> (LBS.fromChunks code, req)  <span cla
 <span class="co">-- File: ajhc/src/C/Prims.hs</span>
 <span class="kw">data</span> <span class="dt">Safety</span> <span class="fu">=</span> <span class="dt">Safe</span> <span class="fu">|</span> <span class="dt">Unsafe</span> <span class="kw">deriving</span>(<span class="dt">Eq</span>,<span class="dt">Ord</span>,<span class="dt">Show</span>)
 <span class="kw">data</span> <span class="dt">CallConv</span> <span class="fu">=</span> <span class="dt">CCall</span> <span class="fu">|</span> <span class="dt">StdCall</span> <span class="fu">|</span> <span class="dt">CApi</span> <span class="fu">|</span> <span class="dt">Primitive</span> <span class="fu">|</span> <span class="dt">DotNet</span>
-<span class="kw">newtype</span> <span class="dt">ExtType</span> <span class="fu">=</span> <span class="dt">ExtType</span> <span class="dt">PackedString</span></code></pre>
+<span class="kw">newtype</span> <span class="dt">ExtType</span> <span class="fu">=</span> <span class="dt">ExtType</span> <span class="dt">PackedString</span></code></pre></div>
 <p>xxx Op.Ty</p>
 <h2 id="cモナド">Cモナド?</h2>
 <p>ここでも注目すべきはイカの型でゲソ。</p>
@@ -238,13 +238,13 @@ compileGrin grin <span class="fu">=</span> (LBS.fromChunks code, req)  <span cla
 <li><a href="http://hackage.haskell.org/packages/archive/ajhc/0.8.0.6/doc/html/C-Generate.html#v:functionCall">functionCall関数</a></li>
 </ul>
 <h2 id="ユーティリティ関数">ユーティリティ関数</h2>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/src/C/FromGrin2.hs</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/src/C/FromGrin2.hs</span>
 <span class="ot">runC ::</span> <span class="dt">Grin</span> <span class="ot">-&gt;</span> <span class="dt">C</span> a <span class="ot">-&gt;</span> ((a,<span class="dt">HcHash</span>,<span class="dt">Written</span>),<span class="dt">Map.Map</span> <span class="dt">Atom</span> <span class="dt">TyRep</span>)
 <span class="ot">convertBody ::</span> <span class="dt">Exp</span> <span class="ot">-&gt;</span> <span class="dt">C</span> <span class="dt">Statement</span>
 <span class="ot">convertConst ::</span> <span class="dt">Val</span> <span class="ot">-&gt;</span> <span class="dt">C</span> (<span class="dt">Maybe</span> <span class="dt">Expression</span>)
 <span class="ot">compileGrin ::</span> <span class="dt">Grin</span> <span class="ot">-&gt;</span> (<span class="dt">LBS.ByteString</span>,<span class="dt">Requires</span>)
 <span class="ot">castFunc ::</span> <span class="dt">Op.ConvOp</span> <span class="ot">-&gt;</span> <span class="dt">Op.Ty</span> <span class="ot">-&gt;</span> <span class="dt">Op.Ty</span> <span class="ot">-&gt;</span> <span class="dt">Expression</span> <span class="ot">-&gt;</span> <span class="dt">Expression</span>
-convertPrim p vs ty</code></pre>
+convertPrim p vs ty</code></pre></div>
 <p>
   <div id="disqus_thread"></div>
   <script type="text/javascript">

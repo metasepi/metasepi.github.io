@@ -85,7 +85,7 @@
 <p>いきなりAjhcの吐くコードを並列実行可能にすることはハードルが高すぎるでゲソ。 まず再入可能を実現しなイカ？</p>
 <h2 id="スナッチ対象を決めるでゲソ">スナッチ対象を決めるでゲソ</h2>
 <p>再入可能を実現するにあたって、何かアプリケーション例があった方が良いでゲソ。 <a href="https://github.com/ajhc/demo-cortex-m3">Cortex-M3向けデモ</a> の中にイカのようなコードがあるでゲソ。</p>
-<pre class="sourceCode gnuassembler"><code class="sourceCode gnuassembler"><span class="co">/* File: demo-cortex-m3/stm32f3-discovery/Device/startup_stm32f30x.s */</span>
+<div class="sourceCode"><pre class="sourceCode gnuassembler"><code class="sourceCode gnuassembler"><span class="co">/* File: demo-cortex-m3/stm32f3-discovery/Device/startup_stm32f30x.s */</span>
  	<span class="kw">.section</span>	.isr_vector,<span class="st">&quot;a&quot;</span>,%progbits
 	<span class="kw">.type</span>	g_pfnVectors, %object
 	<span class="kw">.size</span>	g_pfnVectors, .-g_pfnVectors
@@ -95,8 +95,8 @@
 	<span class="kw">.word</span>	Reset_Handler
 <span class="co">/* snip */</span>
 	<span class="kw">.word</span>	PendSV_Handler
-	<span class="kw">.word</span>	SysTick_Handler</code></pre>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="co">// File: demo-cortex-m3/stm32f3-discovery/src/main.c</span>
+	<span class="kw">.word</span>	SysTick_Handler</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">// File: demo-cortex-m3/stm32f3-discovery/src/main.c</span>
 __IO <span class="dt">uint32_t</span> TimingDelay = <span class="dv">0</span>;
 
 <span class="dt">void</span> SysTick_Handler(<span class="dt">void</span>)
@@ -117,7 +117,7 @@ __IO <span class="dt">uint32_t</span> TimingDelay = <span class="dv">0</span>;
   TimingDelay = nTime;
 
   <span class="kw">while</span>(TimingDelay != <span class="dv">0</span>);
-}</code></pre>
+}</code></pre></div>
 <p>このしくみはDelay関数による指定時間待ち合わせを実現するために、イカのような動作を期待しているでゲソ。</p>
 <ol style="list-style-type: decimal">
 <li>Delay関数呼び出し</li>
@@ -190,7 +190,7 @@ fFE@.CCall.fib w8 = do
       case h100018 of
         1 -&gt; do</code></pre>
 <p>と出力されたC言語コード <a href="https://github.com/ajhc/ajhc-dumpyard/blob/master/use_foreign_export/hs_main.c">hs_main.c</a></p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="dt">static</span> <span class="dt">uint32_t</span> A_STD
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="dt">static</span> <span class="dt">uint32_t</span> A_STD
 fFE$__CCall_fib(gc_t gc,<span class="dt">uint32_t</span> v8)
 {
         wptr_t v68;
@@ -202,7 +202,7 @@ fFE$__CCall_fib(gc_t gc,<span class="dt">uint32_t</span> v8)
 fib(<span class="dt">int</span> x11)
 {
         <span class="kw">return</span> (<span class="dt">int</span>)fFE$__CCall_fib(saved_gc,(<span class="dt">uint32_t</span>)x11);
-}</code></pre>
+}</code></pre></div>
 <p>を見比べると、どうやら“fFE$__CCall_fib“という関数がforeign export ccallした関数のようでゲソ。 また <a href="https://github.com/ajhc/ajhc-dumpyard/blob/master/use_foreign_export/hs_main.c_final.datalog">hs_main.c_final.datalog</a> を読むとイカのように型の定義まであるじゃなイカ。</p>
 <pre><code>% functions
 -- snip --
@@ -218,7 +218,7 @@ subfunc('fW@.fR@.fJhc.List.243_sub','fFE@.CCall.fib').
 -- snip --
 perform(assign,'fFE@.CCall.fib@ret@0','v35').</code></pre>
 <p>このforeign export ccallな関数はgrinの中ではそのまんまCCallという型で表現されているでゲソ。 ということはイカのconvertFunc関数を修正すれば、 GCスタックとHaskellヒープの割り当て/解放処理をforeign export ccallな関数に注入できそうじゃなイカ。</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- ajhc/src/C/FFI.hs</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- ajhc/src/C/FFI.hs</span>
 <span class="kw">data</span> <span class="dt">FfiExport</span> <span class="fu">=</span> <span class="dt">FfiExport</span> {
 <span class="ot">    ffiExportCName    ::</span> <span class="dt">CName</span>,
 <span class="ot">    ffiExportSafety   ::</span> <span class="dt">Safety</span>,
@@ -248,22 +248,22 @@ convertFunc ffie (n,as <span class="fu">:-&gt;</span> body) <span class="fu">=</
                                       zipWith cast (map snd as')
                                                    (map variable newVars))]
 
-        return (function fnname fr (mgct as') ats s <span class="fu">:</span> mstub)</code></pre>
+        return (function fnname fr (mgct as') ats s <span class="fu">:</span> mstub)</code></pre></div>
 <h3 id="使用済みgcスタックとhaskellヒープを次回確保用にプール">使用済みGCスタックとHaskellヒープを次回確保用にプール</h3>
 <p>今のAjhcは通常イカのようにGCスタックとHaskellヒープを管理しているでゲソ。</p>
 <ul>
 <li>GCスタック: mallocで確保。サイズは1&lt;&lt;18エントリ</li>
 <li>Haskellヒープ: 1MBずつmegablockが補給される</li>
 </ul>
-<p>“<em>JHC</em>JGC_FIXED_MEGABLOCK” defineが有効な場合、 GCスタックとHaskellヒープはどちらも固定サイズで唯一一つだけ確保されるのだったでゲソ。 少し冗長になるでゲソが、Cortex-M4に対応するにはイカのコンパイルフラグが必要になりそうでゲソ。</p>
+<p>“_JHC_JGC_FIXED_MEGABLOCK&quot; defineが有効な場合、 GCスタックとHaskellヒープはどちらも固定サイズで唯一一つだけ確保されるのだったでゲソ。 少し冗長になるでゲソが、Cortex-M4に対応するにはイカのコンパイルフラグが必要になりそうでゲソ。</p>
 <ul>
-<li>“<em>JHC</em>JGC_GCSTACK_SIZE”: GCスタックのサイズ指定</li>
-<li>“<em>JHC</em>JGC_FIXEDNUM_GCSTACK”: GCスタックの個数(個数限定)</li>
-<li>“<em>JHC</em>JGC_MEGABLOCK_SHIFT”: megablockのサイズ指定</li>
-<li>“<em>JHC</em>JGC_BLOCK_SHIFT”: blockのサイズ指定</li>
-<li>“<em>JHC</em>JGC_FIXEDNUM_MEGABLOCK”: megablockの個数(個数限定)</li>
+<li>“_JHC_JGC_GCSTACK_SIZE“: GCスタックのサイズ指定</li>
+<li>“_JHC_JGC_FIXEDNUM_GCSTACK“: GCスタックの個数(個数限定)</li>
+<li>“_JHC_JGC_MEGABLOCK_SHIFT“: megablockのサイズ指定</li>
+<li>“_JHC_JGC_BLOCK_SHIFT“: blockのサイズ指定</li>
+<li>“_JHC_JGC_FIXEDNUM_MEGABLOCK“: megablockの個数(個数限定)</li>
 </ul>
-<p>“<em>JHC</em>JGC_FIXED_MEGABLOCK”フラグは意味が変更になってしまうので撤廃するでゲソ。</p>
+<p>“_JHC_JGC_FIXED_MEGABLOCK“フラグは意味が変更になってしまうので撤廃するでゲソ。</p>
 <p>また、GCスタックとHaskellヒープを動的に確保する場合も固定で確保する場合も Ajhcランタイム内部のリストにプールしておき、 要求された時にmallocを呼ばずにミューテターに渡せるようにしたいでゲソ。 GCスタックもmegablockも一つのエントリは固定サイズなので、 見分けがつかないはずでゲソ。</p>
 <h3 id="ランタイムのapi修正">ランタイムのAPI修正</h3>
 <p>今回の変更でstruct s_arenaを文脈毎に分割して持つことになるでゲソ。 そこで、AjhcランタイムのAPIもそれに合わせて修正が必要になるでゲソ。</p>
@@ -282,7 +282,7 @@ convertFunc ffie (n,as <span class="fu">:-&gt;</span> body) <span class="fu">=</
 </ul></li>
 </ul>
 <p>gc_new_foreignptrとかは対応しなくていいんだろうかちょっと不安でゲソ</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/lib/jhc/Jhc/ForeignPtr.hs</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/lib/jhc/Jhc/ForeignPtr.hs</span>
 foreign <span class="kw">import </span>safe ccall gc_malloc_foreignptr
 <span class="ot">    ::</span> <span class="dt">Word</span>     <span class="co">-- alignment in words</span>
     <span class="ot">-&gt;</span> <span class="dt">Word</span>     <span class="co">-- size in words</span>
@@ -295,16 +295,16 @@ foreign <span class="kw">import </span>safe ccall gc_new_foreignptr ::
 foreign <span class="kw">import </span>unsafe ccall gc_add_foreignptr_finalizer
 <span class="ot">    ::</span> <span class="dt">Bang_</span> (<span class="dt">ForeignPtr</span> a)
     <span class="ot">-&gt;</span> <span class="dt">FinalizerPtr</span> a
-    <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</code></pre>
+    <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</code></pre></div>
 <p>と、GCスタックへのポインタを渡していないライブラリがあるでゲソ。 そしてランタイムのGC側ではグローバル変数saved_gcからGCスタックを取り出しているでゲソ。</p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* File: ajhc/rts/rts/gc_jgc.c */</span>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* File: ajhc/rts/rts/gc_jgc.c */</span>
 heap_t A_STD
 gc_new_foreignptr(HsPtr ptr) {
         HsPtr *res = gc_array_alloc_atomic(saved_gc, <span class="dv">2</span>, SLAB_FLAG_FINALIZER);
         res[<span class="dv">0</span>] = ptr;
         res[<span class="dv">1</span>] = NULL;
         <span class="kw">return</span> TO_SPTR(P_WHNF, res);
-}</code></pre>
+}</code></pre></div>
 <p>このように一旦GCスタックへのポインタの受け渡しが途切れる箇所がいくつかあり、それは</p>
 <ul>
 <li>gc_malloc_foreignptr</li>
@@ -387,7 +387,7 @@ lib/jhc/System/Mem.hs:foreign import ccall safe &quot;hs_perform_gc&quot; perfor
 <p><a href="https://github.com/ajhc/ajhc/commit/889d2cf5d557b9d5b41a318efa8237d487de4142">foreign import jhc_context ccall</a> というAjhc専用のimport種別を作成して、この種別が有効な場合にはC言語の関数にgcとarenaを引数渡しするようになったでゲソ。</p>
 <p>ところで <a href="http://www.haskell.org/onlinereport/haskell2010/haskellch8.html">Haskell 2010: 8 Foreign Function Interface</a> によると、hs_perform_gc関数には引数を取れない決まりでゲソ。 するとRTSをロックして次回s_alloc時にGCを実行するようなフラグをarenaに立ててやる必要がありそうでゲソ。 とりあえず生存しているコンテキストに対応するarenaに対して <a href="https://github.com/ajhc/ajhc/commit/fe31a9dd047ed0a564955a51ff51582f05f08b1f#L1L715">次回s_alloc呼び出しの際に強制GC実行</a> するようにしてみたでゲソ。</p>
 <p>さらにs_cacheがグローバル管理されているのもなんとかしたいでゲソ。 s_cacheの定義を新規structにまとめて、arenaの下にそのstructを配置すればなんとかなりそうじゃなイカ。</p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* File: ajhc/rts/rts/gc_jgc_internal.h */</span>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* File: ajhc/rts/rts/gc_jgc_internal.h */</span>
 <span class="kw">struct</span> s_cache {
         SLIST_ENTRY(s_cache) next;
         SLIST_HEAD(,s_block) blocks;
@@ -419,20 +419,20 @@ jhc_hs_init(<span class="dt">void</span>)
                         wptr_t x7 = s_alloc(gc,arena,cCJhc_Prim_Prim_$x3a);
                         ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x7)-&gt;a1 = v106;
                         ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x7)-&gt;a2 = v69834446;
-                        <span class="kw">return</span> x7;</code></pre>
+                        <span class="kw">return</span> x7;</code></pre></div>
 <p>同様にランタイムにあるグローバルs_cacheも <a href="https://github.com/ajhc/ajhc/commit/2c898ff294f93a6bbd6ad58c7dc26ab2aa87d8d4">arenaの下に移動</a> したでゲソ。</p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* File: ajhc/rts/rts/gc_jgc.c */</span>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* File: ajhc/rts/rts/gc_jgc.c */</span>
 <span class="co">// 7 to share caches with the first 7 tuples</span>
 <span class="ot">#define GC_STATIC_ARRAY_NUM 7</span>
 <span class="ot">#define GC_MAX_BLOCK_ENTRIES 150</span>
 
 <span class="dt">static</span> <span class="kw">struct</span> s_cache *array_caches[GC_STATIC_ARRAY_NUM];
-<span class="dt">static</span> <span class="kw">struct</span> s_cache *array_caches_atomic[GC_STATIC_ARRAY_NUM];</code></pre>
+<span class="dt">static</span> <span class="kw">struct</span> s_cache *array_caches_atomic[GC_STATIC_ARRAY_NUM];</code></pre></div>
 <h2 id="実験-pthreadを使ってtimingdelayをエミュレートしてみる">実験: pthreadを使ってTimingDelayをエミュレートしてみる</h2>
 <p>ハードウェア割り込みのエミュレートなので、forkOSは使わないでゲソがとにかくやってみるでゲソ。 …んんーーー <a href="https://github.com/ajhc/ajhc-dumpyard/tree/master/emulateTimingDelay">完成でゲソー!</a></p>
 <p>このプログラムはTimingとDelayの2つのスレッドが動作して、 Delayスレッドの待ち合わせをTimingスレッドが解除するでゲソ。 実行してみると3秒毎に経過時間がコンソールに印字されるはずでゲソ。</p>
 <p>まずC言語側から説明するでゲソ。 main関数はHaskellコードを実行する前にrun_timingDelayDecrement関数を新しいスレッドとして実行するでゲソ。 run_timingDelayDecrement関数は100ミリ秒毎にHaskellのtimingDelayDecrement関数を呼び出すでゲソ。 つまりこのスレッドはタイマー割り込みをエミュレーションしていることになるでゲソ。</p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="co">// main.c</span>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">// main.c</span>
 <span class="dt">static</span> <span class="dt">uint32_t</span> TimingDelay = <span class="dv">0</span>;
 
 <span class="dt">uint32_t</span> *
@@ -466,9 +466,9 @@ main(<span class="dt">int</span> argc, <span class="dt">char</span> *argv[])
 	}
         hs_exit();
         <span class="kw">return</span> <span class="dv">0</span>;
-}</code></pre>
+}</code></pre></div>
 <p>今度はHaskell側でゲソ。 先のrun_timingDelayDecrementスレッドから呼び出されるtimingDelayDecrement関数は単にポインタの先にある uint32_tの値を減算するだけでゲソ。 一方、Haskellのmain関数はmyDelay関数を繰り返し呼び出していて、 さっきのuint32_tに待ち合わせ時間を書き込んだ後、その値が0になるのをループで待ち合わせるでゲソ。</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE ForeignFunctionInterface #-}</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE ForeignFunctionInterface #-}</span>
 <span class="kw">import </span><span class="dt">Data.Word</span>
 <span class="kw">import </span><span class="dt">Control.Monad</span>
 <span class="kw">import </span><span class="dt">Foreign.Ptr</span>
@@ -497,7 +497,7 @@ myDelay nTime <span class="fu">=</span> <span class="kw">do</span>
         <span class="kw">if</span> (i <span class="fu">&gt;</span> <span class="dv">0</span>) <span class="kw">then</span> while <span class="kw">else</span> return ()
   while
 
-foreign <span class="kw">import </span>ccall &quot;c_extern.h getTime&quot; c_getTime :: <span class="dt">IO</span> <span class="dt">Word64</span></code></pre>
+foreign <span class="kw">import </span>ccall &quot;c_extern.h getTime&quot; c_getTime :: <span class="dt">IO</span> <span class="dt">Word64</span></code></pre></div>
 <p>これでスレッドの波をすいーいすいーじゃなイカー。</p>
 <p>
   <div id="disqus_thread"></div>

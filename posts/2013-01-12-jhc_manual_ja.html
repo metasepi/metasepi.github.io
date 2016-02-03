@@ -878,7 +878,11 @@ foreign import ccall &quot;math.h frexp&quot; c_frexp2 :: Double -&gt; (# Double
 <p>const.C_CONSTANT : constに続くテキストをコンパイル結果のC言語ソースコードに直接埋め込む</p>
 <p>peek.TYPE : TYPE型の値の読み込みプリミティブ</p>
 <p>poke.TYPE : TYPE型の値の書き込みプリミティブ</p>
-<p>sizeOf.TYPE, alignmentOf.TYPE, minBound.TYPE, maxBound.TYPE, umaxBound.TYPE : 内部型TYPEの各種属性</p>
+<dl>
+<dt>sizeOf.TYPE, alignmentOf.TYPE, minBound.TYPE, maxBound.TYPE, umaxBound.TYPE</dt>
+<dd>内部型TYPEの各種属性
+</dd>
+</dl>
 <p>error.MESSAGE : results in an error with constant message MESSAGE.</p>
 <p>constPeekByte : 指定したバイト数、定数値を読み込み、Jhc.Stringとして使う</p>
 <p>box : アンボックス化値を取り、それをボックス化する。ボックス化された形はimportされた型によって決まる</p>
@@ -962,7 +966,7 @@ merge=i686</code></pre>
 <tbody>
 <tr class="odd">
 <td align="left"><em>cc</em></td>
-<td align="left">Cコンパイラを指定。一般に手元でのコンパイルにはgccを指定し、クロスコンパイルには<span class="math"><em>A</em><em>R</em><em>C</em><em>H</em> − </span>HOST-gccを指定する。</td>
+<td align="left">Cコンパイラを指定。一般に手元でのコンパイルにはgccを指定し、クロスコンパイルには<span class="math inline"><em>A</em><em>R</em><em>C</em><em>H</em>−</span>HOST-gccを指定する。</td>
 </tr>
 <tr class="even">
 <td align="left"><em>byteorder</em></td>

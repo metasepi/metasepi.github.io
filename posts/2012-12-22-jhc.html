@@ -73,7 +73,8 @@
 <p>この記事は <a href="http://atnd.org/events/34386">Debian/Ubuntu JP Advent Calendar 2012 : ATND</a> と <a href="http://partake.in/events/45a01d39-af5e-42f1-91c7-e8fcc91db244">Haskell Advent Calendar 2012</a> の12/22(土曜)分でゲソー。</p>
 <p>またもや <a href="http://www.paraiso-lang.org/ikmsm/books/c83.html">関数型プログラミングの本</a> が出るでゲソ。コミックマーケット83 <a href="http://twitcmap.jp/?id=0083-3-YYa-02-a">3日目 東地区 Y-02a</a> で頒布予定なので、みんな買ってほしいでゲソ!</p>
 <div class="figure">
-<img src="http://www.paraiso-lang.org/ikmsm/images/c83-cover-s.jpg" />
+<img src="http://www.paraiso-lang.org/ikmsm/images/c83-cover-s.jpg" alt />
+
 </div>
 <ul>
 <li>第1章 インターフェース</li>
@@ -133,7 +134,8 @@ Fib_jhc:
 <h3 id="jhcのしくみ">jhcのしくみ</h3>
 <p>イカの図はjhc本体のコンパイルとjhcによるHaskellコードのコンパイルの関係を表わしているでゲソ。</p>
 <div class="figure">
-<img src="../draw/2012-12-22-jhc_compile.png" />
+<img src="../draw/2012-12-22-jhc_compile.png" alt />
+
 </div>
 <p>まずjhcはGHCによってコンパイルされるGHCの一アプリケーションでゲソ。 jhcがGHCによってコンパイルされるということはjhcはGHCのRTSで動くでゲソ。 このjhcがHaskellのソースコードをコンパイルする際はイカの段階をふむでゲソ。</p>
 <ol style="list-style-type: decimal">
@@ -167,7 +169,8 @@ $ nm Fib_jhc.o | grep &quot;U &quot;
                  U saved_gc</code></pre>
 <p>上記のようにjhcのコンパイルパイプラインを-Cオプションを使って C言語ソースコードで生成直後で止めるでゲソ。 さらに生成されたC言語ソースコードをGCCを使ってオブジェクトファイルにすると たった6つのシンボルにしか依存していないことがわかるでゲソ。 この6つの未解決シンボルは通常jhcのRTSによって解決されるのでゲソが、 もちろん自作しても問題ないのでゲソ。 GHCと異なり、このシンボルはイカのように単純な機能しか持っていないので、 自作するのも現実的な貝なんでゲッソ! もちろん自作RTSから直接ハードをさわるのも面白いかもしれないでゲソ。 これでどんな場所へもHaskell潜水艦でスイスイーじゃなイカー。</p>
 <div class="figure">
-<img src="../draw/2012-12-22-jhc_custom_rts.png" />
+<img src="../draw/2012-12-22-jhc_custom_rts.png" alt />
+
 </div>
 <p>なんだか上の図をぼーっと見ていると、自作RTSがkernelのように見えてきたでゲッソ。</p>
 <h2 id="debianパッケージ化">Debianパッケージ化</h2>

@@ -76,7 +76,7 @@
 <p>作る前にまずは作戦をねるでゲソー。</p>
 <h3 id="ghc-baseパッケージの設計をまねる">(1) GHC baseパッケージの設計をまねる</h3>
 <p><a href="http://hackage.haskell.org/packages/archive/base/latest/doc/html/src/Control-Concurrent.html#forkOS">GHCでのforkOSの実装</a> を見ると、StablePtrにIO関数を包んで、C言語のforkOS_createThread関数に渡しているでゲソ。 pthread_createは</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ghc/libraries/base/Control/Concurrent.hs</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ghc/libraries/base/Control/Concurrent.hs</span>
 foreign export ccall forkOS_entry
 <span class="ot">    ::</span> <span class="dt">StablePtr</span> (<span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
 
@@ -100,8 +100,8 @@ forkOS action0
         when (err <span class="fu">/=</span> <span class="dv">0</span>) <span class="fu">$</span> fail <span class="st">&quot;Cannot create OS thread.&quot;</span>
         tid <span class="ot">&lt;-</span> takeMVar mv
         freeStablePtr entry
-        return tid</code></pre>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* File: ghc/rts/posix/OSThreads.c */</span>
+        return tid</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* File: ghc/rts/posix/OSThreads.c */</span>
 <span class="dt">static</span> <span class="dt">void</span> *
 forkOS_createThreadWrapper ( <span class="dt">void</span> * entry )
 {
@@ -121,7 +121,7 @@ forkOS_createThread ( HsStablePtr entry )
     <span class="kw">if</span>(!result)
         pthread_detach(tid);
     <span class="kw">return</span> result;
-}</code></pre>
+}</code></pre></div>
 <p>どうやらGHCではStablePtrはFFIを越えることができて、その型はHsStablePtrのようでゲソ。 このようなコードをAjhcでも実現できなイカ？ ところが <a href="https://github.com/ajhc/ajhc-dumpyard/tree/master/try_pthread1">それぽいコード</a> を書いてみたところエラーになるじゃなイカ。 これはStablePtrは単なるスマートポインタになるはずでゲソが、 どうもこのスマートポインタを直接C言語コードに渡すのが禁止されているようでゲソ。</p>
 <pre><code>$ make
 --snip--
@@ -130,7 +130,7 @@ Compiling...
 jhc-conc-pthread/Jhc/Conc.hs:28  - Error: caught error processing decl: user error (createFunc: attempt to pass a void argument)
 jhc-conc-pthread/Jhc/Conc.hs:28  - Error: Type 'Foreign.StablePtr.StablePtr (IO ())' cannot be used in a foreign declaration</code></pre>
 <p>このスマートポインタを直接C言語コードに見せる行為をはたして許して良いものか考えどころでゲソ。。。 イカはforeignで使って良い要素を判定している箇所の抜き出しでゲソ。</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/src/E/FromHs.hs</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/src/E/FromHs.hs</span>
 <span class="kw">instance</span> <span class="dt">DataTableMonad</span> <span class="dt">C</span> <span class="kw">where</span>
     getDataTable <span class="fu">=</span> asks ceDataTable
 
@@ -172,15 +172,15 @@ processDecls cho ho' tiData <span class="fu">=</span> withStackStatus <span clas
         fullDataTable <span class="fu">=</span> dataTable <span class="ot">`mappend`</span> hoDataTable (hoBuild ho)
 <span class="co">--snip--</span>
     ds' <span class="ot">&lt;-</span> convertDecls tiData theProps
-        (hoClassHierarchy <span class="fu">$</span> hoTcInfo ho') allAssumps  fullDataTable decls</code></pre>
+        (hoClassHierarchy <span class="fu">$</span> hoTcInfo ho') allAssumps  fullDataTable decls</code></pre></div>
 <p>もう一つ気になるのはdeRefStablePtrを使ってIOを元に戻しても実行不能という点でゲソ。</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Foreign.StablePtr</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Foreign.StablePtr</span>
 
 <span class="ot">main ::</span> <span class="dt">IO</span> ()
 main <span class="fu">=</span> <span class="kw">do</span>
   p <span class="ot">&lt;-</span> newStablePtr <span class="fu">$</span> print <span class="st">&quot;hoge&quot;</span>
   d <span class="ot">&lt;-</span> deRefStablePtr p
-  d</code></pre>
+  d</code></pre></div>
 <p>上のコードをコンパイルすると、イカのようなエラーになるでゲソ。</p>
 <pre><code>$ ajhc --tdir=tmp -o Main Main.hs
 --snip--
@@ -210,7 +210,7 @@ tmp/main_code.c:1146:68: note: each undeclared identifier is reported only once 
 Exiting abnormally. Work directory is 'tmp'
 ajhc: user error (C code did not compile.)</code></pre>
 <p>これはイカのようなC言語コードをAjhcが吐き出すためでゲソ。 もうちょっと小細工すれば関数ポインタが使えるようになりそうじゃなイカ？</p>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="dt">static</span> <span class="dt">void</span> A_STD
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="dt">static</span> <span class="dt">void</span> A_STD
 ftheMain(gc_t gc)
 {
         saved_gc = gc;
@@ -222,18 +222,18 @@ HsPtr
 testThread(HsPtr x30)
 {
         <span class="kw">return</span> (HsPtr)fFE$__CCall_testThread(saved_gc,(uintptr_t)x30);
-}</code></pre>
+}</code></pre></div>
 <p>どうも上の不具合はイカのpatchで簡単に修正できるようでゲソ。たぶんこれはイージーミスだと思うでゲソ。</p>
-<pre class="sourceCode diff"><code class="sourceCode diff"><span class="kw">--- a/lib/jhc/Jhc/Type/Ptr.hs</span>
+<div class="sourceCode"><pre class="sourceCode diff"><code class="sourceCode diff"><span class="kw">--- a/lib/jhc/Jhc/Type/Ptr.hs</span>
 <span class="dt">+++ b/lib/jhc/Jhc/Type/Ptr.hs</span>
 <span class="dt">@@ -3,4 +3,4 @@ module Jhc.Type.Ptr where</span>
  import Jhc.Prim.Bits
 
  data {-# CTYPE &quot;HsPtr&quot; #-} Ptr a = Ptr Addr_
 <span class="st">-data {-# CTYPE &quot;FunPtr&quot; #-} FunPtr a = FunPtr FunAddr_</span>
-<span class="ot">+data {-# CTYPE &quot;HsFunPtr&quot; #-} FunPtr a = FunPtr FunAddr_</span></code></pre>
+<span class="ot">+data {-# CTYPE &quot;HsFunPtr&quot; #-} FunPtr a = FunPtr FunAddr_</span></code></pre></div>
 <p>しかしこれでFunPtrを使った関数ポインタを実現できたんでゲソが、 任意のIOを関数ポインタ化できることにはならないでゲソ。 具体的にはイカのような型になってしまっているforkOSの引数をIO ()にしたいでゲソ。</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">forkOS ::</span> <span class="dt">FunPtr</span> (<span class="dt">Ptr</span> () <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Ptr</span> ())) <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">Int</span></code></pre>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">forkOS ::</span> <span class="dt">FunPtr</span> (<span class="dt">Ptr</span> () <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Ptr</span> ())) <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">Int</span></code></pre></div>
 <p>GHCはどんな魔法を使っているのでゲソ？ <a href="https://github.com/ajhc/ajhc-dumpyard/tree/master/ghc_foreign_wrapper">GHCでforeign import ccall “wrapper”を使う例</a> を解析すれば何かわかるかもしれないでゲソ。 freeHaskellFunPtrの行方を探ったところ、 どうもghc/rts/Adjustor.cでwrapperが作ったコード片のラッパーを作るようでゲソ。 createAdjustorというのが主犯のようじゃなイカ。</p>
 <p>とりあえず任意のIOをFunPtrに変換するのはキツいにしても、 定数的なIOはラベルをふるだけなのだから比較的簡単にFunPtr化できるんじゃなイカ？</p>
 <p><a href="http://hackage.haskell.org/trac/ghc/wiki/Commentary/Rts/FFI">Commentary/Rts/FFI – GHC</a> を読んでみたでゲソが、具体的な実現方法については言及がないでゲソ。</p>
@@ -245,9 +245,9 @@ testThread(HsPtr x30)
 <pre><code>ajhc: Grin.FromE.compile'.ce in function: theMain
 can't grok expression: &lt;fromBang_ x128471745∷IO ()&gt; x62470114</code></pre>
 <p>このメッセージはcompile’関数が以下の型を意図せず受け取ったことをしめしているでゲソ。</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell">(<span class="dt">EAp</span> (<span class="dt">EPrim</span> (<span class="dt">PrimPrim</span> <span class="st">&quot;fromBang_&quot;</span>) [x] e1) e2)</code></pre>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">(<span class="dt">EAp</span> (<span class="dt">EPrim</span> (<span class="dt">PrimPrim</span> <span class="st">&quot;fromBang_&quot;</span>) [x] e1) e2)</code></pre></div>
 <p>ということはこのEApという型はどこかで変換されるべきで、そのしくみから漏れてきたと考えられるじゃなイカ。 しかし仮にイカのようなpatchをあてても…</p>
-<pre class="sourceCode diff"><code class="sourceCode diff"><span class="kw">--- a/lib/haskell-extras/Foreign/StablePtr.hs</span>
+<div class="sourceCode"><pre class="sourceCode diff"><code class="sourceCode diff"><span class="kw">--- a/lib/haskell-extras/Foreign/StablePtr.hs</span>
 <span class="dt">+++ b/lib/haskell-extras/Foreign/StablePtr.hs</span>
 <span class="dt">@@ -5,7 +5,9 @@ module Foreign.StablePtr(</span>
      castPtrToStablePtr,
@@ -279,7 +279,7 @@ can't grok expression: &lt;fromBang_ x128471745∷IO ()&gt; x62470114</code></pr
  foreign import ccall unsafe &quot;rts/stableptr.c c_derefStablePtr&quot; c_derefStablePtr :: Bang_ (StablePtr a) -&gt; UIO (Bang_ a)
 <span class="ot">+</span>
 <span class="ot">+foreign import ccall unsafe &quot;rts/stableptr.c c_newStablePtr&quot;   c_newStablePtrIO   :: IO a -&gt; UIO (StablePtr (IO a))</span>
-<span class="ot">+foreign import ccall unsafe &quot;rts/stableptr.c c_derefStablePtr&quot; c_derefStablePtrIO :: StablePtr (IO a) -&gt; UIO (IO a)</span></code></pre>
+<span class="ot">+foreign import ccall unsafe &quot;rts/stableptr.c c_derefStablePtr&quot; c_derefStablePtrIO :: StablePtr (IO a) -&gt; UIO (IO a)</span></code></pre></div>
 <p>ajhcのコンパイルでイカのようにエラーになってしまうでゲソ。 どうやらforeign importに渡せる型は限定されているようでゲソ。</p>
 <pre><code>Compiling...
 [1 of 4] Foreign.StablePtr
@@ -287,16 +287,16 @@ lib/haskell-extras/Foreign/StablePtr.hs:56  - Error: Type 'Foreign.StablePtr.Sta
 lib/haskell-extras/Foreign/StablePtr.hs:57  - Error: Type 'IO Foreign.StablePtr.39_a' cannot be used in a foreign declaration
 make[2]: *** [haskell-extras-0.8.1.hl] エラー 1</code></pre>
 <p>じゃあUIOを経由してStablePtrを作るのはどーなんでゲソ？</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">newStablePtrIO ::</span> <span class="dt">IO</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">StablePtr</span> (<span class="dt">UIO</span> a))
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">newStablePtrIO ::</span> <span class="dt">IO</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">StablePtr</span> (<span class="dt">UIO</span> a))
 newStablePtrIO x <span class="fu">=</span> newStablePtr (unIO x)
 
 <span class="ot">deRefStablePtrIO ::</span> <span class="dt">StablePtr</span> (<span class="dt">UIO</span> a) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">IO</span> a)
 deRefStablePtrIO x <span class="fu">=</span> <span class="kw">do</span>
   u <span class="ot">&lt;-</span> deRefStablePtr x
-  return <span class="fu">$</span> fromUIO u</code></pre>
+  return <span class="fu">$</span> fromUIO u</code></pre></div>
 <p>エラーは変化せず、そりゃそうカー。</p>
 <p>ちょっと立ち返って、StablePtrを経由したIO ()の授受というのは本来どのようなコードになるべきなんでゲソ？ イカのようなコード、つまりIO ()をStablePtrとBang_で二重に包んだような型を作り、 この型をpthread_create()で生成されるスレッドに渡して復元してほしいでゲソ。</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Foreign.StablePtr</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Foreign.StablePtr</span>
 <span class="kw">import </span><span class="dt">Jhc.Prim.Rts</span>
 
 <span class="ot">iToB ::</span> <span class="dt">IO</span> () <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Bang_</span> (<span class="dt">StablePtr</span> (<span class="dt">IO</span> ())))
@@ -313,9 +313,9 @@ runB b <span class="fu">=</span> <span class="kw">do</span>
 main <span class="fu">=</span> <span class="kw">do</span>
   l <span class="ot">&lt;-</span> getLine
   b <span class="ot">&lt;-</span> iToB <span class="fu">$</span> print l
-  runB b</code></pre>
+  runB b</code></pre></div>
 <p>ところが先のエラーがなぜ起きていたかというと予期しないEApがあったからじゃなイカ。 この変なEApだけごまかせばなんとかなるんじゃなイカ？ どうやらこのEApという型はfromAp関数でEVarを剥き出しにしてからパターンマッチされるようでゲソ。</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/src/E/Type.hs</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/src/E/Type.hs</span>
 <span class="ot">fromAp ::</span> <span class="dt">E</span> <span class="ot">-&gt;</span> (<span class="dt">E</span>,[<span class="dt">E</span>])
 fromAp e <span class="fu">=</span> f [] e <span class="kw">where</span>
     f as (<span class="dt">EAp</span> e a) <span class="fu">=</span> f (a<span class="fu">:</span>as) e
@@ -349,18 +349,18 @@ fromAp e <span class="fu">=</span> f [] e <span class="kw">where</span>
                         _ <span class="ot">-&gt;</span> <span class="kw">do</span>
                             ee <span class="ot">&lt;-</span> evalVar [<span class="dt">TyNode</span>] tvr
                             app fty ee as
-            _ <span class="ot">-&gt;</span> error <span class="st">&quot;FromE.ce: bad.&quot;</span></code></pre>
+            _ <span class="ot">-&gt;</span> error <span class="st">&quot;FromE.ce: bad.&quot;</span></code></pre></div>
 <p>そこでイカのようなfromBang_プリミティブを抹殺する関数を作ったでゲソ!</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">    stripBang ::</span> <span class="dt">E</span> <span class="ot">-&gt;</span> <span class="dt">E</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">    stripBang ::</span> <span class="dt">E</span> <span class="ot">-&gt;</span> <span class="dt">E</span>
     stripBang e <span class="fu">=</span> f e <span class="kw">where</span>
       f (<span class="dt">EAp</span> p a) <span class="fu">=</span> g p a
       f e <span class="fu">=</span> e
       g (<span class="dt">EPrim</span> (<span class="dt">PrimPrim</span> <span class="st">&quot;fromBang_&quot;</span>) [b] _) a <span class="fu">=</span> <span class="dt">EAp</span> b a
-      g e a <span class="fu">=</span> <span class="dt">EAp</span> e a</code></pre>
+      g e a <span class="fu">=</span> <span class="dt">EAp</span> e a</code></pre></div>
 <p>このstripBangを通してからfromApにeを食わせたところ無事エラーが出なくなったでゲソ。 ちょっと危険な気もするが、大目に見てほしいでゲソ。</p>
 <h2 id="実装">実装</h2>
 <p>ここまで来ればforkOSを実装するのは簡単でゲソ。</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/lib/haskell-extras/Control/Concurrent.hs</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/lib/haskell-extras/Control/Concurrent.hs</span>
 <span class="ot">{-# LANGUAGE ForeignFunctionInterface #-}</span>
 <span class="kw">module</span> <span class="dt">Control.Concurrent</span> (forkOS, <span class="dt">ThreadId</span>) <span class="kw">where</span>
 <span class="kw">import </span><span class="dt">Foreign.Ptr</span>
@@ -395,8 +395,8 @@ forkOS f <span class="fu">=</span> alloca <span class="fu">$</span> \ip <span cl
   pth <span class="ot">&lt;-</span> forkOScreateThread p_forkOScreateThreadWrapper (toBang_ s) ip
   i <span class="ot">&lt;-</span> peek ip
   when (i <span class="fu">/=</span> <span class="dv">0</span>) <span class="fu">$</span> fail <span class="st">&quot;Cannot create OS thread.&quot;</span>
-  return <span class="fu">$</span> <span class="dt">ThreadId</span> pth</code></pre>
-<pre class="sourceCode c"><code class="sourceCode c"><span class="co">// File: ajhc/rts/rts/conc.c</span>
+  return <span class="fu">$</span> <span class="dt">ThreadId</span> pth</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">// File: ajhc/rts/rts/conc.c</span>
 jhc_threadid_t
 forkOS_createThread(<span class="dt">void</span> *(*wrapper) (<span class="dt">void</span> *), <span class="dt">void</span> *entry, <span class="dt">int</span> *err)
 {
@@ -406,7 +406,7 @@ forkOS_createThread(<span class="dt">void</span> *(*wrapper) (<span class="dt">v
                 pthread_detach(tid);
         }
         <span class="kw">return</span> tid;
-}</code></pre>
+}</code></pre></div>
 <div class="footnotes">
 <hr />
 <ol>

@@ -70,11 +70,12 @@
 <hr>
 <p>jhcコンパイルパイプラインの図は <a href="http://repetae.net/computer/jhc/big-picture.pdf">An informal graph of the internal code motion in jhc (pdf)</a> にあるんでゲソがどうにも概念寄りで、実際にソースコードのどの箇所で処理を行なっているのか分かり難いでゲソ。 そこで、上記の図よりも実装寄りの図を描いてみたでゲソ。 だいたいさっきのbig-picture.pdfと対応が取れているでゲソ。</p>
 <div class="figure">
-<img src="../draw/2013-01-25-jhc_compile_flow.png" />
+<img src="../draw/2013-01-25-jhc_compile_flow.png" alt />
+
 </div>
 <p>これで地図が手にはいったので、気になる部分を読もうじゃなイカ。 この図の中で最適化を行なっていそうな3つの関数ソースコードから、 最適化してそうな部分をイカに抜き出してみたでゲソ。</p>
 <h2 id="processdecls関数">processDecls関数</h2>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">processDecls ::</span> <span class="dt">CollectedHo</span> <span class="ot">-&gt;</span> <span class="dt">Ho</span> <span class="ot">-&gt;</span> <span class="dt">TiData</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">CollectedHo</span>,<span class="dt">Ho</span>)
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">processDecls ::</span> <span class="dt">CollectedHo</span> <span class="ot">-&gt;</span> <span class="dt">Ho</span> <span class="ot">-&gt;</span> <span class="dt">TiData</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">CollectedHo</span>,<span class="dt">Ho</span>)
 processDecls cho ho' tiData <span class="fu">=</span> <span class="kw">do</span>
     <span class="kw">let</span> prog <span class="fu">=</span> program {
             progDataTable <span class="fu">=</span> fullDataTable,
@@ -112,9 +113,9 @@ processDecls cho ho' tiData <span class="fu">=</span> <span class="kw">do</span>
         choHoMap <span class="fu">=</span> Map.singleton (hoModuleGroup ho') ho' { hoBuild <span class="fu">=</span> newHoBuild},
         choCombinators <span class="fu">=</span> fromList <span class="fu">$</span> [ (combIdent c,c) <span class="fu">|</span> c <span class="ot">&lt;-</span> progCombinators prog ],
         choExternalNames <span class="fu">=</span> idMapToIdSet newMap
-        } <span class="ot">`mappend`</span> cho,ho' { hoBuild <span class="fu">=</span> newHoBuild })</code></pre>
+        } <span class="ot">`mappend`</span> cho,ho' { hoBuild <span class="fu">=</span> newHoBuild })</code></pre></div>
 <h2 id="compilewholeprogram関数">compileWholeProgram関数</h2>
-<pre class="sourceCode haskell"><code class="sourceCode haskell">    prog <span class="ot">&lt;-</span> return <span class="fu">$</span> programUpdate prog {
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">    prog <span class="ot">&lt;-</span> return <span class="fu">$</span> programUpdate prog {
         progMain   <span class="fu">=</span> tvrIdent main,
         progEntry <span class="fu">=</span> fromList <span class="fu">$</span> map tvrIdent (main<span class="fu">:</span>ffiExportNames),
         progCombinators <span class="fu">=</span> emptyComb { combHead <span class="fu">=</span> main, combBody <span class="fu">=</span> mainv }<span class="fu">:</span>map (unsetProperty prop_EXPORTED) (progCombinators prog)
@@ -163,9 +164,9 @@ processDecls cho ho' tiData <span class="fu">=</span> <span class="kw">do</span>
     prog <span class="ot">&lt;-</span> return <span class="fu">$</span> E.CPR.cprAnalyzeProgram prog
     prog <span class="ot">&lt;-</span> simplifyProgram SS.emptySimplifyOpts {
         SS.so_postLift <span class="fu">=</span> <span class="dt">True</span>, SS.so_finalPhase <span class="fu">=</span> <span class="dt">True</span> } <span class="st">&quot;PostLiftSimplify&quot;</span> verbose prog
-    prog <span class="ot">&lt;-</span> return <span class="fu">$</span> atomizeApps <span class="dt">True</span> prog</code></pre>
+    prog <span class="ot">&lt;-</span> return <span class="fu">$</span> atomizeApps <span class="dt">True</span> prog</code></pre></div>
 <h2 id="compiletogrin関数">compileToGrin関数</h2>
-<pre class="sourceCode haskell"><code class="sourceCode haskell">    x <span class="ot">&lt;-</span> Grin.FromE.compile prog
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">    x <span class="ot">&lt;-</span> Grin.FromE.compile prog
     x <span class="ot">&lt;-</span> transformGrin simplifyParms x
     x <span class="ot">&lt;-</span> explicitRecurse x
     lintCheckGrin x
@@ -188,7 +189,7 @@ processDecls cho ho' tiData <span class="fu">=</span> <span class="kw">do</span>
     x <span class="ot">&lt;-</span> transformGrin devolveTransform x
     x <span class="ot">&lt;-</span> transformGrin simplifyParms x
     x <span class="ot">&lt;-</span> return <span class="fu">$</span> twiddleGrin x
-    x <span class="ot">&lt;-</span> storeAnalyze x</code></pre>
+    x <span class="ot">&lt;-</span> storeAnalyze x</code></pre></div>
 <h2 id="コールグラフ">コールグラフ</h2>
 <p>この調査のために一旦コールグラフを書いたので、念の為はりつけておくでゲッソ。 ひょっとすると後日使うかもしれないじゃなイカ？</p>
 <pre><code>main
@@ -247,12 +248,12 @@ processDecls cho ho' tiData <span class="fu">=</span> <span class="kw">do</span>
             =&gt; System.system comm # gccでコンパイル</code></pre>
 <h2 id="主要な関数の型">主要な関数の型</h2>
 <p>さらにこの調査のために関数の型を調べる必要があったでゲソ。 どうもjhcの作者のJohnさんはトップレベルの関数に型シグニチャをつけない傾向があるでゲソ…イカンでげゲソ! 主要な関数の型はイカの通りでゲソ。</p>
-<pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">parseFiles ::</span> <span class="dt">Opt</span> <span class="ot">-&gt;</span> [<span class="dt">FilePath</span>] <span class="ot">-&gt;</span> [<span class="dt">String</span>] <span class="ot">-&gt;</span> [<span class="dt">Either</span> <span class="dt">Module</span> <span class="dt">FilePath</span>] <span class="ot">-&gt;</span> (<span class="dt">CollectedHo</span> <span class="ot">-&gt;</span> <span class="dt">Ho</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">CollectedHo</span>) <span class="ot">-&gt;</span> (<span class="dt">CollectedHo</span> <span class="ot">-&gt;</span> <span class="dt">Ho</span> <span class="ot">-&gt;</span> <span class="dt">TiData</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">CollectedHo</span>,<span class="dt">Ho</span>)) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">CompNode</span>,<span class="dt">CollectedHo</span>)
-<span class="ot">loadModules ::</span> <span class="dt">Opt</span> <span class="ot">-&gt;</span> [<span class="dt">FilePath</span>] <span class="ot">-&gt;</span> [<span class="dt">String</span>] <span class="ot">-&gt;</span> <span class="dt">SrcLoc</span> <span class="ot">-&gt;</span> [<span class="dt">Either</span> <span class="dt">Module</span> <span class="dt">FilePath</span>] <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Map.Map</span> <span class="dt">SourceHash</span> (<span class="dt">Module</span>,[(<span class="dt">Module</span>,<span class="dt">SrcLoc</span>)]),<span class="dt">HoHash</span>,<span class="dt">CompUnitGraph</span>)
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">parseFiles ::</span> <span class="dt">Opt</span> <span class="ot">-&gt;</span> [FilePath] <span class="ot">-&gt;</span> [<span class="dt">String</span>] <span class="ot">-&gt;</span> [<span class="dt">Either</span> <span class="dt">Module</span> FilePath] <span class="ot">-&gt;</span> (<span class="dt">CollectedHo</span> <span class="ot">-&gt;</span> <span class="dt">Ho</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">CollectedHo</span>) <span class="ot">-&gt;</span> (<span class="dt">CollectedHo</span> <span class="ot">-&gt;</span> <span class="dt">Ho</span> <span class="ot">-&gt;</span> <span class="dt">TiData</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">CollectedHo</span>,<span class="dt">Ho</span>)) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">CompNode</span>,<span class="dt">CollectedHo</span>)
+<span class="ot">loadModules ::</span> <span class="dt">Opt</span> <span class="ot">-&gt;</span> [FilePath] <span class="ot">-&gt;</span> [<span class="dt">String</span>] <span class="ot">-&gt;</span> <span class="dt">SrcLoc</span> <span class="ot">-&gt;</span> [<span class="dt">Either</span> <span class="dt">Module</span> FilePath] <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Map.Map</span> <span class="dt">SourceHash</span> (<span class="dt">Module</span>,[(<span class="dt">Module</span>,<span class="dt">SrcLoc</span>)]),<span class="dt">HoHash</span>,<span class="dt">CompUnitGraph</span>)
 <span class="ot">processCug ::</span> <span class="dt">CompUnitGraph</span> <span class="ot">-&gt;</span> <span class="dt">HoHash</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">CompNode</span>
 <span class="ot">typeCheckGraph ::</span> <span class="dt">Opt</span> <span class="ot">-&gt;</span> <span class="dt">CompNode</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
-<span class="ot">parseHsSource ::</span> <span class="dt">Opt</span> <span class="ot">-&gt;</span> <span class="dt">FilePath</span> <span class="ot">-&gt;</span> <span class="dt">LBS.ByteString</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">HsModule</span>,<span class="dt">LBS.ByteString</span>)
-<span class="ot">preprocessHs ::</span> <span class="dt">Opt</span> <span class="ot">-&gt;</span> <span class="dt">FilePath</span> <span class="ot">-&gt;</span> <span class="dt">LBS.ByteString</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">LBS.ByteString</span>
+<span class="ot">parseHsSource ::</span> <span class="dt">Opt</span> <span class="ot">-&gt;</span> FilePath <span class="ot">-&gt;</span> <span class="dt">LBS.ByteString</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">HsModule</span>,<span class="dt">LBS.ByteString</span>)
+<span class="ot">preprocessHs ::</span> <span class="dt">Opt</span> <span class="ot">-&gt;</span> FilePath <span class="ot">-&gt;</span> <span class="dt">LBS.ByteString</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">LBS.ByteString</span>
 <span class="ot">runParserWithMode ::</span> <span class="dt">ParseMode</span> <span class="ot">-&gt;</span> <span class="dt">P</span> a <span class="ot">-&gt;</span> <span class="dt">String</span> <span class="ot">-&gt;</span> ([<span class="dt">Warning</span>],<span class="dt">ParseResult</span> a)
 <span class="ot">doModules ::</span> <span class="dt">HoTcInfo</span> <span class="ot">-&gt;</span> [<span class="dt">HsModule</span>] <span class="ot">-&gt;</span> <span class="dt">IO</span>  (<span class="dt">HoTcInfo</span>,<span class="dt">Tc.TiData</span>)
 <span class="ot">determineExports ::</span> [(<span class="dt">Name</span>,<span class="dt">SrcLoc</span>,[<span class="dt">Name</span>])] <span class="ot">-&gt;</span> [(<span class="dt">Module</span>,[<span class="dt">Name</span>])] <span class="ot">-&gt;</span> [<span class="dt">ModInfo</span>]  <span class="ot">-&gt;</span> <span class="dt">IO</span> [<span class="dt">ModInfo</span>]
@@ -267,7 +268,7 @@ FrontEnd.Rename.hs<span class="fu">.</span><span class="ot">renameDecls ::</span
 <span class="ot">compileCompNode ::</span> (<span class="dt">CollectedHo</span> <span class="ot">-&gt;</span> <span class="dt">Ho</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">CollectedHo</span>) <span class="ot">-&gt;</span> (<span class="dt">CollectedHo</span> <span class="ot">-&gt;</span> <span class="dt">Ho</span> <span class="ot">-&gt;</span> <span class="dt">TiData</span>  <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">CollectedHo</span>,<span class="dt">Ho</span>)) <span class="ot">-&gt;</span> <span class="dt">Map.Map</span> <span class="dt">SourceHash</span> (<span class="dt">Module</span>,[(<span class="dt">Module</span>,<span class="dt">SrcLoc</span>)]) <span class="ot">-&gt;</span> <span class="dt">CompNode</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">CollectedHo</span>
 <span class="ot">processInitialHo ::</span> <span class="dt">CollectedHo</span> <span class="ot">-&gt;</span> <span class="dt">Ho</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">CollectedHo</span>
 <span class="ot">processDecls ::</span> <span class="dt">CollectedHo</span> <span class="ot">-&gt;</span> <span class="dt">Ho</span> <span class="ot">-&gt;</span> <span class="dt">TiData</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">CollectedHo</span>,<span class="dt">Ho</span>)
-<span class="ot">recordHoFile ::</span> <span class="dt">Ho</span> <span class="ot">-&gt;</span> <span class="dt">HoIDeps</span> <span class="ot">-&gt;</span> [<span class="dt">FilePath</span>] <span class="ot">-&gt;</span> <span class="dt">HoHeader</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
+<span class="ot">recordHoFile ::</span> <span class="dt">Ho</span> <span class="ot">-&gt;</span> <span class="dt">HoIDeps</span> <span class="ot">-&gt;</span> [FilePath] <span class="ot">-&gt;</span> <span class="dt">HoHeader</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
 <span class="ot">processCollectedHo ::</span> <span class="dt">CollectedHo</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
 <span class="ot">choDataTable ::</span> <span class="dt">CollectedHo</span> <span class="ot">-&gt;</span> <span class="dt">DataTable</span>
 <span class="ot">choCombinators ::</span> <span class="dt">CollectedHo</span> <span class="ot">-&gt;</span> <span class="dt">IdMap</span> <span class="dt">Comb</span>
@@ -287,7 +288,7 @@ Grin.FromE.compile<span class="ot"> ::</span> <span class="dt">Program</span> <s
 <span class="ot">twiddleGrin ::</span> <span class="dt">Grin</span> <span class="ot">-&gt;</span> <span class="dt">Grin</span>
 <span class="ot">storeAnalyze ::</span> <span class="dt">Grin</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">Grin</span>
 <span class="ot">compileGrinToC ::</span> <span class="dt">Grin</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
-<span class="ot">compileGrin ::</span> <span class="dt">Grin</span> <span class="ot">-&gt;</span> (<span class="dt">LBS.ByteString</span>,<span class="dt">Requires</span>)</code></pre>
+<span class="ot">compileGrin ::</span> <span class="dt">Grin</span> <span class="ot">-&gt;</span> (<span class="dt">LBS.ByteString</span>,<span class="dt">Requires</span>)</code></pre></div>
 <p>
   <div id="disqus_thread"></div>
   <script type="text/javascript">
