@@ -72,14 +72,14 @@
 <p>ここでは写像するモノリシックkernelとしてNetBSDを選定するでゲソ。 ソースコードが読みやすい、などの理由があるでゲソが、単にワシの趣味でゲソ。</p>
 <p>このC言語で書かれたNetBSD kernelをいきなり型付き言語でスクラッチから書き直すのもやはりシンドイでゲソ。 もう少し楽できなイカ？ そこでいきなり全部ではなく、コンパイル可能/実行可能な状態を保ちながら少しずつ型付き言語で同じ機能を再実装するでゲソ。 少しずつ型をつけていけば、 いつかは全てのコードが型付き言語で動くようになるんじゃなイカ？</p>
 <div class="figure">
-<img src="../draw/2012-12-27-arafura_design.png" alt />
+<img src="../draw/2012-12-27-arafura_design.png" />
 
 </div>
 <p>この「NetBSD kernelを型付き言語で少しずつ <a href="http://ja.wikipedia.org/wiki/%E3%82%B9%E3%83%8A%E3%83%83%E3%83%81%E3%83%A3%E3%83%BC">スナッチ</a> する」というデザインを <a href="http://ja.wikipedia.org/wiki/%E3%82%A2%E3%83%A9%E3%83%95%E3%83%A9%E6%B5%B7">アラフラ</a> (<a href="http://en.wikipedia.org/wiki/Arafura_Sea">Arafura</a>)と呼ぼうと思うでゲソ。 “A”からはじまる海の名前、最初の船出にはぴったりじゃなイカ! <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> もしこの海で航海に失敗しても、今度は“B”で始まる海(デザイン)を選べばいいんでゲソ。 合言葉は“ネバーギブアップ”でゲッソ!!!</p>
 <h2 id="やってみよう">やってみよう!</h2>
 <p>これまでの調査でjhcがMetasepiの設計に使えそうなことが判明したでゲソ。 NetBSD kernelは割り込みハンドラを作ったりしなければならないので、 もっと簡単なNetBSD bootloaderを手始めにjhcを使ってスナッチしてみるでゲソ。 何事もトレーニングでゲッソ。</p>
 <div class="figure">
-<img src="../draw/2012-12-27-loader.png" alt />
+<img src="../draw/2012-12-27-loader.png" />
 
 </div>
 <p>NetBSD bootloaderのモジュールの構造は上図のようになっているでゲソ。 とりあえずboot2.cの中にあるコマンドラインループをjhcを使って書いてみたでゲソ。 <a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></p>
@@ -115,7 +115,7 @@ main <span class="fu">=</span> <span class="kw">do</span>
     fromMaybe (putStr s) <span class="fu">$</span> Map.lookup s commands</code></pre></div>
 <p>helpの表示はまぁいいとして、 kernelの読み込み+起動は既存コードにFFIで丸投げでゲソ。 このソースコードをイカのような方法でコンパイルしてみるでゲソ。</p>
 <div class="figure">
-<img src="../draw/2012-12-27-compile.png" alt />
+<img src="../draw/2012-12-27-compile.png" />
 
 </div>
 <p>ほいでもってコンパイルして生成されたbootloaderバイナリをqemuで動かしてみるでゲッソ! (動画だと2:15ぐらいからMetasepi arafura版bootloaderをqemu上で起動しているでゲソ。)</p>
@@ -125,7 +125,7 @@ main <span class="fu">=</span> <span class="kw">do</span>
 </noscript>
 <p>うん、helpの表示とkernelの起動はできているようでゲソ。まずは実験成功でゲソ! ところでくれぐれも勘違いしてほしくないのは、 今回作ったbootloaderの99%はまだC言語製だということでゲソ。 このbootloaderの動きをシーケンス図で描いてみるとイカのようになるでゲソ。</p>
 <div class="figure">
-<img src="../draw/2013-01-09-sequence_diagram.png" alt />
+<img src="../draw/2013-01-09-sequence_diagram.png" />
 
 </div>
 <p>なんと残念!かんじんの部分は既存のC言語ソースコードのままでゲソ。 でもこれから少しずつスナッチを繰り返すことで、 上図のシーケンスの多くの部分をHaskellのような型付き言語で記述することも夢ではないんじゃなイカ？</p>
@@ -177,9 +177,8 @@ main <span class="fu">=</span> <span class="kw">do</span>
         This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
         <br>
         Metasepi project is supported by
-        <a href="http://www.centillion.co.jp/"><img alt="Centillion Japan Co.,Ltd." style="border-width:0" src="../img/centillion_78x25.png" /></a> ×
-        <a href="http://www.aics.riken.jp/en/"><img alt="RIKEN AICS" style="border-width:0" src="../img/riken-logo_55x25.png" /></a> ×
         <a href="https://liferobotics.jp/"><img alt="Life Robotics Inc." style="border-width:0" src="../img/liferobotics-logo_57x25.png" /></a> ×
+        <a href="http://www.aics.riken.jp/en/"><img alt="RIKEN AICS" style="border-width:0" src="../img/riken-logo_55x25.png" /></a> ×
         <a href="http://www.metasepi-design.com/"><img alt="METASEPI DESIGN" style="border-width:0" src="../img/metasepi_design_logo_82x25.png" /></a> ×
         <a href="../past-supporters.html">Past Supporters</a>
       </p>

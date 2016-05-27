@@ -69,7 +69,7 @@
 </ul>
 <hr>
 <div class="figure">
-<img src="http://www.paraiso-lang.org/ikmsm/images/c85-cover-s.jpg" alt />
+<img src="http://www.paraiso-lang.org/ikmsm/images/c85-cover-s.jpg" />
 
 </div>
 <p>この記事は <a href="http://qiita.com/advent-calendar/2013/android">Android Advent Calendar 2013 - Qiita [キータ]</a> の12/17(火曜)分じゃなイカ。</p>
@@ -82,7 +82,7 @@
 <p>記事が気になったら是非 <a href="http://www.paraiso-lang.org/ikmsm/books/c85-sample.pdf">サンプル版pdf</a> を読んでみてほしいでゲッソ!</p>
 <h2 id="haskellで書いたandroid-ndkアプリってどんな感じ">Haskellで書いたAndroid NDKアプリってどんな感じ？</h2>
 <p>Android NDKに対するスナッチ設計の詳細は先の同人誌に書いたので、 この記事ではHaskellで書いたAndroid NDKアプリの中身を見てみようと思うでゲソ。 題材はGoogle Playからダウンロードできる <a href="https://play.google.com/store/apps/details?id=org.metasepi.ajhc.android.cube">Cube</a> というアプリでゲソ。</p>
-<p><a href="https://play.google.com/store/apps/details?id=org.metasepi.ajhc.android.cube"><img src="../img/20131217_haskell_cube.png" alt /></a></p>
+<p><a href="https://play.google.com/store/apps/details?id=org.metasepi.ajhc.android.cube"><img src="../img/20131217_haskell_cube.png" /></a></p>
 <p>このアプリは単なるOpenGL ESのデモアプリで使い方はイカの動画を見ればすぐわかると思うでゲソ。</p>
 <iframe width="420" height="315" src="//www.youtube.com/embed/n6cepTfnFoo" frameborder="0" allowfullscreen>
 </iframe>
@@ -247,7 +247,7 @@ foreign export ccall <span class="st">&quot;androidMain&quot;</span><span class=
 <span class="ot">androidMain ::</span> <span class="dt">Ptr</span> <span class="dt">AndroidApp</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
 androidMain <span class="fu">=</span> androidMainHs androidActs p_engineHandleInput p_engineHandleCmd</code></pre></div>
 <div class="figure">
-<img src="../draw/20131217_android-fw.png" alt />
+<img src="../draw/20131217_android-fw.png" />
 
 </div>
 <p>このコード少しわかりにくいので図にしてみたでゲソ。 Androidアプリが起動するとまず最初にandroidMain関数が実行されるんでゲソ。 つまりandroidMain関数はこのアプリでのエントリポイントでゲソ。 この関数はC言語から呼び出せるengineHandleInput、engineHandleCmdという関数と共に4つの関数を内包したAndroidNdkActs型をHaskellで作られたAndroidフレームワークの初期化関数androidMainHsに渡すんじゃなイカ。 このフレームワーク側ではAndroid本体からイベントがあると、 いいかんじな処理をした後にAndroidNdkActs型の中の適切な関数を呼び出してアプリを動作させるんでゲソ。 例えば、タッチパネルが操作されてたらイカのような手順で関数が呼び出されることになるでゲソ。</p>
@@ -303,9 +303,8 @@ androidMain <span class="fu">=</span> androidMainHs androidActs p_engineHandleIn
         This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
         <br>
         Metasepi project is supported by
-        <a href="http://www.centillion.co.jp/"><img alt="Centillion Japan Co.,Ltd." style="border-width:0" src="../img/centillion_78x25.png" /></a> ×
-        <a href="http://www.aics.riken.jp/en/"><img alt="RIKEN AICS" style="border-width:0" src="../img/riken-logo_55x25.png" /></a> ×
         <a href="https://liferobotics.jp/"><img alt="Life Robotics Inc." style="border-width:0" src="../img/liferobotics-logo_57x25.png" /></a> ×
+        <a href="http://www.aics.riken.jp/en/"><img alt="RIKEN AICS" style="border-width:0" src="../img/riken-logo_55x25.png" /></a> ×
         <a href="http://www.metasepi-design.com/"><img alt="METASEPI DESIGN" style="border-width:0" src="../img/metasepi_design_logo_82x25.png" /></a> ×
         <a href="../past-supporters.html">Past Supporters</a>
       </p>

@@ -117,7 +117,7 @@ compileToGrin prog <span class="fu">=</span> <span class="kw">do</span>
 <li>Func: ftheMain :: () -&gt; ()</li>
 </ol>
 <p>また、上記の関数は-dgrin-graphが吐いた図によるとイカのような関係にあるらしいでゲソ。</p>
-<p><a href="https://gitorious.org/metasepi/jhc-arafura/blobs/raw/4c932225363068e235d211ad9340c94d2be45907/metasepi-arafura/misc/jhc_dump_fib/hs.out_grin.dot.png"><img src="https://gitorious.org/metasepi/jhc-arafura/blobs/raw/4c932225363068e235d211ad9340c94d2be45907/metasepi-arafura/misc/jhc_dump_fib/hs.out_grin.dot.png" alt /></a></p>
+<p><a href="https://gitorious.org/metasepi/jhc-arafura/blobs/raw/4c932225363068e235d211ad9340c94d2be45907/metasepi-arafura/misc/jhc_dump_fib/hs.out_grin.dot.png"><img src="https://gitorious.org/metasepi/jhc-arafura/blobs/raw/4c932225363068e235d211ad9340c94d2be45907/metasepi-arafura/misc/jhc_dump_fib/hs.out_grin.dot.png" /></a></p>
 <p>これらがどのようにC言語に写像されているか、 また逆にC言語ソースコードで上記由来ではない部分が存在するかどうかチェックしてみなイカ？</p>
 <h2 id="ダンプ解析-例による理解">ダンプ解析 (例による理解)</h2>
 <h3 id="caf-v-930757141">1. Caf: v-930757141</h3>
@@ -147,7 +147,7 @@ v<span class="fu">-</span><span class="dv">930757141</span> <span class="fu">:=<
 <span class="ot">#define g930757141 (MKLAZY_C(&amp;_g930757141))</span></code></pre></div>
 <p>これを図にまとめると、イカのようになるでゲソ。 CAF(Constant Applicative Form) というのは 「一度実行したら、その結果をメモ化して使いまわせるもの」のことでゲソ。 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> ということはg930757141というのは未評価のサンクで、 このサンクの値を評価して確定させるためにはCode pointerの先にある E__ftheMain$d3()関数を実行する必要があるということが予想できるじゃなイカ。</p>
 <div class="figure">
-<img src="../draw/2013-02-14-jhc_grin_to_c_1_v-930757141.png" alt />
+<img src="../draw/2013-02-14-jhc_grin_to_c_1_v-930757141.png" />
 
 </div>
 <p>ではこのサンクg930757141はどのように使われるんでゲソ？</p>
@@ -537,7 +537,7 @@ ftheMain$d3(gc_t gc)
 }</code></pre></div>
 <p>いきなりc2というグローバル変数が出てきたじゃなイカ。これはなんでゲソ？</p>
 <div class="figure">
-<img src="../draw/2013-02-17-jhc_grin_to_c_c2.png" alt />
+<img src="../draw/2013-02-17-jhc_grin_to_c_c2.png" />
 
 </div>
 <p>なるほどたしかに fR@.fJhc.Basics.++ &amp;“[]” [] とあったので“[]”という文字列が欲しかったんでゲソね。</p>
@@ -1052,7 +1052,7 @@ E__ftheMain$d3(gc_t gc,<span class="kw">struct</span> sFtheMain$d3* arg)
 <span class="kw">inline</span> <span class="dt">static</span> <span class="dt">void</span> update(<span class="dt">void</span> *t, wptr_t n) { GETHEAD(t) = (fptr_t)n; }</code></pre></div>
 <p>もう一度、“1. Caf: v-930757141”を振り替えってみるでゲソ。 詳細に図を描いてみたら未評価サンクが評価される動作がはっきり解ったじゃなイカ!</p>
 <div class="figure">
-<img src="../draw/2013-02-14-jhc_grin_to_c_E__f.png" alt />
+<img src="../draw/2013-02-14-jhc_grin_to_c_E__f.png" />
 
 </div>
 <p>うん。なんとなくGrin=&gt;Cがどんな変換なのかイメージがつかめたでゲソ。 次は例による理解ではなく、jhcのソースコードそのものを理解することもできるんじゃなイカ？</p>
@@ -1092,9 +1092,8 @@ E__ftheMain$d3(gc_t gc,<span class="kw">struct</span> sFtheMain$d3* arg)
         This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
         <br>
         Metasepi project is supported by
-        <a href="http://www.centillion.co.jp/"><img alt="Centillion Japan Co.,Ltd." style="border-width:0" src="../img/centillion_78x25.png" /></a> ×
-        <a href="http://www.aics.riken.jp/en/"><img alt="RIKEN AICS" style="border-width:0" src="../img/riken-logo_55x25.png" /></a> ×
         <a href="https://liferobotics.jp/"><img alt="Life Robotics Inc." style="border-width:0" src="../img/liferobotics-logo_57x25.png" /></a> ×
+        <a href="http://www.aics.riken.jp/en/"><img alt="RIKEN AICS" style="border-width:0" src="../img/riken-logo_55x25.png" /></a> ×
         <a href="http://www.metasepi-design.com/"><img alt="METASEPI DESIGN" style="border-width:0" src="../img/metasepi_design_logo_82x25.png" /></a> ×
         <a href="../past-supporters.html">Past Supporters</a>
       </p>
