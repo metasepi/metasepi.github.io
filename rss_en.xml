@@ -8,8 +8,16 @@
         <name>Kiwamu Okabe</name>
         <email>kiwamu@debian.or.jp</email>
     </author>
-    <updated>2016-01-30T00:00:00Z</updated>
+    <updated>2016-09-17T00:00:00Z</updated>
     <entry>
+    <title>c2ats - An utility to generate ATS interface from C code</title>
+    <link href="http://metasepi.org//en/posts/2016-09-17-c2ats.html" />
+    <id>http://metasepi.org//en/posts/2016-09-17-c2ats.html</id>
+    <published>2016-09-17T00:00:00Z</published>
+    <updated>2016-09-17T00:00:00Z</updated>
+    <summary type="html"><![CDATA[Create scaffold to rewrite large Unix-like kernel using ATS.]]></summary>
+</entry>
+<entry>
     <title>Functional IoT Meetup</title>
     <link href="http://metasepi.org//en/posts/2016-01-30-fpiot_0.html" />
     <id>http://metasepi.org//en/posts/2016-01-30-fpiot_0.html</id>
@@ -80,14 +88,6 @@
     <published>2014-07-26T00:00:00Z</published>
     <updated>2014-07-26T00:00:00Z</updated>
     <summary type="html"><![CDATA[Let's practice presentation for Haskell Symposium 2014!]]></summary>
-</entry>
-<entry>
-    <title>Metasepi team meeting</title>
-    <link href="http://metasepi.org//en/posts/2014-07-04-osc-nagoya-ats.html" />
-    <id>http://metasepi.org//en/posts/2014-07-04-osc-nagoya-ats.html</id>
-    <published>2014-07-04T00:00:00Z</published>
-    <updated>2014-07-04T00:00:00Z</updated>
-    <summary type="html"><![CDATA[Functional Nagoya likes ATS language?]]></summary>
 </entry>
 
 </feed>

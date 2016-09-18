@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>c2ats - An utility to generate ATS interface from C code - Metasepi</title>
+
+  <meta name="description" content="metasepi.org">
+  <meta name="author" content="Kiwamu Okabe">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="http://metasepi.org/rss_en.xml" rel="alternate" title="Blog" type="application/rss+xml">
+
+  <!-- CSS concatenated and minified via ant build script-->
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="../../css/syntax.css">
+  <link rel="stylesheet" href="../../css/calendar.css">
+  <!-- end CSS-->
+
+  <link rel="stylesheet" href="../../css/default.css">
+
+  <script src="../../js/libs/modernizr-2.0.6.min.js"></script>
+</head>
+
+<body onload="prettyPrint()">
+  <div id="fb-root"></div>
+  <script>
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = '//connect.facebook.net/ja_JP/all.js#xfbml=1';
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
+
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <a href="../../">Metasepi</a>
+      </div>
+
+      <div class="nav">
+        <li><a href="../../">Home</a></li>
+        <li><a href="../../en/posts.html">Blog</a>(<a href="../../posts.html">old</a>)</li>
+        <li><a href="../../papers.html">Papers</a></li>
+        <li><a href="../../map.html">Map</a></li>
+        <li><a href="../../memories.html">Memories</a></li>
+        <li><a href="../../about.html">About</a></li>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="content clearfix">
+      <h1>c2ats - An utility to generate ATS interface from C code</h1>
+<div class="info">Posted on September 17, 2016 / Tags: <a href="../../en/tags/ats.html">ats</a>, <a href="../../en/tags/haskell.html">haskell</a>, <a href="../../en/tags/c.html">c</a></div>
+<h2>Table of contents</h2>
+<ul>
+<li><a href="#motivation">Motivation</a></li>
+<li><a href="#the-c2ats-utility">The c2ats utility</a></li>
+<li><a href="#how-to-use-it">How to use it?</a></li>
+<li><a href="#future-plan">Future plan</a></li>
+</ul>
+<hr>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/qiFA3VyHLvg" frameborder="0" allowfullscreen>
+</iframe>
+<h2 id="motivation">Motivation</h2>
+<p>Today, we are choosing the <a href="../../map.html#bohai">Bohai</a> iteration which means rewriting <a href="http://netbsd.org/">NetBSD</a> kernel using <a href="http://www.ats-lang.org/">ATS</a> language. On the iteration, we should choose some C language function and rewrite it little by little. But in many cases, the function depends on many C language interfaces, which are needed to be imported into ATS code.</p>
+<div class="figure">
+<img src="../../draw/2016-09-17-interface_c_ats.png" />
+
+</div>
+<p>After <a href="http://fpiot.metasepi.org/">some trying</a>, I have felt that such import may cause mistake to assign signature to ATS function. Such mistake easily occurs undefined behavior.</p>
+<p>How about generating ATS code importing such C language interface? The C interface already has static types, which are weaker than ATS’s. Converting strong types into weak ones is hard. But I expect that the other way around is some easy.</p>
+<h2 id="the-c2ats-utility">The c2ats utility</h2>
+<ul>
+<li>Hackage: <a href="https://hackage.haskell.org/package/c2ats" class="uri">https://hackage.haskell.org/package/c2ats</a></li>
+<li>Source code: <a href="https://github.com/metasepi/c2ats" class="uri">https://github.com/metasepi/c2ats</a></li>
+</ul>
+<p>The c2ats is an utility to generate ATS’s sats file importing from C language header, semi-automatically. The sats file includes many declarations from C language as following:</p>
+<pre><code>$ vi example.h
+#include &lt;stdio.h&gt;
+$ c2ats gen example.h &gt; example.sats
+$ cat example.sats
+--snip--
+viewdef ptr_v_1 (a:t@ype, l:addr) = a @ l
+--snip--
+abst@ype struct_c2ats__IO_FILE // FIXME! Forward declaration.
+typedef type_c2ats_FILE = struct_c2ats__IO_FILE
+--snip--
+fun fun_c2ats_fread: {l1:addr} (!ptr_v_1(type_c2ats_FILE, l1) | ptr, type_c2ats_size_t, type_c2ats_size_t, ptr l1) -&gt; type_c2ats_size_t = &quot;mac#fread&quot;
+--snip--
+typedef struct_c2ats__IO_FILE = $extype_struct&quot;struct _IO_FILE&quot; of {
+  _flags = int,
+  _IO_read_ptr = ptr (* cPtr0(char) *),
+  _IO_read_end = ptr (* cPtr0(char) *),
+  _IO_read_base = ptr (* cPtr0(char) *),
+--snip--
+typedef type_c2ats__IO_FILE = struct_c2ats__IO_FILE
+--snip--</code></pre>
+<p>The <code>example.h</code> includes <code>stdio.h</code>. The c2ats takes a C language header and generates sats file into stdout. On above example, the sats file has <code>fread(3)</code> interface named <code>fun_c2ats_fread</code>, and the interface has a linear type (at-view) <code>ptr_v_1(type_c2ats_FILE, l1)</code> to prove that <code>ptr l1</code> points <code>type_c2ats_FILE</code>. The <code>type_c2ats_FILE</code> is an alias of <code>struct_c2ats__IO_FILE</code> which is imported from C language <code>struct _IO_FILE</code>.</p>
+<h2 id="how-to-use-it">How to use it?</h2>
+<p>First, you need following:</p>
+<ul>
+<li><a href="https://gcc.gnu.org/">GCC</a> to parse C language header</li>
+<li><a href="https://www.haskell.org/cabal/">cabal</a> to build <a href="https://www.haskell.org/">Haskell</a> code</li>
+</ul>
+<p>Then try to install the c2ats:</p>
+<pre><code>$ cabal install c2ats
+$ which c2ats
+/home/YourName/.cabal/bin/c2ats</code></pre>
+<p>Now we can use the c2ats utility.</p>
+<p>Let’s try some code using <code>fread(3)</code>. You need to call the c2ats to import C language interface as following, because the <code>fread(3)</code> is defined at <code>stdio.h</code>:</p>
+<pre><code>$ vi example.h
+#include &lt;stdio.h&gt;
+$ c2ats gen example.h &gt; example.sats
+$ wc -l example.sats
+318 example.sats</code></pre>
+<p>The <code>example.sats</code> has all of declarations in <code>stdio.h</code> and also the headers depended.</p>
+<p>You may write following code using imported interface from <code>stdio.h</code>:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* File: main.dats *)</span>
+<span class="ot">#include &quot;share/atspre_define.hats&quot;</span>
+<span class="ot">#include &quot;share/atspre_staload.hats&quot;</span>
+
+staload <span class="dt">UN</span> = <span class="st">&quot;prelude/SATS/unsafe.sats&quot;</span>
+
+staload <span class="st">&quot;example.sats&quot;</span>
+
+<span class="kw">fun</span> my_fopen (file: <span class="dt">string</span>, mode: <span class="dt">string</span>):
+  [l:addr] (ptr_v_1(type_c2ats_FILE, l) | ptr l) = ret where {
+  <span class="kw">val</span> pn = string2ptr file
+  <span class="kw">val</span> (pfnat, fpfnat | pn) = $UN<span class="kw">.</span>ptr_vtake pn
+  <span class="kw">val</span> pm = string2ptr mode
+  <span class="kw">val</span> (pfmat, fpfmat | pm) = $UN<span class="kw">.</span>ptr_vtake pm
+
+  <span class="kw">val</span> (pffp | fp) = fun_c2ats_fopen (pfnat, pfmat | pn, pm)
+
+  prval () = fpfnat pfnat
+  prval () = fpfmat pfmat
+
+  <span class="kw">val</span> ret = (pffp | fp)
+}
+
+<span class="kw">fun</span> my_fread {l:addr}{n:<span class="dt">int</span> | n &gt; <span class="dv">0</span>}
+  (pffp: !type_c2ats_FILE @ l | fp: ptr l, len: size_t (n)): (size_t, strptr) = ret where {
+  implement{} string_tabulate$fopr (s) = <span class="ch">'_'</span>
+  <span class="kw">val</span> buf = strnptr2strptr (string_tabulate len)
+  <span class="kw">val</span> pbuf = strptr2ptr buf
+
+  <span class="kw">val</span> r = fun_c2ats_fread (pffp | pbuf, <span class="dv">1</span><span class="dt">UL</span>, $UN<span class="kw">.</span>cast2ulint len, fp)
+  <span class="kw">val</span> r = $UN<span class="kw">.</span>cast2size r
+  <span class="kw">val</span> pbufr = add_ptr_bsz (pbuf, r)
+  <span class="kw">val</span> () = <span class="kw">if</span> r &lt; len <span class="kw">then</span> $UN<span class="kw">.</span>ptr0_set&lt;<span class="dt">char</span>&gt;(pbufr, '\<span class="dv">0</span>')
+
+  <span class="kw">val</span> ret = (r, buf)
+}
+
+<span class="kw">fun</span> my_fclose {l:addr} (pffp: type_c2ats_FILE @ l | fp: ptr l): <span class="dt">int</span> = ret where {
+  <span class="kw">val</span> ret = fun_c2ats_fclose (pffp | fp)
+
+  <span class="kw">val</span> fp = __cast (pffp | fp) where {
+    extern castfn __cast: {l1:addr} (ptr_v_1(type_c2ats_FILE, l1) | ptr l1) -&gt; ()
+  }
+}
+
+<span class="kw">fun</span> readshow {l:addr} (pffp: !type_c2ats_FILE @ l | fp: ptr l): void = {
+  <span class="kw">val</span> (r, str) = my_fread (pffp | fp, i2sz(<span class="dv">128</span>))
+  <span class="kw">val</span> () = print str
+  <span class="kw">val</span> () = free str
+  <span class="kw">val</span> () = <span class="kw">if</span> r &gt; <span class="dv">0</span> <span class="kw">then</span> readshow (pffp | fp)
+}
+
+implement main0 () = {
+  <span class="kw">val</span> (pffp | fp) = my_fopen (<span class="st">&quot;main.dats&quot;</span>, <span class="st">&quot;r&quot;</span>)
+  <span class="kw">val</span> () = readshow (pffp | fp)
+  <span class="kw">val</span> r = my_fclose (pffp | fp)
+}</code></pre></div>
+<p>Above code is using imported interfaces, <code>fun_c2ats_fopen</code>, <code>fun_c2ats_fread</code> and <code>fun_c2ats_fclose</code>. And the code is work:</p>
+<pre><code>$ patscc main.dats -DATS_MEMALLOC_LIBC
+$ ./a.out | head
+#include &quot;share/atspre_define.hats&quot;
+#include &quot;share/atspre_staload.hats&quot;
+
+staload UN = &quot;prelude/SATS/unsafe.sats&quot;
+
+staload &quot;example.sats&quot;
+
+fun my_fopen (file: string, mode: string):
+  [l:addr] (ptr_v_1(type_c2ats_FILE, l) | ptr l) = ret where {
+  val pn = string2ptr file</code></pre>
+<p>However, above code is so messy. Because imported interface has bad signatures. If modify sats files as following:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* example.sats *)</span>
+<span class="co">(* --snip-- *)</span>
+<span class="kw">fun</span> fun_c2ats_fclose: {l1:addr} (ptr_v_1(type_c2ats_FILE, l1) | ptr l1) -&gt; <span class="dt">int</span> = <span class="st">&quot;mac#fclose&quot;</span>
+<span class="co">(* --snip-- *)</span>
+<span class="kw">fun</span> fun_c2ats_fopen: (<span class="dt">string</span>, <span class="dt">string</span>) -&gt; [l1:addr] (ptr_v_1(type_c2ats_FILE, l1) | ptr l1) = <span class="st">&quot;mac#fopen&quot;</span>
+<span class="co">(* --snip-- *)</span>
+<span class="kw">fun</span> fun_c2ats_fread: {l1:addr} (!ptr_v_1(type_c2ats_FILE, l1) | ptr, size_t, size_t, ptr l1) -&gt; size_t = <span class="st">&quot;mac#fread&quot;</span>
+<span class="co">(* --snip-- *)</span></code></pre></div>
+<p>you can get better dats code as following:</p>
+<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* main.dats *)</span>
+<span class="ot">#include &quot;share/atspre_define.hats&quot;</span>
+<span class="ot">#include &quot;share/atspre_staload.hats&quot;</span>
+
+staload <span class="dt">UN</span> = <span class="st">&quot;prelude/SATS/unsafe.sats&quot;</span>
+
+staload <span class="st">&quot;example.sats&quot;</span>
+
+<span class="kw">fun</span> my_fread {l:addr}{n:<span class="dt">int</span> | n &gt; <span class="dv">0</span>}
+  (pffp: !type_c2ats_FILE @ l | fp: ptr l, len: size_t (n)): (size_t, strptr) = ret where {
+  implement{} string_tabulate$fopr (s) = <span class="ch">'_'</span>
+  <span class="kw">val</span> buf = strnptr2strptr (string_tabulate len)
+  <span class="kw">val</span> pbuf = strptr2ptr buf
+
+  <span class="kw">val</span> r = fun_c2ats_fread (pffp | pbuf, i2sz <span class="dv">1</span>, len, fp)
+  <span class="kw">val</span> pbufr = add_ptr_bsz (pbuf, r)
+  <span class="kw">val</span> () = <span class="kw">if</span> r &lt; len <span class="kw">then</span> $UN<span class="kw">.</span>ptr0_set&lt;<span class="dt">char</span>&gt;(pbufr, '\<span class="dv">0</span>')
+
+  <span class="kw">val</span> ret = (r, buf)
+}
+
+<span class="kw">fun</span> readshow {l:addr} (pffp: !type_c2ats_FILE @ l | fp: ptr l): void = {
+  <span class="kw">val</span> (r, str) = my_fread (pffp | fp, i2sz(<span class="dv">128</span>))
+  <span class="kw">val</span> () = print str
+  <span class="kw">val</span> () = free str
+  <span class="kw">val</span> () = <span class="kw">if</span> r &gt; <span class="dv">0</span> <span class="kw">then</span> readshow (pffp | fp)
+}
+
+implement main0 () = {
+  <span class="kw">val</span> (pffp | fp) = fun_c2ats_fopen (<span class="st">&quot;main.dats&quot;</span>, <span class="st">&quot;r&quot;</span>)
+  <span class="kw">val</span> () = readshow (pffp | fp)
+  <span class="kw">val</span> r = fun_c2ats_fclose (pffp | fp)
+}</code></pre></div>
+<p>Totally, the c2ats generates a scaffold (you may be familiar with <a href="http://rubyonrails.org/">Ruby on Rails</a>) to build ATS application. Sometimes, it’s useful to create application rapidly. However, such scaffold should be replaced with better signature until shipping our product.</p>
+<h2 id="future-plan">Future plan</h2>
+<p>The c2ats is not yet a completed product. We have some plans to use it on Metasepi project.</p>
+<ul>
+<li>More better support for forward declaration problem. Today, c2ats simply injects <code>abst@ype</code>.</li>
+<li>Generate split sats files from C language headers, because large project is hardly maintained by single sats file.</li>
+<li>Track changing original code. NetBSD kernel is daily growing up. Sometimes the generated sats files are orphaned. We can maintain freshness, if find changing C language header.</li>
+</ul>
+<p>After all, we’ll start to rewrite some NetBSD kernel driver using ATS language and c2ats.</p>
+<p>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_shortname = 'metasepi';
+    var disqus_identifier = '/en/posts/2016-09-17-c2ats.html';
+    var disqus_url = 'http://metasepi.org' + '/en/posts/2016-09-17-c2ats.html';
+    var disqus_title = 'c2ats - An utility to generate ATS interface from C code';
+    var disqus_developer = 1;
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>
+    Please enable JavaScript to view the 
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  <a href="http://disqus.com" class="dsq-brlink">
+    blog comments powered by <span.logo-disqus>Disqus</span>
+  </a>
+</p>
+
+    </div>
+
+    <footer>
+      <p>
+        This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
+        <br>
+        Metasepi project is supported by
+        <a href="https://liferobotics.jp/"><img alt="Life Robotics Inc." style="border-width:0" src="../../img/liferobotics-logo_57x25.png" /></a> ×
+        <a href="http://www.aics.riken.jp/en/"><img alt="RIKEN AICS" style="border-width:0" src="../../img/riken-logo_55x25.png" /></a> ×
+        <a href="http://www.metasepi-design.com/"><img alt="METASEPI DESIGN" style="border-width:0" src="../../img/metasepi_design_logo_82x25.png" /></a> ×
+        <a href="../../past-supporters.html">Past Supporters</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="/js/libs/jquery-1.6.2.min.js"><\/script>')</script>
+
+  <!-- scripts concatenated and minified via ant build script-->
+  <script defer src="../../js/plugins.js"></script>
+  <script defer src="../../js/script.js"></script>
+  <!-- end scripts-->
+
+  <script>
+    window._gaq = [['_setAccount','UA-158383-8'],['_trackPageview'],['_trackPageLoadTime']];
+    Modernizr.load({
+      load: ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js'
+    });
+  </script>
+
+  <!--[if lt IE 7 ]>
+    <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js">
+    <script>
+      window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})
+  <![endif]-->
+</body>
