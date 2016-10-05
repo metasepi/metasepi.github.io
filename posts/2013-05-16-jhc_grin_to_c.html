@@ -132,19 +132,19 @@ v<span class="fu">-</span><span class="dv">930757141</span> <span class="fu">:=<
         sptr_t rest[];
 } A_MAYALIAS node_t;
 
-<span class="ot">#define P_WHNF  0x0</span>
-<span class="ot">#define P_LAZY  0x1</span>
-<span class="ot">#define P_VALUE 0x2</span>
-<span class="ot">#define P_FUNC  0x3</span>
-<span class="ot">#define TO_SPTR_C(t,x) (typeof (x))((uintptr_t)(x) + (t))</span>
+<span class="pp">#define P_WHNF  0x0</span>
+<span class="pp">#define P_LAZY  0x1</span>
+<span class="pp">#define P_VALUE 0x2</span>
+<span class="pp">#define P_FUNC  0x3</span>
+<span class="pp">#define TO_SPTR_C(t,x) (typeof (x))((uintptr_t)(x) + (t))</span>
         <span class="co">// attach a ptype to a smart pointer, suitable for use by constant initialializers</span>
-<span class="ot">#define TO_FPTR(fn)   TO_SPTR_C(P_FUNC,(fptr_t)fn)</span>
-<span class="ot">#define MKLAZY_C(fn)  TO_SPTR_C(P_LAZY,(sptr_t)fn)</span>
+<span class="pp">#define TO_FPTR(fn)   TO_SPTR_C(P_FUNC,(fptr_t)fn)</span>
+<span class="pp">#define MKLAZY_C(fn)  TO_SPTR_C(P_LAZY,(sptr_t)fn)</span>
 
 <span class="co">/* CAFS */</span>
 <span class="co">/* v-930757141 = (FtheMain$3)*/</span>
 <span class="dt">static</span> node_t _g930757141 = { .head = TO_FPTR(&amp;E__ftheMain$d3) };
-<span class="ot">#define g930757141 (MKLAZY_C(&amp;_g930757141))</span></code></pre></div>
+<span class="pp">#define g930757141 (MKLAZY_C(&amp;_g930757141))</span></code></pre></div>
 <p>これを図にまとめると、イカのようになるでゲソ。 CAF(Constant Applicative Form) というのは 「一度実行したら、その結果をメモ化して使いまわせるもの」のことでゲソ。 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> ということはg930757141というのは未評価のサンクで、 このサンクの値を評価して確定させるためにはCode pointerの先にある E__ftheMain$d3()関数を実行する必要があるということが予想できるじゃなイカ。</p>
 <div class="figure">
 <img src="../draw/2013-02-14-jhc_grin_to_c_1_v-930757141.png" />
@@ -162,12 +162,12 @@ v<span class="fu">-</span><span class="dv">930757141</span> <span class="fu">:=<
    eval_fn fn = (eval_fn)FROM_SPTR(h);
    =&gt; wptr_t r =  E__ftheMain$d3(gc,_g930757141); <span class="co">// (*fn)(gc,NODEP(ds));</span>
       =&gt; wptr_t r2 = ftheMain$d3(gc);
-         =&gt; <span class="kw">return</span> fR$__fJhc_Basics_$pp(gc,c2,SET_RAW_TAG(CJhc_Prim_Prim_$BE));
+         =&gt; <span class="cf">return</span> fR$__fJhc_Basics_$pp(gc,c2,SET_RAW_TAG(CJhc_Prim_Prim_$BE));
       =&gt; update(_g930757141,r2);
          GETHEAD(_g930757141) = (fptr_t)r2;
       gc_add_root(gc,(sptr_t)r2);
-      <span class="kw">return</span> r2;
-   <span class="kw">return</span> r;</code></pre></div>
+      <span class="cf">return</span> r2;
+   <span class="cf">return</span> r;</code></pre></div>
 <p>さらg930757141はevel()関数を通して評価され、 最終的に_g930757141のheadメンバーをftheMain$d3()関数の実行結果で上書きしているでゲソ。 結局eval()関数を通したことで、g930757141は未評価サンクから評価済みサンクに変化したんでゲソ。 このeval()関数、場合によってはさらにその子供のサンクを評価するために一度実行に入ると長い時間滞留する可能性があるでゲソ。 jhcのコンパイル結果にeval()を使っている箇所があったら注意して確認する必要があるということになるでゲソ。</p>
 <h3 id="func-b_main--">2. Func: b_main :: () -&gt; ()</h3>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Grin --</span>
@@ -179,13 +179,13 @@ b_main  <span class="fu">=</span> <span class="kw">do</span>
 <span class="dt">void</span>
 _amain(<span class="dt">void</span>)
 {
-        <span class="kw">return</span> (<span class="dt">void</span>)b__main(saved_gc);
+        <span class="cf">return</span> (<span class="dt">void</span>)b__main(saved_gc);
 }
 
 <span class="dt">static</span> <span class="dt">void</span> A_STD
 b__main(gc_t gc)
 {
-        <span class="kw">return</span> ftheMain(gc);
+        <span class="cf">return</span> ftheMain(gc);
 }</code></pre></div>
 <p>うむ。これはなんかそのままでゲソ。 あえて違うところを挙げるとするならsaved_gcを引数で取り回すということでゲソ。 saved_gcはjgcの機能なので、別のGCを選択した場合には当然この出力も変化するはずでゲソ。</p>
 <h3 id="func-fw.fjhc.inst.show.showword-bits32i---n">3. Func: fW@.fJhc.Inst.Show.showWord :: (bits32,I) -&gt; (N)</h3>
@@ -225,21 +225,21 @@ fW$__fJhc_Inst_Show_showWord(gc_t gc,<span class="dt">uint32_t</span> v154049694
         fW$__fR$__fJhc_Inst_Show_showWord__2:;
         {   <span class="dt">uint32_t</span> v40405746 = (v80100072 / <span class="dv">10</span>); <span class="co">// w40405746 &lt;- w80100072 / 10</span>
             <span class="dt">uint32_t</span> v253468956 = (v80100072 % <span class="dv">10</span>); <span class="co">// w253468956 &lt;- w80100072 % 10</span>
-            uintmax_t v124940226 = ((uintmax_t)v253468956); <span class="co">// bm124940226 &lt;- (bits&lt;max&gt;)ConvOp Zx bits32 w253468956</span>
+            <span class="dt">uintmax_t</span> v124940226 = ((<span class="dt">uintmax_t</span>)v253468956); <span class="co">// bm124940226 &lt;- (bits&lt;max&gt;)ConvOp Zx bits32 w253468956</span>
             <span class="dt">uint32_t</span> v132127022 = ((<span class="dt">uint32_t</span>)v124940226); <span class="co">// w132127022 &lt;- (bits32)ConvOp Lobits bits&lt;max&gt; bm124940226</span>
             <span class="dt">uint32_t</span> v26031830 = (<span class="dv">48</span> + v132127022); <span class="co">// w26031830 &lt;- 48 + w132127022</span>
             <span class="dt">uint32_t</span> v260152044 = v26031830; <span class="co">// w260152044 &lt;- (bits32)ConvOp B2B bits32 w26031830</span>
             {   gc_frame0(gc,<span class="dv">1</span>,v196335308);
                 wptr_t v122 = RAW_SET_UF(v260152044); <span class="co">// nd122 &lt;- dstore (CJhc.Type.Basic.Char w260152044)</span>
                 sptr_t v55102202 = demote(v122); <span class="co">// ni55102202 &lt;- demote nd122</span>
-                <span class="kw">if</span> (<span class="dv">0</span> == v40405746) { <span class="co">// case w40405746 of 0 -&gt;</span>
+                <span class="cf">if</span> (<span class="dv">0</span> == v40405746) { <span class="co">// case w40405746 of 0 -&gt;</span>
                     {   gc_frame0(gc,<span class="dv">1</span>,v55102202);
                         wptr_t x3 = s_alloc(gc,cCJhc_Prim_Prim_$x3a); <span class="co">// dstore (CJhc.Prim.Prim.: ni55102202 ni196335308)</span>
                         ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x3)-&gt;a1 = v55102202;
                         ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x3)-&gt;a2 = v196335308;
-                        <span class="kw">return</span> x3;
+                        <span class="cf">return</span> x3;
                     }
-                } <span class="kw">else</span> { <span class="co">// w0 -&gt;</span>
+                } <span class="cf">else</span> { <span class="co">// w0 -&gt;</span>
                     {   gc_frame0(gc,<span class="dv">1</span>,v55102202);
                         wptr_t x4 = s_alloc(gc,cCJhc_Prim_Prim_$x3a); <span class="co">// nd15 &lt;- dstore (CJhc.Prim.Prim.: ni55102202 ni196335308)</span>
                         ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x4)-&gt;a1 = v55102202;
@@ -248,7 +248,7 @@ fW$__fJhc_Inst_Show_showWord(gc_t gc,<span class="dt">uint32_t</span> v154049694
                         sptr_t v1829124143 = demote(v15); <span class="co">// ni1829124143 &lt;- demote nd15</span>
                         v80100072 = v40405746; <span class="co">// fW@.fR@.fJhc.Inst.Show.showWord w40405746 ni1829124143</span>
                         v196335308 = v1829124143;
-                        <span class="kw">goto</span> fW$__fR$__fJhc_Inst_Show_showWord__2;
+                        <span class="cf">goto</span> fW$__fR$__fJhc_Inst_Show_showWord__2;
                     }
                 }
             }
@@ -256,7 +256,7 @@ fW$__fJhc_Inst_Show_showWord(gc_t gc,<span class="dt">uint32_t</span> v154049694
 }</code></pre></div>
 <p>C言語側にGrinコード断片をコメントで入れてみたでゲソ。 だいたい1対1に対応が取れているじゃなイカ。 ここではGrinとC言語の違いに着目して、そのしくみを詳しく見てみるでゲソ。</p>
 <p>まず第一にdstore (CJhc.Type.Basic.Char,x)がRAW_SET_UF(x)になることがあるでゲソ。 このRAW_SET_UF()はイカのような定義で、即値のWHNFに変換してくれるでゲソ。 CJhc.Type.Basic.Charは即値なので、RAW_SET_UF()を使ってスマートポインタに埋め込まれるんじゃなイカ。</p>
-<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="ot">#define RAW_SET_UF(n)  ((wptr_t)(((uintptr_t)(n) &lt;&lt; 2) | P_VALUE))</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="pp">#define RAW_SET_UF(n)  ((wptr_t)(((uintptr_t)(n) &lt;&lt; 2) | P_VALUE))</span></code></pre></div>
 <p>ところがdstore (CJhc.Prim.Prim.: x y) のような場合にはイカのようにs_alloc()でヒープへのスマートポインタを作って、 格納するでゲソ。 これはHaskellの(:)演算子を思いうかべればすぐわかるでゲソ。 (:)演算子は2つの要素をconsし、 そのconsした結果がstruct sCJhc_Prim_Prim_$x3aなんでゲソ。 つまりconsする旅にヒープの領域を消費するということでゲソ。</p>
 <div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="kw">struct</span> sCJhc_Prim_Prim_$x3a {
     sptr_t a1;
@@ -296,15 +296,15 @@ fJhc_Show_shows(gc_t gc,sptr_t v29375120,sptr_t v44000678)
             wptr_t v100038 = eval(gc,v29375120); <span class="co">// nd100038 &lt;- eval ni29375120</span>
             v216085094 = ((<span class="kw">struct</span> sCJhc_Type_Word_Int*)v100038)-&gt;a1; <span class="co">// (CJhc.Type.Word.Int w216085094) &lt;- return nd100038</span>
             <span class="dt">uint16_t</span> v100040 = (((<span class="dt">int32_t</span>)<span class="dv">0</span>) &gt; ((<span class="dt">int32_t</span>)v216085094)); <span class="co">// h100040 &lt;- 0 `Gt` w216085094</span>
-            <span class="kw">if</span> (<span class="dv">0</span> == v100040) { <span class="co">// case h100040 of 0 -&gt; do</span>
-                uintmax_t v220263214 = ((intmax_t)((<span class="dt">int32_t</span>)v216085094)); <span class="co">// bm220263214 &lt;- (bits&lt;max&gt;)ConvOp Sx bits32 w216085094</span>
+            <span class="cf">if</span> (<span class="dv">0</span> == v100040) { <span class="co">// case h100040 of 0 -&gt; do</span>
+                <span class="dt">uintmax_t</span> v220263214 = ((<span class="dt">intmax_t</span>)((<span class="dt">int32_t</span>)v216085094)); <span class="co">// bm220263214 &lt;- (bits&lt;max&gt;)ConvOp Sx bits32 w216085094</span>
                 <span class="dt">uint32_t</span> v110207578 = ((<span class="dt">uint32_t</span>)v220263214); <span class="co">// w110207578 &lt;- (bits32)ConvOp Lobits bits&lt;max&gt; bm220263214</span>
-                <span class="kw">return</span> fW$__fJhc_Inst_Show_showWord(gc,v110207578,v44000678); <span class="co">// fW@.fJhc.Inst.Show.showWord w110207578 ni44000678</span>
-            } <span class="kw">else</span> { <span class="co">// 1 -&gt; do</span>
+                <span class="cf">return</span> fW$__fJhc_Inst_Show_showWord(gc,v110207578,v44000678); <span class="co">// fW@.fJhc.Inst.Show.showWord w110207578 ni44000678</span>
+            } <span class="cf">else</span> { <span class="co">// 1 -&gt; do</span>
                 <span class="co">/* 1 */</span>
                 assert(<span class="dv">1</span> == v100040);
                 <span class="dt">uint32_t</span> v196289068 = (-((<span class="dt">int32_t</span>)v216085094)); <span class="co">// w196289068 &lt;- (bits32)Neg w216085094</span>
-                uintmax_t v253468954 = ((intmax_t)((<span class="dt">int32_t</span>)v196289068)); <span class="co">// bm253468954 &lt;- (bits&lt;max&gt;)ConvOp Sx bits32 w196289068</span>
+                <span class="dt">uintmax_t</span> v253468954 = ((<span class="dt">intmax_t</span>)((<span class="dt">int32_t</span>)v196289068)); <span class="co">// bm253468954 &lt;- (bits&lt;max&gt;)ConvOp Sx bits32 w196289068</span>
                 <span class="dt">uint32_t</span> v124235152 = ((<span class="dt">uint32_t</span>)v253468954); <span class="co">// w124235152 &lt;- (bits32)ConvOp Lobits bits&lt;max&gt; bm253468954</span>
                 sptr_t x5 = s_alloc(gc,cFW$__fJhc_Inst_Show_showWord); <span class="co">// ni244126258 &lt;- istore (FW@.fJhc.Inst.Show.showWord w124235152 ni44000678)</span>
                 ((<span class="kw">struct</span> sFW$__fJhc_Inst_Show_showWord*)x5)-&gt;head = TO_FPTR(&amp;E__fW$__fJhc_Inst_Show_showWord);
@@ -315,7 +315,7 @@ fJhc_Show_shows(gc_t gc,sptr_t v29375120,sptr_t v44000678)
                     wptr_t x6 = s_alloc(gc,cCJhc_Prim_Prim_$x3a); <span class="co">// dstore (CJhc.Prim.Prim.: &amp;(CJhc.Type.Basic.Char 45) ni244126258)</span>
                     ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x6)-&gt;a1 = ((sptr_t)RAW_SET_UF('-'));
                     ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x6)-&gt;a2 = v244126258;
-                    <span class="kw">return</span> x6;
+                    <span class="cf">return</span> x6;
                 }
             }
         }
@@ -340,7 +340,7 @@ showWord w rest <span class="fu">=</span> w <span class="ot">`seq`</span> <span 
         <span class="kw">where</span> rest' <span class="fu">=</span> chr (fromIntegral d <span class="fu">+</span> ord <span class="ch">'0'</span>) <span class="fu">:</span> rest</code></pre></div>
 <h3 id="func-fr.fjhc.show.11_showl-in---n">5. Func: fR@.fJhc.Show.11_showl :: (I,N) -&gt; (N)</h3>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Grin --</span>
-fR<span class="fu">@.</span>fJhc<span class="fu">.</span><span class="dt">Show</span><span class="fu">.</span>11_<span class="ot">showl ::</span> (<span class="dt">I</span>,<span class="dt">N</span>) <span class="ot">-&gt;</span> (<span class="dt">N</span>)
+fR<span class="fu">@.</span>fJhc<span class="fu">.</span><span class="dt">Show</span><span class="fu">.</span>11<span class="ot">_showl ::</span> (<span class="dt">I</span>,<span class="dt">N</span>) <span class="ot">-&gt;</span> (<span class="dt">N</span>)
 fR<span class="fu">@.</span>fJhc<span class="fu">.</span><span class="dt">Show</span><span class="fu">.</span>11_showl ni108431528 nd267777212 <span class="fu">=</span> <span class="kw">do</span>
   ni267777293 <span class="ot">&lt;-</span> demote nd267777212
   withRoots(nd267777212,ni267777293)
@@ -364,10 +364,10 @@ fR$__fJhc_Show_11__showl(gc_t gc,sptr_t v108431528,wptr_t v267777212)
             <span class="kw">struct</span> tup1 x7;
             gc_frame0(gc,<span class="dv">2</span>,v267777212,v267777293); <span class="co">// withRoots(nd267777212,ni267777293)</span>
             wptr_t v100036 = eval(gc,v108431528); <span class="co">// nd100036 &lt;- eval ni108431528</span>
-            <span class="kw">if</span> (SET_RAW_TAG(CJhc_Prim_Prim_$BE) == v100036) { <span class="co">// case nd100036 of [] -&gt;</span>
+            <span class="cf">if</span> (SET_RAW_TAG(CJhc_Prim_Prim_$BE) == v100036) { <span class="co">// case nd100036 of [] -&gt;</span>
                 x7.t0 = ((sptr_t)RAW_SET_UF(']')); <span class="co">// return (&amp;(CJhc.Type.Basic.Char 93),ni267777293)</span>
                 x7.t1 = v267777293;
-            } <span class="kw">else</span> { <span class="co">// (CJhc.Prim.Prim.: ni26 ni67) -&gt;</span>
+            } <span class="cf">else</span> { <span class="co">// (CJhc.Prim.Prim.: ni26 ni67) -&gt;</span>
                 sptr_t v26;
                 sptr_t v67;
                 <span class="co">/* (&quot;CJhc.Prim.Prim.:&quot; ni26 ni67) パターンマッチ */</span>
@@ -396,7 +396,7 @@ fR$__fJhc_Show_11__showl(gc_t gc,sptr_t v108431528,wptr_t v267777212)
                 wptr_t x10 = s_alloc(gc,cCJhc_Prim_Prim_$x3a); <span class="co">// dstore (CJhc.Prim.Prim.: ni126 ni95)</span>
                 ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x10)-&gt;a1 = v126;
                 ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x10)-&gt;a2 = v95;
-                <span class="kw">return</span> x10;
+                <span class="cf">return</span> x10;
             }
         }
 }</code></pre></div>
@@ -446,7 +446,7 @@ ftheMain$d2(gc_t gc,sptr_t v38,sptr_t v42)
                 <span class="dt">uint32_t</span> v215350916 = (v239029634 + v242159974); <span class="co">// w215350916 &lt;- w239029634 + w242159974</span>
                 wptr_t x11 = s_alloc(gc,cCJhc_Type_Word_Int); <span class="co">// dstore (CJhc.Type.Word.Int w215350916)</span>
                 ((<span class="kw">struct</span> sCJhc_Type_Word_Int*)x11)-&gt;a1 = v215350916;
-                <span class="kw">return</span> x11;
+                <span class="cf">return</span> x11;
             }
         }
 }</code></pre></div>
@@ -475,9 +475,9 @@ fR$__fJhc_Basics_$pp(gc_t gc,sptr_t v29534742,wptr_t v29534740)
 {
         {   gc_frame0(gc,<span class="dv">1</span>,v29534740); <span class="co">// withRoots(nd29534740)</span>
             wptr_t v100000 = eval(gc,v29534742); <span class="co">// nd100000 &lt;- eval ni29534742</span>
-            <span class="kw">if</span> (SET_RAW_TAG(CJhc_Prim_Prim_$BE) == v100000) { <span class="co">// case nd100000 of [] -&gt;</span>
-                <span class="kw">return</span> v29534740; <span class="co">// return nd29534740</span>
-            } <span class="kw">else</span> { <span class="co">// (CJhc.Prim.Prim.: ni106 ni108) -&gt;</span>
+            <span class="cf">if</span> (SET_RAW_TAG(CJhc_Prim_Prim_$BE) == v100000) { <span class="co">// case nd100000 of [] -&gt;</span>
+                <span class="cf">return</span> v29534740; <span class="co">// return nd29534740</span>
+            } <span class="cf">else</span> { <span class="co">// (CJhc.Prim.Prim.: ni106 ni108) -&gt;</span>
                 sptr_t v106;
                 sptr_t v108;
                 <span class="co">/* (&quot;CJhc.Prim.Prim.:&quot; ni106 ni108) パターンマッチ */</span>
@@ -493,7 +493,7 @@ fR$__fJhc_Basics_$pp(gc_t gc,sptr_t v29534742,wptr_t v29534740)
                         wptr_t x13 = s_alloc(gc,cCJhc_Prim_Prim_$x3a); <span class="co">// dstore (CJhc.Prim.Prim.: ni106 ni69834446)</span>
                         ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x13)-&gt;a1 = v106;
                         ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x13)-&gt;a2 = v69834446;
-                        <span class="kw">return</span> x13;
+                        <span class="cf">return</span> x13;
                     }
                 }
             }
@@ -511,9 +511,9 @@ ftheMain<span class="fu">$</span><span class="dv">3</span>  <span class="fu">=</
     sptr_t a2;
 };
 
-<span class="ot">#define RAW_SET_UF(n)  ((wptr_t)(((uintptr_t)(n) &lt;&lt; 2) | P_VALUE))</span>
-<span class="ot">#define RAW_SET_16(w)  (wptr_t)(((uintptr_t)(w) &lt;&lt; 16) | P_VALUE)</span>
-<span class="ot">#define SET_RAW_TAG(x)    RAW_SET_16(x)</span>
+<span class="pp">#define RAW_SET_UF(n)  ((wptr_t)(((uintptr_t)(n) &lt;&lt; 2) | P_VALUE))</span>
+<span class="pp">#define RAW_SET_16(w)  (wptr_t)(((uintptr_t)(w) &lt;&lt; 16) | P_VALUE)</span>
+<span class="pp">#define SET_RAW_TAG(x)    RAW_SET_16(x)</span>
 
 <span class="kw">enum</span> {
     CJhc_Prim_Prim_$BE = <span class="dv">1</span>,
@@ -525,15 +525,15 @@ ftheMain<span class="fu">$</span><span class="dv">3</span>  <span class="fu">=</
 
 <span class="co">/* (HcNode CJhc.Prim.Prim.: [Left &amp;(&quot;CJhc.Type.Basic.Char&quot; 93),Left &amp;(&quot;CJhc.Prim.Prim.[]&quot;)],1) */</span>
 <span class="dt">static</span> <span class="dt">const</span> <span class="kw">struct</span> sCJhc_Prim_Prim_$x3a _c1 = {.a1 = (sptr_t)RAW_SET_UF(']'), .a2 = (sptr_t)SET_RAW_TAG(CJhc_Prim_Prim_$BE)};
-<span class="ot">#define c1 (TO_SPTR_C(P_WHNF, (sptr_t)&amp;_c1))</span>
+<span class="pp">#define c1 (TO_SPTR_C(P_WHNF, (sptr_t)&amp;_c1))</span>
 <span class="co">/* (HcNode CJhc.Prim.Prim.: [Left &amp;(&quot;CJhc.Type.Basic.Char&quot; 91),Right 1],2) */</span>
 <span class="dt">static</span> <span class="dt">const</span> <span class="kw">struct</span> sCJhc_Prim_Prim_$x3a _c2 = {.a1 = (sptr_t)RAW_SET_UF('['), .a2 = c1};
-<span class="ot">#define c2 (TO_SPTR_C(P_WHNF, (sptr_t)&amp;_c2))</span>
+<span class="pp">#define c2 (TO_SPTR_C(P_WHNF, (sptr_t)&amp;_c2))</span>
 
 <span class="dt">static</span> wptr_t A_STD A_MALLOC
 ftheMain$d3(gc_t gc)
 {
-        <span class="kw">return</span> fR$__fJhc_Basics_$pp(gc,c2,SET_RAW_TAG(CJhc_Prim_Prim_$BE));
+        <span class="cf">return</span> fR$__fJhc_Basics_$pp(gc,c2,SET_RAW_TAG(CJhc_Prim_Prim_$BE));
 }</code></pre></div>
 <p>いきなりc2というグローバル変数が出てきたじゃなイカ。これはなんでゲソ？</p>
 <div class="figure">
@@ -565,9 +565,9 @@ fR$__fJhc_Basics_zipWith(gc_t gc,sptr_t v182639120,sptr_t v132127014)
 {
         {   gc_frame0(gc,<span class="dv">1</span>,v132127014); <span class="co">// withRoots(ni132127014)</span>
             wptr_t v100028 = eval(gc,v182639120); <span class="co">// nd100028 &lt;- eval ni182639120</span>
-            <span class="kw">if</span> (SET_RAW_TAG(CJhc_Prim_Prim_$BE) == v100028) { <span class="co">// case nd100028 of [] -&gt;</span>
-                <span class="kw">return</span> v100028; <span class="co">// return []</span>
-            } <span class="kw">else</span> { <span class="co">// (CJhc.Prim.Prim.: ni40405740 ni40) -&gt;</span>
+            <span class="cf">if</span> (SET_RAW_TAG(CJhc_Prim_Prim_$BE) == v100028) { <span class="co">// case nd100028 of [] -&gt;</span>
+                <span class="cf">return</span> v100028; <span class="co">// return []</span>
+            } <span class="cf">else</span> { <span class="co">// (CJhc.Prim.Prim.: ni40405740 ni40) -&gt;</span>
                 sptr_t v40;
                 sptr_t v40405740;
                 <span class="co">/* (&quot;CJhc.Prim.Prim.:&quot; ni40405740 ni40) パターンマッチ */</span>
@@ -575,9 +575,9 @@ fR$__fJhc_Basics_zipWith(gc_t gc,sptr_t v182639120,sptr_t v132127014)
                 v40 = ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)v100028)-&gt;a2;
                 {   gc_frame0(gc,<span class="dv">2</span>,v40,v40405740); <span class="co">// withRoots(ni40,ni40405740)</span>
                     wptr_t v100030 = eval(gc,v132127014); <span class="co">// nd100030 &lt;- eval ni132127014</span>
-                    <span class="kw">if</span> (SET_RAW_TAG(CJhc_Prim_Prim_$BE) == v100030) { <span class="co">// case nd100030 of [] -&gt;</span>
-                        <span class="kw">return</span> v100030; <span class="co">// return []</span>
-                    } <span class="kw">else</span> { <span class="co">// (CJhc.Prim.Prim.: ni194635132 ni116) -&gt;</span>
+                    <span class="cf">if</span> (SET_RAW_TAG(CJhc_Prim_Prim_$BE) == v100030) { <span class="co">// case nd100030 of [] -&gt;</span>
+                        <span class="cf">return</span> v100030; <span class="co">// return []</span>
+                    } <span class="cf">else</span> { <span class="co">// (CJhc.Prim.Prim.: ni194635132 ni116) -&gt;</span>
                         sptr_t v116;
                         sptr_t v194635132;
                         <span class="co">/* (&quot;CJhc.Prim.Prim.:&quot; ni194635132 ni116) パターンマッチ */</span>
@@ -599,7 +599,7 @@ fR$__fJhc_Basics_zipWith(gc_t gc,sptr_t v182639120,sptr_t v132127014)
                                     wptr_t x16 = s_alloc(gc,cCJhc_Prim_Prim_$x3a); <span class="co">// dstore (CJhc.Prim.Prim.: ni229109160 ni248061794)</span>
                                     ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x16)-&gt;a1 = v229109160;
                                     ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x16)-&gt;a2 = v248061794;
-                                    <span class="kw">return</span> x16;
+                                    <span class="cf">return</span> x16;
                                 }
                             }
                         }
@@ -611,7 +611,7 @@ fR$__fJhc_Basics_zipWith(gc_t gc,sptr_t v182639120,sptr_t v132127014)
 <p>うむ。これも今の知識で読めるでゲソ。次の人!っでゲッソ。</p>
 <h3 id="func-fw.fr.fjhc.list.387_f-bits32i---n">10. Func: fW@.fR@.fJhc.List.387_f :: (bits32,I) -&gt; (N)</h3>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- Grin --</span>
-fW<span class="fu">@.</span>fR<span class="fu">@.</span>fJhc<span class="fu">.</span><span class="dt">List</span><span class="fu">.</span>387_<span class="ot">f ::</span> (bits32,<span class="dt">I</span>) <span class="ot">-&gt;</span> (<span class="dt">N</span>)
+fW<span class="fu">@.</span>fR<span class="fu">@.</span>fJhc<span class="fu">.</span><span class="dt">List</span><span class="fu">.</span>387<span class="ot">_f ::</span> (bits32,<span class="dt">I</span>) <span class="ot">-&gt;</span> (<span class="dt">N</span>)
 fW<span class="fu">@.</span>fR<span class="fu">@.</span>fJhc<span class="fu">.</span><span class="dt">List</span><span class="fu">.</span>387_f w115160438 ni124940224 <span class="fu">=</span> <span class="kw">do</span>
   h100024 <span class="ot">&lt;-</span> <span class="dv">0</span> <span class="ot">`Gte`</span> w115160438
   <span class="kw">case</span> h100024 <span class="kw">of</span>
@@ -631,11 +631,11 @@ fW<span class="fu">@.</span>fR<span class="fu">@.</span>fJhc<span class="fu">.</
 fW$__fR$__fJhc_List_387__f(gc_t gc,<span class="dt">uint32_t</span> v115160438,sptr_t v124940224)
 {
         <span class="dt">uint16_t</span> v100024 = (((<span class="dt">int32_t</span>)<span class="dv">0</span>) &gt;= ((<span class="dt">int32_t</span>)v115160438)); <span class="co">// h100024 &lt;- 0 `Gte` w115160438</span>
-        <span class="kw">if</span> (<span class="dv">0</span> == v100024) { <span class="co">// case h100024 of 0 -&gt; do</span>
+        <span class="cf">if</span> (<span class="dv">0</span> == v100024) { <span class="co">// case h100024 of 0 -&gt; do</span>
             wptr_t v100026 = eval(gc,v124940224); <span class="co">// nd100026 &lt;- eval ni124940224</span>
-            <span class="kw">if</span> (SET_RAW_TAG(CJhc_Prim_Prim_$BE) == v100026) { <span class="co">// case nd100026 of [] -&gt;</span>
-                <span class="kw">return</span> v100026; <span class="co">// return []</span>
-            } <span class="kw">else</span> { <span class="co">// (CJhc.Prim.Prim.: ni304 ni306) -&gt; do</span>
+            <span class="cf">if</span> (SET_RAW_TAG(CJhc_Prim_Prim_$BE) == v100026) { <span class="co">// case nd100026 of [] -&gt;</span>
+                <span class="cf">return</span> v100026; <span class="co">// return []</span>
+            } <span class="cf">else</span> { <span class="co">// (CJhc.Prim.Prim.: ni304 ni306) -&gt; do</span>
                 sptr_t v304;
                 sptr_t v306;
                 <span class="co">/* (&quot;CJhc.Prim.Prim.:&quot; ni304 ni306) パターンマッチ */</span>
@@ -652,14 +652,14 @@ fW$__fR$__fJhc_List_387__f(gc_t gc,<span class="dt">uint32_t</span> v115160438,s
                         wptr_t x18 = s_alloc(gc,cCJhc_Prim_Prim_$x3a); <span class="co">// dstore (CJhc.Prim.Prim.: ni304 ni131889104)</span>
                         ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x18)-&gt;a1 = v304;
                         ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x18)-&gt;a2 = v131889104;
-                        <span class="kw">return</span> x18;
+                        <span class="cf">return</span> x18;
                     }
                 }
             }
-        } <span class="kw">else</span> { <span class="co">// 1 -&gt;</span>
+        } <span class="cf">else</span> { <span class="co">// 1 -&gt;</span>
             <span class="co">/* 1 */</span>
             assert(<span class="dv">1</span> == v100024);
-            <span class="kw">return</span> SET_RAW_TAG(CJhc_Prim_Prim_$BE); <span class="co">// return []</span>
+            <span class="cf">return</span> SET_RAW_TAG(CJhc_Prim_Prim_$BE); <span class="co">// return []</span>
         }
 }</code></pre></div>
 <p>これも今までのパターンと同じでゲソ。もはや楽勝でゲソー。</p>
@@ -729,9 +729,9 @@ ftheMain(gc_t gc)
                 ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)FROM_SPTR(v220263216))-&gt;a1 = c3; <span class="co">// overwrite ni220263216 (CJhc.Prim.Prim.: &amp;(CJhc.Type.Word.Int 1) ni144627460)</span>
                 ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)FROM_SPTR(v220263216))-&gt;a2 = v144627460;
                 v100014 = fW$__fR$__fJhc_List_387__f(gc,<span class="dv">40</span>,v856819231); <span class="co">// nd100014 &lt;- fW@.fR@.fJhc.List.387_f 40 ni856819231</span>
-                <span class="kw">if</span> (SET_RAW_TAG(CJhc_Prim_Prim_$BE) == v100014) { <span class="co">// ni78 &lt;- case nd100014 of [] -&gt;</span>
+                <span class="cf">if</span> (SET_RAW_TAG(CJhc_Prim_Prim_$BE) == v100014) { <span class="co">// ni78 &lt;- case nd100014 of [] -&gt;</span>
                     v78 = g930757141; <span class="co">// return ni-930757141</span>
-                } <span class="kw">else</span> { <span class="co">// (CJhc.Prim.Prim.: ni129 ni32) -&gt;</span>
+                } <span class="cf">else</span> { <span class="co">// (CJhc.Prim.Prim.: ni129 ni32) -&gt;</span>
                     sptr_t v129;
                     sptr_t v32;
                     <span class="co">/* (&quot;CJhc.Prim.Prim.:&quot; ni129 ni32) パターンマッチ */</span>
@@ -764,9 +764,9 @@ ftheMain(gc_t gc)
                 v10 = v81465164; <span class="co">// in fJhc.Monad.72_go ni81465164</span>
                 fJhc_Monad_72__go__25:; <span class="co">// let fJhc.Monad.72_go ni10 = do</span>
                 {   wptr_t v100020 = eval(gc,v10); <span class="co">// nd100020 &lt;- eval ni10</span>
-                    <span class="kw">if</span> (SET_RAW_TAG(CJhc_Prim_Prim_$BE) == v100020) { <span class="co">// case nd100020 of [] -&gt;</span>
+                    <span class="cf">if</span> (SET_RAW_TAG(CJhc_Prim_Prim_$BE) == v100020) { <span class="co">// case nd100020 of [] -&gt;</span>
                         SET_RAW_TAG(CJhc_Prim_Prim_$LR); <span class="co">// return (CJhc.Prim.Prim.())</span>
-                    } <span class="kw">else</span> { <span class="co">// (CJhc.Prim.Prim.: ni12 ni260952206) -&gt;</span>
+                    } <span class="cf">else</span> { <span class="co">// (CJhc.Prim.Prim.: ni12 ni260952206) -&gt;</span>
                         sptr_t v12;
                         sptr_t v260952206;
                         <span class="co">/* (&quot;CJhc.Prim.Prim.:&quot; ni12 ni260952206) パターンマッチ */</span>
@@ -780,12 +780,12 @@ ftheMain(gc_t gc)
                             saved_gc = gc; <span class="co">// なにこれ？</span>
                             (<span class="dt">void</span>)jhc_utf8_putchar((<span class="dt">int</span>)v249143450); <span class="co">// (void)jhc_utf8_putchar(int) w249143450</span>
                             v10 = v260952206; <span class="co">// fJhc.Monad.72_go ni260952206</span>
-                            <span class="kw">goto</span> fJhc_Monad_72__go__25;
+                            <span class="cf">goto</span> fJhc_Monad_72__go__25;
                         }
                     }
                 }
                 saved_gc = gc; <span class="co">// なにこれ？</span>
-                <span class="kw">return</span> (<span class="dt">void</span>)jhc_utf8_putchar((<span class="dt">int</span>)<span class="dv">10</span>); <span class="co">// (void)jhc_utf8_putchar(int) 10</span>
+                <span class="cf">return</span> (<span class="dt">void</span>)jhc_utf8_putchar((<span class="dt">int</span>)<span class="dv">10</span>); <span class="co">// (void)jhc_utf8_putchar(int) 10</span>
             }
         }
 }</code></pre></div>
@@ -811,13 +811,13 @@ ftheMain(gc_t gc)
 <div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="dt">void</span> 
 _amain(<span class="dt">void</span>)
 {
-        <span class="kw">return</span> (<span class="dt">void</span>)b__main(saved_gc);
+        <span class="cf">return</span> (<span class="dt">void</span>)b__main(saved_gc);
 }
 
 <span class="dt">static</span> <span class="dt">void</span> A_STD
 b__main(gc_t gc)
 {
-        <span class="kw">return</span> ftheMain(gc);
+        <span class="cf">return</span> ftheMain(gc);
 }</code></pre></div>
 <h3 id="grin由来ではないc言語コード">Grin由来ではないC言語コード</h3>
 <p>さて。Grinの関数がC言語にどう変換されたか見てきたでゲソ。 でも、とりこぼした要素はないか気にならなイカ？ チェックでゲソ!</p>
@@ -902,7 +902,7 @@ jhc_hs_init(<span class="dt">void</span>)
 <div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="dt">void</span>
 hs_init(<span class="dt">int</span> *argc, <span class="dt">char</span> **argv[])
 {
-        <span class="kw">if</span>(!hs_init_count++) {
+        <span class="cf">if</span>(!hs_init_count++) {
                 jhc_alloc_init();
                 jhc_hs_init();</code></pre></div>
 <p>find_cache関数とは何者なのでゲソ？</p>
@@ -910,18 +910,18 @@ hs_init(<span class="dt">int</span> *argc, <span class="dt">char</span> **argv[]
 find_cache(<span class="kw">struct</span> s_cache **rsc, <span class="kw">struct</span> s_arena *arena,
            <span class="dt">unsigned</span> <span class="dt">short</span> size, <span class="dt">unsigned</span> <span class="dt">short</span> num_ptrs)
 {
-        <span class="kw">if</span>(__predict_true(rsc &amp;&amp; *rsc))
-                <span class="kw">return</span> *rsc;
+        <span class="cf">if</span>(__predict_true(rsc &amp;&amp; *rsc))
+                <span class="cf">return</span> *rsc;
         <span class="kw">struct</span> s_cache *sc = SLIST_FIRST(&amp;arena-&gt;caches);
-        <span class="kw">for</span>(;sc;sc = SLIST_NEXT(sc,next)) {
-                <span class="kw">if</span>(sc-&gt;size == size &amp;&amp; sc-&gt;num_ptrs == num_ptrs)
-                        <span class="kw">goto</span> found;
+        <span class="cf">for</span>(;sc;sc = SLIST_NEXT(sc,next)) {
+                <span class="cf">if</span>(sc-&gt;size == size &amp;&amp; sc-&gt;num_ptrs == num_ptrs)
+                        <span class="cf">goto</span> found;
         }
         sc = new_cache(arena,size,num_ptrs);
 found:
-        <span class="kw">if</span>(rsc)
+        <span class="cf">if</span>(rsc)
                 *rsc = sc;
-        <span class="kw">return</span> sc;
+        <span class="cf">return</span> sc;
 }
 
 <span class="kw">struct</span> s_cache *
@@ -933,14 +933,14 @@ new_cache(<span class="kw">struct</span> s_arena *arena, <span class="dt">unsign
         sc-&gt;size = size;
         sc-&gt;num_ptrs = num_ptrs;
         sc-&gt;flags = <span class="dv">0</span>;
-        size_t excess = BLOCK_SIZE - <span class="kw">sizeof</span>(<span class="kw">struct</span> s_block);
-        sc-&gt;num_entries = (<span class="dv">8</span>*excess) / (<span class="dv">8</span>*<span class="kw">sizeof</span>(uintptr_t)*size + <span class="dv">1</span>) - <span class="dv">1</span>;
+        <span class="dt">size_t</span> excess = BLOCK_SIZE - <span class="kw">sizeof</span>(<span class="kw">struct</span> s_block);
+        sc-&gt;num_entries = (<span class="dv">8</span>*excess) / (<span class="dv">8</span>*<span class="kw">sizeof</span>(<span class="dt">uintptr_t</span>)*size + <span class="dv">1</span>) - <span class="dv">1</span>;
         sc-&gt;color = (<span class="kw">sizeof</span>(<span class="kw">struct</span> s_block) + BITARRAY_SIZE_IN_BYTES(sc-&gt;num_entries) +
-                        <span class="kw">sizeof</span>(uintptr_t) - <span class="dv">1</span>) / <span class="kw">sizeof</span>(uintptr_t);
+                        <span class="kw">sizeof</span>(<span class="dt">uintptr_t</span>) - <span class="dv">1</span>) / <span class="kw">sizeof</span>(<span class="dt">uintptr_t</span>);
         SLIST_INIT(&amp;sc-&gt;blocks);
         SLIST_INIT(&amp;sc-&gt;full_blocks);
         SLIST_INSERT_HEAD(&amp;arena-&gt;caches,sc,next);
-        <span class="kw">return</span> sc;
+        <span class="cf">return</span> sc;
 }</code></pre></div>
 <p>struct s_arenaのcachesメンバーには、 サイズとポインタの数で種類分けされたcacheと呼ばれるエントリが列になっているでゲソ。 find_cache関数の第三引数はサイズ、第四引数はポインタの数で、 呼び元が欲しいcacheが既にcachesメンバーに確保されているのかチェックするのがfind_cache関数のでゲソ。 もし対応するエントリがcachesに入ってなかった場合、 find_cache関数はnew_cache関数を呼び出して新しいエントリを確保するんじゃなイカ。 …でもこのcachesメンバーはコンパイル時に静的に確保してしまうこともできそうなもんでゲソ。 ここらへんは改善できそうでゲソ。</p>
 <div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="dt">static</span> wptr_t A_STD A_FALIGNED
@@ -950,7 +950,7 @@ E__fJhc_Show_shows(gc_t gc,<span class="kw">struct</span> sFJhc_Show_shows* arg)
             gc_frame0(gc,<span class="dv">1</span>,MKLAZY(arg));
             r = fJhc_Show_shows(gc,arg-&gt;a1,arg-&gt;a2);
             update(arg,r);
-            <span class="kw">return</span> r;
+            <span class="cf">return</span> r;
         }
 }
 
@@ -961,7 +961,7 @@ E__fR$__fJhc_Basics_$pp(gc_t gc,<span class="kw">struct</span> sFR$__fJhc_Basics
             gc_frame0(gc,<span class="dv">1</span>,MKLAZY(arg));
             r = fR$__fJhc_Basics_$pp(gc,arg-&gt;a1,arg-&gt;a2);
             update(arg,r);
-            <span class="kw">return</span> r;
+            <span class="cf">return</span> r;
         }
 }
 
@@ -972,7 +972,7 @@ E__fR$__fJhc_Basics_zipWith(gc_t gc,<span class="kw">struct</span> sFR$__fJhc_Ba
             gc_frame0(gc,<span class="dv">1</span>,MKLAZY(arg));
             r = fR$__fJhc_Basics_zipWith(gc,arg-&gt;a1,arg-&gt;a2);
             update(arg,r);
-            <span class="kw">return</span> r;
+            <span class="cf">return</span> r;
         }
 }
 
@@ -983,7 +983,7 @@ E__fR$__fJhc_Show_11__showl(gc_t gc,<span class="kw">struct</span> sFR$__fJhc_Sh
             gc_frame0(gc,<span class="dv">1</span>,MKLAZY(arg));
             r = fR$__fJhc_Show_11__showl(gc,arg-&gt;a1,arg-&gt;a2);
             update(arg,r);
-            <span class="kw">return</span> r;
+            <span class="cf">return</span> r;
         }
 }
 
@@ -994,7 +994,7 @@ E__fW$__fJhc_Inst_Show_showWord(gc_t gc,<span class="kw">struct</span> sFW$__fJh
             gc_frame0(gc,<span class="dv">1</span>,MKLAZY(arg));
             r = fW$__fJhc_Inst_Show_showWord(gc,arg-&gt;a1,arg-&gt;a2);
             update(arg,r);
-            <span class="kw">return</span> r;
+            <span class="cf">return</span> r;
         }
 }
 
@@ -1005,7 +1005,7 @@ E__fW$__fR$__fJhc_List_387__f(gc_t gc,<span class="kw">struct</span> sFW$__fR$__
             gc_frame0(gc,<span class="dv">1</span>,MKLAZY(arg));
             r = fW$__fR$__fJhc_List_387__f(gc,arg-&gt;a1,arg-&gt;a2);
             update(arg,r);
-            <span class="kw">return</span> r;
+            <span class="cf">return</span> r;
         }
 }
 
@@ -1016,7 +1016,7 @@ E__ftheMain$d2(gc_t gc,<span class="kw">struct</span> sFtheMain$d2* arg)
             gc_frame0(gc,<span class="dv">1</span>,MKLAZY(arg));
             r = ftheMain$d2(gc,arg-&gt;a1,arg-&gt;a2);
             update(arg,r);
-            <span class="kw">return</span> r;
+            <span class="cf">return</span> r;
         }
 }
 
@@ -1027,7 +1027,7 @@ E__ftheMain$d3(gc_t gc,<span class="kw">struct</span> sFtheMain$d3* arg)
         r = ftheMain$d3(gc);
         update(arg,r);
         gc_add_root(gc,(sptr_t)r);
-        <span class="kw">return</span> r;
+        <span class="cf">return</span> r;
 }</code></pre></div>
 <p>この“E__f“で始まる関数群はほぼ同じことをしているでゲソ。</p>
 <ol style="list-style-type: decimal">
@@ -1037,18 +1037,18 @@ E__ftheMain$d3(gc_t gc,<span class="kw">struct</span> sFtheMain$d3* arg)
 <li>return r;</li>
 </ol>
 <p>まず最初のgc_frame0はイカのようなマクロで、 引数argはポインタで、lazy locationフラグを立ててGCルートに追加するでゲソ。</p>
-<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="ot">#define TO_SPTR(t,x)   (typeof (x))((uintptr_t)(x) | (t))</span>
-<span class="ot">#define MKLAZY(fn)    TO_SPTR(P_LAZY,(sptr_t)fn)</span>
-<span class="ot">#define gc_frame0(gc,n,...) void *ptrs[n] = { __VA_ARGS__ }; \</span>
-<span class="ot">        for(int i = 0; i &lt; n; i++) gc[i] = (sptr_t)ptrs[i]; \</span>
-<span class="ot">        gc_t sgc = gc;  gc_t gc = sgc + n;</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="pp">#define TO_SPTR(t,x)   (typeof (x))((uintptr_t)(x) | (t))</span>
+<span class="pp">#define MKLAZY(fn)    TO_SPTR(P_LAZY,(sptr_t)fn)</span>
+<span class="pp">#define gc_frame0(gc,n,...) void *ptrs[n] = { __VA_ARGS__ }; \</span>
+<span class="pp">        for(int i = 0; i &lt; n; i++) gc[i] = (sptr_t)ptrs[i]; \</span>
+<span class="pp">        gc_t sgc = gc;  gc_t gc = sgc + n;</span></code></pre></div>
 <p>update関数は“E__f“プレフィックスを除いた関数の返値でargのhead、 つまりfptr_tを上書きするでゲソ。 これは未評価サンクの評価を行なっているんじゃなイカ？</p>
 <div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="kw">typedef</span> <span class="kw">struct</span> node {
         fptr_t head;
         sptr_t rest[];
 } A_MAYALIAS node_t;
-<span class="ot">#define NODEP(x)     ((node_t *)(x))</span>
-<span class="ot">#define GETHEAD(x)   (NODEP(x)-&gt;head)</span>
+<span class="pp">#define NODEP(x)     ((node_t *)(x))</span>
+<span class="pp">#define GETHEAD(x)   (NODEP(x)-&gt;head)</span>
 <span class="kw">inline</span> <span class="dt">static</span> <span class="dt">void</span> update(<span class="dt">void</span> *t, wptr_t n) { GETHEAD(t) = (fptr_t)n; }</code></pre></div>
 <p>もう一度、“1. Caf: v-930757141”を振り替えってみるでゲソ。 詳細に図を描いてみたら未評価サンクが評価される動作がはっきり解ったじゃなイカ!</p>
 <div class="figure">

@@ -106,7 +106,7 @@ __IO <span class="dt">uint32_t</span> TimingDelay = <span class="dv">0</span>;
 
 <span class="dt">void</span> TimingDelay_Decrement(<span class="dt">void</span>)
 {
-  <span class="kw">if</span> (TimingDelay != <span class="bn">0x00</span>)
+  <span class="cf">if</span> (TimingDelay != <span class="bn">0x00</span>)
   { 
     TimingDelay--;
   }
@@ -116,7 +116,7 @@ __IO <span class="dt">uint32_t</span> TimingDelay = <span class="dv">0</span>;
 {
   TimingDelay = nTime;
 
-  <span class="kw">while</span>(TimingDelay != <span class="dv">0</span>);
+  <span class="cf">while</span>(TimingDelay != <span class="dv">0</span>);
 }</code></pre></div>
 <p>このしくみはDelay関数による指定時間待ち合わせを実現するために、イカのような動作を期待しているでゲソ。</p>
 <ol style="list-style-type: decimal">
@@ -196,12 +196,12 @@ fFE$__CCall_fib(gc_t gc,<span class="dt">uint32_t</span> v8)
         wptr_t v68;
         <span class="dt">uint32_t</span> v35;
         <span class="dt">uint16_t</span> v100016 = (((<span class="dt">int32_t</span>)<span class="dv">0</span>) &lt;= ((<span class="dt">int32_t</span>)v8));
-        <span class="kw">if</span> (<span class="dv">0</span> == v100016) {
+        <span class="cf">if</span> (<span class="dv">0</span> == v100016) {
 <span class="co">/* --snip-- */</span>
 <span class="dt">int</span> 
 fib(<span class="dt">int</span> x11)
 {
-        <span class="kw">return</span> (<span class="dt">int</span>)fFE$__CCall_fib(saved_gc,(<span class="dt">uint32_t</span>)x11);
+        <span class="cf">return</span> (<span class="dt">int</span>)fFE$__CCall_fib(saved_gc,(<span class="dt">uint32_t</span>)x11);
 }</code></pre></div>
 <p>を見比べると、どうやら“fFE$__CCall_fib“という関数がforeign export ccallした関数のようでゲソ。 また <a href="https://github.com/ajhc/ajhc-dumpyard/blob/master/use_foreign_export/hs_main.c_final.datalog">hs_main.c_final.datalog</a> を読むとイカのように型の定義まであるじゃなイカ。</p>
 <pre><code>% functions
@@ -303,7 +303,7 @@ gc_new_foreignptr(HsPtr ptr) {
         HsPtr *res = gc_array_alloc_atomic(saved_gc, <span class="dv">2</span>, SLAB_FLAG_FINALIZER);
         res[<span class="dv">0</span>] = ptr;
         res[<span class="dv">1</span>] = NULL;
-        <span class="kw">return</span> TO_SPTR(P_WHNF, res);
+        <span class="cf">return</span> TO_SPTR(P_WHNF, res);
 }</code></pre></div>
 <p>このように一旦GCスタックへのポインタの受け渡しが途切れる箇所がいくつかあり、それは</p>
 <ul>
@@ -398,13 +398,13 @@ lib/jhc/System/Mem.hs:foreign import ccall safe &quot;hs_perform_gc&quot; perfor
         <span class="dt">unsigned</span> <span class="dt">char</span> flags;
         <span class="dt">unsigned</span> <span class="dt">short</span> num_entries;
         <span class="kw">struct</span> s_arena *arena;
-<span class="ot">#if _JHC_PROFILE</span>
+<span class="pp">#if _JHC_PROFILE</span>
         <span class="dt">unsigned</span> allocations;
-<span class="ot">#endif</span>
+<span class="pp">#endif</span>
 };
 
 <span class="co">/* File: hs_main.c */</span>
-<span class="ot">#include &quot;jhc_rts_header.h&quot;</span>
+<span class="pp">#include </span><span class="im">&quot;jhc_rts_header.h&quot;</span>
 <span class="dt">static</span> <span class="kw">struct</span> s_cache *cCJhc_Prim_Prim_$x3a;
 <span class="dt">static</span> <span class="kw">struct</span> s_cache *cCJhc_Type_Basic_Just;
 <span class="co">/* snip */</span>
@@ -419,12 +419,12 @@ jhc_hs_init(<span class="dt">void</span>)
                         wptr_t x7 = s_alloc(gc,arena,cCJhc_Prim_Prim_$x3a);
                         ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x7)-&gt;a1 = v106;
                         ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x7)-&gt;a2 = v69834446;
-                        <span class="kw">return</span> x7;</code></pre></div>
+                        <span class="cf">return</span> x7;</code></pre></div>
 <p>同様にランタイムにあるグローバルs_cacheも <a href="https://github.com/ajhc/ajhc/commit/2c898ff294f93a6bbd6ad58c7dc26ab2aa87d8d4">arenaの下に移動</a> したでゲソ。</p>
 <div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* File: ajhc/rts/rts/gc_jgc.c */</span>
 <span class="co">// 7 to share caches with the first 7 tuples</span>
-<span class="ot">#define GC_STATIC_ARRAY_NUM 7</span>
-<span class="ot">#define GC_MAX_BLOCK_ENTRIES 150</span>
+<span class="pp">#define GC_STATIC_ARRAY_NUM 7</span>
+<span class="pp">#define GC_MAX_BLOCK_ENTRIES 150</span>
 
 <span class="dt">static</span> <span class="kw">struct</span> s_cache *array_caches[GC_STATIC_ARRAY_NUM];
 <span class="dt">static</span> <span class="kw">struct</span> s_cache *array_caches_atomic[GC_STATIC_ARRAY_NUM];</code></pre></div>
@@ -438,18 +438,18 @@ jhc_hs_init(<span class="dt">void</span>)
 <span class="dt">uint32_t</span> *
 getTimingDelay()
 {
-        <span class="kw">return</span> &amp;TimingDelay;
+        <span class="cf">return</span> &amp;TimingDelay;
 }
 
 <span class="dt">void</span> *run_timingDelayDecrement(<span class="dt">void</span> *p)
 {
-	<span class="kw">for</span> (;;) {
-<span class="ot">#define MILLI_SEC(N)  ((N) * 1000)</span>
+	<span class="cf">for</span> (;;) {
+<span class="pp">#define MILLI_SEC(N)  ((N) * 1000)</span>
 		usleep(MILLI_SEC(<span class="dv">100</span>));
 		timingDelayDecrement();
 	}
 	<span class="co">/* NOTREACHED */</span>
-	<span class="kw">return</span> NULL;
+	<span class="cf">return</span> NULL;
 }
 
 <span class="dt">int</span>
@@ -458,14 +458,14 @@ main(<span class="dt">int</span> argc, <span class="dt">char</span> *argv[])
 	<span class="dt">int</span> err;
 
         hs_init(&amp;argc,&amp;argv);
-        <span class="kw">if</span> (jhc_setjmp(&amp;jhc_uncaught)) {
+        <span class="cf">if</span> (jhc_setjmp(&amp;jhc_uncaught)) {
                 jhc_error(<span class="st">&quot;Uncaught Exception&quot;</span>);
-        } <span class="kw">else</span> {
+        } <span class="cf">else</span> {
 		forkOS_createThread(&amp;run_timingDelayDecrement, NULL, &amp;err);
                 _amain();
 	}
         hs_exit();
-        <span class="kw">return</span> <span class="dv">0</span>;
+        <span class="cf">return</span> <span class="dv">0</span>;
 }</code></pre></div>
 <p>今度はHaskell側でゲソ。 先のrun_timingDelayDecrementスレッドから呼び出されるtimingDelayDecrement関数は単にポインタの先にある uint32_tの値を減算するだけでゲソ。 一方、Haskellのmain関数はmyDelay関数を繰り返し呼び出していて、 さっきのuint32_tに待ち合わせ時間を書き込んだ後、その値が0になるのをループで待ち合わせるでゲソ。</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE ForeignFunctionInterface #-}</span>

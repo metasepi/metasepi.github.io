@@ -109,7 +109,7 @@ forkOS_createThreadWrapper ( <span class="dt">void</span> * entry )
     cap = rts_lock();
     rts_evalStableIO(&amp;cap, (HsStablePtr) entry, NULL);
     rts_unlock(cap);
-    <span class="kw">return</span> NULL;
+    <span class="cf">return</span> NULL;
 }
 
 <span class="dt">int</span>
@@ -118,9 +118,9 @@ forkOS_createThread ( HsStablePtr entry )
     pthread_t tid;
     <span class="dt">int</span> result = pthread_create(&amp;tid, NULL,
 				forkOS_createThreadWrapper, (<span class="dt">void</span>*)entry);
-    <span class="kw">if</span>(!result)
+    <span class="cf">if</span>(!result)
         pthread_detach(tid);
-    <span class="kw">return</span> result;
+    <span class="cf">return</span> result;
 }</code></pre></div>
 <p>どうやらGHCではStablePtrはFFIを越えることができて、その型はHsStablePtrのようでゲソ。 このようなコードをAjhcでも実現できなイカ？ ところが <a href="https://github.com/ajhc/ajhc-dumpyard/tree/master/try_pthread1">それぽいコード</a> を書いてみたところエラーになるじゃなイカ。 これはStablePtrは単なるスマートポインタになるはずでゲソが、 どうもこのスマートポインタを直接C言語コードに渡すのが禁止されているようでゲソ。</p>
 <pre><code>$ make
@@ -158,7 +158,7 @@ convertDecls tiData props classHierarchy assumps dataTable hsDecls <span class="
         }
 
 <span class="co">-- File: ajhc/src/E/Main.hs</span>
-processDecls <span class="ot">::</span>
+<span class="ot">processDecls ::</span>
     <span class="dt">CollectedHo</span>             <span class="co">-- ^ Collected ho</span>
     <span class="ot">-&gt;</span> <span class="dt">Ho</span>                   <span class="co">-- ^ preliminary haskell object  data</span>
     <span class="ot">-&gt;</span> <span class="dt">TiData</span>               <span class="co">-- ^ front end output</span>
@@ -214,14 +214,14 @@ ajhc: user error (C code did not compile.)</code></pre>
 ftheMain(gc_t gc)
 {
         saved_gc = gc;
-        (<span class="dt">uint32_t</span>)pthread_create((pthread_t*)<span class="dv">0</span>,(pthread_attr_t*)<span class="dv">0</span>,(FunPtr)((uintptr_t)&amp;testThread),(HsPtr)<span class="dv">0</span>);
-        <span class="kw">return</span>;
+        (<span class="dt">uint32_t</span>)pthread_create((pthread_t*)<span class="dv">0</span>,(pthread_attr_t*)<span class="dv">0</span>,(FunPtr)((<span class="dt">uintptr_t</span>)&amp;testThread),(HsPtr)<span class="dv">0</span>);
+        <span class="cf">return</span>;
 }
 
 HsPtr
 testThread(HsPtr x30)
 {
-        <span class="kw">return</span> (HsPtr)fFE$__CCall_testThread(saved_gc,(uintptr_t)x30);
+        <span class="cf">return</span> (HsPtr)fFE$__CCall_testThread(saved_gc,(<span class="dt">uintptr_t</span>)x30);
 }</code></pre></div>
 <p>どうも上の不具合はイカのpatchで簡単に修正できるようでゲソ。たぶんこれはイージーミスだと思うでゲソ。</p>
 <div class="sourceCode"><pre class="sourceCode diff"><code class="sourceCode diff"><span class="kw">--- a/lib/jhc/Jhc/Type/Ptr.hs</span>
@@ -231,7 +231,7 @@ testThread(HsPtr x30)
 
  data {-# CTYPE &quot;HsPtr&quot; #-} Ptr a = Ptr Addr_
 <span class="st">-data {-# CTYPE &quot;FunPtr&quot; #-} FunPtr a = FunPtr FunAddr_</span>
-<span class="ot">+data {-# CTYPE &quot;HsFunPtr&quot; #-} FunPtr a = FunPtr FunAddr_</span></code></pre></div>
+<span class="va">+data {-# CTYPE &quot;HsFunPtr&quot; #-} FunPtr a = FunPtr FunAddr_</span></code></pre></div>
 <p>しかしこれでFunPtrを使った関数ポインタを実現できたんでゲソが、 任意のIOを関数ポインタ化できることにはならないでゲソ。 具体的にはイカのような型になってしまっているforkOSの引数をIO ()にしたいでゲソ。</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">forkOS ::</span> <span class="dt">FunPtr</span> (<span class="dt">Ptr</span> () <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Ptr</span> ())) <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">Int</span></code></pre></div>
 <p>GHCはどんな魔法を使っているのでゲソ？ <a href="https://github.com/ajhc/ajhc-dumpyard/tree/master/ghc_foreign_wrapper">GHCでforeign import ccall “wrapper”を使う例</a> を解析すれば何かわかるかもしれないでゲソ。 freeHaskellFunPtrの行方を探ったところ、 どうもghc/rts/Adjustor.cでwrapperが作ったコード片のラッパーを作るようでゲソ。 createAdjustorというのが主犯のようじゃなイカ。</p>
@@ -254,9 +254,9 @@ can't grok expression: &lt;fromBang_ x128471745∷IO ()&gt; x62470114</code></pr
      newStablePtr,
      deRefStablePtr,
 <span class="st">-    freeStablePtr</span>
-<span class="ot">+    freeStablePtr,</span>
-<span class="ot">+    newStablePtrIO,</span>
-<span class="ot">+    deRefStablePtrIO,</span>
+<span class="va">+    freeStablePtr,</span>
+<span class="va">+    newStablePtrIO,</span>
+<span class="va">+    deRefStablePtrIO,</span>
      ) where
  
  import Jhc.Prim.Rts
@@ -264,22 +264,22 @@ can't grok expression: &lt;fromBang_ x128471745∷IO ()&gt; x62470114</code></pr
      fromUIO $ \w -&gt; case c_derefStablePtr (toBang_ x) w of
          (# w', s #) -&gt; (# w', fromBang_ s #)
  
-<span class="ot">+newStablePtrIO :: IO a -&gt; IO (StablePtr (IO a))</span>
-<span class="ot">+newStablePtrIO x = do</span>
-<span class="ot">+    fromUIO $ \w -&gt; case c_newStablePtrIO x w of</span>
-<span class="ot">+        (# w', s #) -&gt; (# w', s #)</span>
-<span class="ot">+</span>
-<span class="ot">+deRefStablePtrIO :: StablePtr (IO a) -&gt; IO (IO a)</span>
-<span class="ot">+deRefStablePtrIO x = do</span>
-<span class="ot">+    fromUIO $ \w -&gt; case c_derefStablePtrIO x w of</span>
-<span class="ot">+        (# w', s #) -&gt; (# w', s #)</span>
-<span class="ot">+</span>
+<span class="va">+newStablePtrIO :: IO a -&gt; IO (StablePtr (IO a))</span>
+<span class="va">+newStablePtrIO x = do</span>
+<span class="va">+    fromUIO $ \w -&gt; case c_newStablePtrIO x w of</span>
+<span class="va">+        (# w', s #) -&gt; (# w', s #)</span>
+<span class="va">+</span>
+<span class="va">+deRefStablePtrIO :: StablePtr (IO a) -&gt; IO (IO a)</span>
+<span class="va">+deRefStablePtrIO x = do</span>
+<span class="va">+    fromUIO $ \w -&gt; case c_derefStablePtrIO x w of</span>
+<span class="va">+        (# w', s #) -&gt; (# w', s #)</span>
+<span class="va">+</span>
  foreign import ccall unsafe &quot;rts/stableptr.c c_freeStablePtr&quot;  c_freeStablePtr   :: Bang_ (StablePtr a) -&gt; IO ()
  foreign import ccall unsafe &quot;rts/stableptr.c c_newStablePtr&quot;   c_newStablePtr    :: Bang_ a -&gt; UIO (Bang_ (StablePtr a))
  foreign import ccall unsafe &quot;rts/stableptr.c c_derefStablePtr&quot; c_derefStablePtr :: Bang_ (StablePtr a) -&gt; UIO (Bang_ a)
-<span class="ot">+</span>
-<span class="ot">+foreign import ccall unsafe &quot;rts/stableptr.c c_newStablePtr&quot;   c_newStablePtrIO   :: IO a -&gt; UIO (StablePtr (IO a))</span>
-<span class="ot">+foreign import ccall unsafe &quot;rts/stableptr.c c_derefStablePtr&quot; c_derefStablePtrIO :: StablePtr (IO a) -&gt; UIO (IO a)</span></code></pre></div>
+<span class="va">+</span>
+<span class="va">+foreign import ccall unsafe &quot;rts/stableptr.c c_newStablePtr&quot;   c_newStablePtrIO   :: IO a -&gt; UIO (StablePtr (IO a))</span>
+<span class="va">+foreign import ccall unsafe &quot;rts/stableptr.c c_derefStablePtr&quot; c_derefStablePtrIO :: StablePtr (IO a) -&gt; UIO (IO a)</span></code></pre></div>
 <p>ajhcのコンパイルでイカのようにエラーになってしまうでゲソ。 どうやらforeign importに渡せる型は限定されているようでゲソ。</p>
 <pre><code>Compiling...
 [1 of 4] Foreign.StablePtr
@@ -384,7 +384,7 @@ forkOScreateThreadWrapper b <span class="fu">=</span> <span class="kw">do</span>
   freeStablePtr s
   return nullPtr
 
-foreign export ccall <span class="st">&quot;forkOScreateThreadWrapper&quot;</span> forkOScreateThreadWrapper <span class="ot">::</span>
+foreign export ccall <span class="st">&quot;forkOScreateThreadWrapper&quot;</span><span class="ot"> forkOScreateThreadWrapper ::</span>
   <span class="dt">Bang_</span> (<span class="dt">StablePtr</span> (<span class="dt">IO</span> ())) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Ptr</span> ())
 foreign <span class="kw">import </span>ccall &quot;&amp;forkOScreateThreadWrapper&quot; p_forkOScreateThreadWrapper ::
   <span class="dt">FunPtr</span> (<span class="dt">Bang_</span> (<span class="dt">StablePtr</span> (<span class="dt">IO</span> ())) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Ptr</span> ()))
@@ -402,10 +402,10 @@ forkOS_createThread(<span class="dt">void</span> *(*wrapper) (<span class="dt">v
 {
         pthread_t tid;
         *err = pthread_create(&amp;tid, NULL, wrapper, entry);
-        <span class="kw">if</span> (*err) {
+        <span class="cf">if</span> (*err) {
                 pthread_detach(tid);
         }
-        <span class="kw">return</span> tid;
+        <span class="cf">return</span> tid;
 }</code></pre></div>
 <div class="footnotes">
 <hr />

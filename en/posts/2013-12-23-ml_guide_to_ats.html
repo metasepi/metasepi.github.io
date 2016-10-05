@@ -308,7 +308,7 @@ stadef nat_lt (i: <span class="dt">int</span>, limit: <span class="dt">int</span
 <li>ガードを使った存在記号を用いて、数値型を指定した範囲に制限することができます。</li>
 </ul>
 <div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="co">(* ATS *)</span>
-typedef <span class="dt">NatLt</span> (n: <span class="dt">int</span>) =
+typedef NatLt (n: <span class="dt">int</span>) =
   [i: <span class="dt">int</span> | nat_lt (i, n)] <span class="dt">int</span>(i)</code></pre></div>
 <p>これで静的な関数 NatLt: int -&gt; type を定義できました。 静的な数値nを与えれば、NatLtは 0 から n - 1 までの範囲を持つ数値型のサブセットとしての型を返します。 NatLtの実装はこう読めるでしょう。 「種intであり、nat_lt(i, n)が真で、int(i)型として生産されるのようなiが存在する。」</p>
 <p>NatLt(n)型を使った関数は以下のようになるでしょう。</p>
@@ -521,7 +521,7 @@ dataview fgets_v (sz:<span class="dt">int</span>, addr, addr) =
       <span class="co">(* 読み込む最大のバイト数を引数に取る。  *)</span>
       size: <span class="dt">int</span>(count),
       <span class="co">(* モードmによってオープンされたFILE構造体への参照を引数に取る。 *)</span>
-      stream: &amp;<span class="dt">FILE</span>(m)
+      stream: &amp;FILE(m)
     )
   :&lt;&gt;
     <span class="co">(* l'は返値のポインタを指示します。 *)</span>
@@ -551,7 +551,7 @@ dataview fgets_v (sz:<span class="dt">int</span>, addr, addr) =
 <span class="kw">fun</span> fgets
     {n, sz:<span class="dt">int</span> | <span class="dv">0</span> &lt; n; n &lt;= sz} {m:fm} {l:addr} (
       pf_mod: file_mode_lte(m, r), pf_buf: bytes(sz) @ l
-    | s: ptr(l), size: <span class="dt">int</span>(n), stream: &amp;<span class="dt">FILE</span>(m))
+    | s: ptr(l), size: <span class="dt">int</span>(n), stream: &amp;FILE(m))
   :&lt;&gt;
     [l':addr] (fgets_v(sz, l, l') | ptr(l')) =
   <span class="st">&quot;fgets&quot;</span></code></pre></div>

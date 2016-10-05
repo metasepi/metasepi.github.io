@@ -152,17 +152,17 @@ stg_putMVarzh
     mvar = R1;
     val  = R2;
 
-<span class="ot">#if defined(THREADED_RTS)</span>
+<span class="pp">#if defined(THREADED_RTS)</span>
     (<span class="st">&quot;ptr&quot;</span> info) = foreign <span class="st">&quot;C&quot;</span> lockClosure(mvar <span class="st">&quot;ptr&quot;</span>) [];
-<span class="ot">#else</span>
+<span class="pp">#else</span>
     info = GET_INFO(mvar);
-<span class="ot">#endif</span>
+<span class="pp">#endif</span>
 
-    <span class="kw">if</span> (info == stg_MVAR_CLEAN_info) {
+    <span class="cf">if</span> (info == stg_MVAR_CLEAN_info) {
         foreign <span class="st">&quot;C&quot;</span> dirty_MVAR(BaseReg <span class="st">&quot;ptr&quot;</span>, mvar <span class="st">&quot;ptr&quot;</span>);
     }
 
-    <span class="kw">if</span> (StgMVar_value(mvar) != stg_END_TSO_QUEUE_closure) {
+    <span class="cf">if</span> (StgMVar_value(mvar) != stg_END_TSO_QUEUE_closure) {
 
         <span class="co">// see Note [mvar-heap-check] above</span>
         HP_CHK_GEN_TICKY(SIZEOF_StgMVarTSOQueue, R1_PTR &amp; R2_PTR, stg_putMVarzh);
@@ -175,9 +175,9 @@ stg_putMVarzh
         StgMVarTSOQueue_link(q) = END_TSO_QUEUE;
         StgMVarTSOQueue_tso(q)  = CurrentTSO;
 
-	<span class="kw">if</span> (StgMVar_head(mvar) == stg_END_TSO_QUEUE_closure) {
+	<span class="cf">if</span> (StgMVar_head(mvar) == stg_END_TSO_QUEUE_closure) {
 	    StgMVar_head(mvar) = q;
-	} <span class="kw">else</span> {
+	} <span class="cf">else</span> {
             StgMVarTSOQueue_link(StgMVar_tail(mvar)) = q;
             foreign <span class="st">&quot;C&quot;</span> recordClosureMutated(MyCapability() <span class="st">&quot;ptr&quot;</span>,
                                              StgMVar_tail(mvar)) [];
@@ -194,23 +194,23 @@ stg_putMVarzh
   
     q = StgMVar_head(mvar);
 loop:
-    <span class="kw">if</span> (q == stg_END_TSO_QUEUE_closure) {
+    <span class="cf">if</span> (q == stg_END_TSO_QUEUE_closure) {
 	<span class="co">/* No further takes, the MVar is now full. */</span>
 	StgMVar_value(mvar) = val;
     	unlockClosure(mvar, stg_MVAR_DIRTY_info);
 	jump %ENTRY_CODE(Sp(<span class="dv">0</span>));
     }
-    <span class="kw">if</span> (StgHeader_info(q) == stg_IND_info ||
+    <span class="cf">if</span> (StgHeader_info(q) == stg_IND_info ||
         StgHeader_info(q) == stg_MSG_NULL_info) {
         q = StgInd_indirectee(q);
-        <span class="kw">goto</span> loop;
+        <span class="cf">goto</span> loop;
     }
 
     <span class="co">// There are takeMVar(s) waiting: wake up the first one</span>
     
     tso = StgMVarTSOQueue_tso(q);
     StgMVar_head(mvar) = StgMVarTSOQueue_link(q);
-    <span class="kw">if</span> (StgMVar_head(mvar) == stg_END_TSO_QUEUE_closure) {
+    <span class="cf">if</span> (StgMVar_head(mvar) == stg_END_TSO_QUEUE_closure) {
         StgMVar_tail(mvar) = stg_END_TSO_QUEUE_closure;
     }
 
@@ -225,7 +225,7 @@ loop:
     <span class="co">// indicate that the MVar operation has now completed.</span>
     StgTSO__link(tso) = stg_END_TSO_QUEUE_closure;
 
-    <span class="kw">if</span> (TO_W_(StgStack_dirty(stack)) == <span class="dv">0</span>) {
+    <span class="cf">if</span> (TO_W_(StgStack_dirty(stack)) == <span class="dv">0</span>) {
         foreign <span class="st">&quot;C&quot;</span> dirty_STACK(MyCapability() <span class="st">&quot;ptr&quot;</span>, stack <span class="st">&quot;ptr&quot;</span>) [];
     }
     
@@ -235,24 +235,24 @@ loop:
     jump %ENTRY_CODE(Sp(<span class="dv">0</span>));
 }
 
-<span class="ot">#define PerformTake(stack, value)               \</span>
-<span class="ot">    W_ sp;                                      \</span>
-<span class="ot">    sp = StgStack_sp(stack);                    \</span>
-<span class="ot">    W_[sp + WDS(1)] = value;                    \</span>
-<span class="ot">    W_[sp + WDS(0)] = stg_gc_unpt_r1_info;</span>
+<span class="pp">#define PerformTake(stack, value)               \</span>
+<span class="pp">    W_ sp;                                      \</span>
+<span class="pp">    sp = StgStack_sp(stack);                    \</span>
+<span class="pp">    W_[sp + WDS(1)] = value;                    \</span>
+<span class="pp">    W_[sp + WDS(0)] = stg_gc_unpt_r1_info;</span>
 
 <span class="co">// File: ghc/includes/rts/storage/SMPClosureOps.h</span>
 EXTERN_INLINE StgInfoTable *lockClosure(StgClosure *p)
 {
     StgWord info;
-    <span class="kw">do</span> {
+    <span class="cf">do</span> {
 	nat i = <span class="dv">0</span>;
-	<span class="kw">do</span> {
+	<span class="cf">do</span> {
 	    info = xchg((P_)(<span class="dt">void</span> *)&amp;p-&gt;header.info, (W_)&amp;stg_WHITEHOLE_info);
-	    <span class="kw">if</span> (info != (W_)&amp;stg_WHITEHOLE_info) <span class="kw">return</span> (StgInfoTable *)info;
-	} <span class="kw">while</span> (++i &lt; SPIN_COUNT);
+	    <span class="cf">if</span> (info != (W_)&amp;stg_WHITEHOLE_info) <span class="cf">return</span> (StgInfoTable *)info;
+	} <span class="cf">while</span> (++i &lt; SPIN_COUNT);
 	yieldThread();
-    } <span class="kw">while</span> (<span class="dv">1</span>);
+    } <span class="cf">while</span> (<span class="dv">1</span>);
 }
 
 <span class="co">// File: ghc/rts/sm/Storage.c</span>
@@ -280,7 +280,7 @@ recordMutableCap (StgClosure *p, Capability *cap, nat gen)
     <span class="co">//    ASSERT(cap-&gt;running_task == myTask());</span>
     <span class="co">// NO: assertion is violated by performPendingThrowTos()</span>
     bd = cap-&gt;mut_lists[gen];
-    <span class="kw">if</span> (bd-&gt;free &gt;= bd-&gt;start + BLOCK_SIZE_W) {
+    <span class="cf">if</span> (bd-&gt;free &gt;= bd-&gt;start + BLOCK_SIZE_W) {
 	bdescr *new_bd;
 	new_bd = allocBlock_lock();
 	new_bd-&gt;link = bd;
@@ -295,7 +295,7 @@ recordClosureMutated (Capability *cap, StgClosure *p)
 {
     bdescr *bd;
     bd = Bdescr((StgPtr)p);
-    <span class="kw">if</span> (bd-&gt;gen_no != <span class="dv">0</span>) recordMutableCap(p,cap,bd-&gt;gen_no);
+    <span class="cf">if</span> (bd-&gt;gen_no != <span class="dv">0</span>) recordMutableCap(p,cap,bd-&gt;gen_no);
 }
 
 <span class="co">// File: ghc/rts/HeapStackCheck.cmm</span>
@@ -321,8 +321,8 @@ tryWakeupThread (Capability *cap, StgTSO *tso)
 {
     traceEventThreadWakeup (cap, tso, tso-&gt;cap-&gt;no);
 
-<span class="ot">#ifdef THREADED_RTS</span>
-    <span class="kw">if</span> (tso-&gt;cap != cap)
+<span class="pp">#ifdef THREADED_RTS</span>
+    <span class="cf">if</span> (tso-&gt;cap != cap)
     {
         MessageWakeup *msg;
         msg = (MessageWakeup *)allocate(cap,sizeofW(MessageWakeup));
@@ -331,48 +331,48 @@ tryWakeupThread (Capability *cap, StgTSO *tso)
         sendMessage(cap, tso-&gt;cap, (Message*)msg);
         debugTraceCap(DEBUG_sched, cap, <span class="st">&quot;message: try wakeup thread %ld on cap %d&quot;</span>,
                       (W_)tso-&gt;id, tso-&gt;cap-&gt;no);
-        <span class="kw">return</span>;
+        <span class="cf">return</span>;
     }
-<span class="ot">#endif</span>
+<span class="pp">#endif</span>
 
-    <span class="kw">switch</span> (tso-&gt;why_blocked)
+    <span class="cf">switch</span> (tso-&gt;why_blocked)
     {
-    <span class="kw">case</span> BlockedOnMVar:
+    <span class="cf">case</span> BlockedOnMVar:
     {
-        <span class="kw">if</span> (tso-&gt;_link == END_TSO_QUEUE) {
+        <span class="cf">if</span> (tso-&gt;_link == END_TSO_QUEUE) {
             tso-&gt;block_info.closure = (StgClosure*)END_TSO_QUEUE;
-            <span class="kw">goto</span> unblock;
-        } <span class="kw">else</span> {
-            <span class="kw">return</span>;
+            <span class="cf">goto</span> unblock;
+        } <span class="cf">else</span> {
+            <span class="cf">return</span>;
         }
     }
 
-    <span class="kw">case</span> BlockedOnMsgThrowTo:
+    <span class="cf">case</span> BlockedOnMsgThrowTo:
     {
         <span class="dt">const</span> StgInfoTable *i;
         
         i = lockClosure(tso-&gt;block_info.closure);
         unlockClosure(tso-&gt;block_info.closure, i);
-        <span class="kw">if</span> (i != &amp;stg_MSG_NULL_info) {
+        <span class="cf">if</span> (i != &amp;stg_MSG_NULL_info) {
             debugTraceCap(DEBUG_sched, cap, <span class="st">&quot;thread %ld still blocked on throwto (%p)&quot;</span>,
                           (W_)tso-&gt;id, tso-&gt;block_info.throwto-&gt;header.info);
-            <span class="kw">return</span>;
+            <span class="cf">return</span>;
         }
 
         <span class="co">// remove the block frame from the stack</span>
         ASSERT(tso-&gt;stackobj-&gt;sp[<span class="dv">0</span>] == (StgWord)&amp;stg_block_throwto_info);
         tso-&gt;stackobj-&gt;sp += <span class="dv">3</span>;
-        <span class="kw">goto</span> unblock;
+        <span class="cf">goto</span> unblock;
     }
 
-    <span class="kw">case</span> BlockedOnBlackHole:
-    <span class="kw">case</span> BlockedOnSTM:
-    <span class="kw">case</span> ThreadMigrating:
-        <span class="kw">goto</span> unblock;
+    <span class="cf">case</span> BlockedOnBlackHole:
+    <span class="cf">case</span> BlockedOnSTM:
+    <span class="cf">case</span> ThreadMigrating:
+        <span class="cf">goto</span> unblock;
 
-    <span class="kw">default</span>:
+    <span class="cf">default</span>:
         <span class="co">// otherwise, do nothing</span>
-        <span class="kw">return</span>;
+        <span class="cf">return</span>;
     }
 
 unblock:

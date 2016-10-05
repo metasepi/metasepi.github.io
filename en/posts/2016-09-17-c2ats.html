@@ -127,16 +127,16 @@ $ wc -l example.sats
 <span class="ot">#include &quot;share/atspre_define.hats&quot;</span>
 <span class="ot">#include &quot;share/atspre_staload.hats&quot;</span>
 
-staload <span class="dt">UN</span> = <span class="st">&quot;prelude/SATS/unsafe.sats&quot;</span>
+staload UN = <span class="st">&quot;prelude/SATS/unsafe.sats&quot;</span>
 
 staload <span class="st">&quot;example.sats&quot;</span>
 
 <span class="kw">fun</span> my_fopen (file: <span class="dt">string</span>, mode: <span class="dt">string</span>):
   [l:addr] (ptr_v_1(type_c2ats_FILE, l) | ptr l) = ret where {
   <span class="kw">val</span> pn = string2ptr file
-  <span class="kw">val</span> (pfnat, fpfnat | pn) = $UN<span class="kw">.</span>ptr_vtake pn
+  <span class="kw">val</span> (pfnat, fpfnat | pn) = $UN.ptr_vtake pn
   <span class="kw">val</span> pm = string2ptr mode
-  <span class="kw">val</span> (pfmat, fpfmat | pm) = $UN<span class="kw">.</span>ptr_vtake pm
+  <span class="kw">val</span> (pfmat, fpfmat | pm) = $UN.ptr_vtake pm
 
   <span class="kw">val</span> (pffp | fp) = fun_c2ats_fopen (pfnat, pfmat | pn, pm)
 
@@ -152,10 +152,10 @@ staload <span class="st">&quot;example.sats&quot;</span>
   <span class="kw">val</span> buf = strnptr2strptr (string_tabulate len)
   <span class="kw">val</span> pbuf = strptr2ptr buf
 
-  <span class="kw">val</span> r = fun_c2ats_fread (pffp | pbuf, <span class="dv">1</span><span class="dt">UL</span>, $UN<span class="kw">.</span>cast2ulint len, fp)
-  <span class="kw">val</span> r = $UN<span class="kw">.</span>cast2size r
+  <span class="kw">val</span> r = fun_c2ats_fread (pffp | pbuf, <span class="dv">1</span>UL, $UN.cast2ulint len, fp)
+  <span class="kw">val</span> r = $UN.cast2size r
   <span class="kw">val</span> pbufr = add_ptr_bsz (pbuf, r)
-  <span class="kw">val</span> () = <span class="kw">if</span> r &lt; len <span class="kw">then</span> $UN<span class="kw">.</span>ptr0_set&lt;<span class="dt">char</span>&gt;(pbufr, '\<span class="dv">0</span>')
+  <span class="kw">val</span> () = <span class="kw">if</span> r &lt; len <span class="kw">then</span> $UN.ptr0_set&lt;<span class="dt">char</span>&gt;(pbufr, '\<span class="dv">0</span>')
 
   <span class="kw">val</span> ret = (r, buf)
 }
@@ -207,7 +207,7 @@ fun my_fopen (file: string, mode: string):
 <span class="ot">#include &quot;share/atspre_define.hats&quot;</span>
 <span class="ot">#include &quot;share/atspre_staload.hats&quot;</span>
 
-staload <span class="dt">UN</span> = <span class="st">&quot;prelude/SATS/unsafe.sats&quot;</span>
+staload UN = <span class="st">&quot;prelude/SATS/unsafe.sats&quot;</span>
 
 staload <span class="st">&quot;example.sats&quot;</span>
 
@@ -219,7 +219,7 @@ staload <span class="st">&quot;example.sats&quot;</span>
 
   <span class="kw">val</span> r = fun_c2ats_fread (pffp | pbuf, i2sz <span class="dv">1</span>, len, fp)
   <span class="kw">val</span> pbufr = add_ptr_bsz (pbuf, r)
-  <span class="kw">val</span> () = <span class="kw">if</span> r &lt; len <span class="kw">then</span> $UN<span class="kw">.</span>ptr0_set&lt;<span class="dt">char</span>&gt;(pbufr, '\<span class="dv">0</span>')
+  <span class="kw">val</span> () = <span class="kw">if</span> r &lt; len <span class="kw">then</span> $UN.ptr0_set&lt;<span class="dt">char</span>&gt;(pbufr, '\<span class="dv">0</span>')
 
   <span class="kw">val</span> ret = (r, buf)
 }

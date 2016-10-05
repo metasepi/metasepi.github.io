@@ -73,7 +73,7 @@ main <span class="fu">=</span> return ()</code></pre></div>
 <span class="dt">char</span> jhc_command[] = <span class="st">&quot;jhc -C -o Zen.c Zen.hs&quot;</span>;
 <span class="dt">char</span> jhc_version[] = <span class="st">&quot;jhc 0.8.1 (-0)&quot;</span>;
 
-<span class="ot">#include &quot;jhc_rts_header.h&quot;</span>
+<span class="pp">#include </span><span class="im">&quot;jhc_rts_header.h&quot;</span>
 
 
 <span class="dt">void</span> jhc_hs_init(<span class="dt">void</span>) ;
@@ -95,19 +95,19 @@ jhc_hs_init(<span class="dt">void</span>)
 <span class="dt">void</span> 
 _amain(<span class="dt">void</span>)
 {
-        <span class="kw">return</span> (<span class="dt">void</span>)b__main(saved_gc);
+        <span class="cf">return</span> (<span class="dt">void</span>)b__main(saved_gc);
 }
 
 <span class="dt">static</span> <span class="dt">void</span> A_STD
 b__main(gc_t gc)
 {
-        <span class="kw">return</span> ftheMain(gc);
+        <span class="cf">return</span> ftheMain(gc);
 }
 
 <span class="dt">static</span> <span class="dt">void</span> A_STD
 ftheMain(gc_t gc)
 {
-        <span class="kw">return</span>;
+        <span class="cf">return</span>;
 }</code></pre></div>
 <p>この基本となるC言語コードの形に対して、 様々なHaskellコードが落されることなんでゲソね。 なにか禅の世界を感じたでゲソー。</p>
 <p>
