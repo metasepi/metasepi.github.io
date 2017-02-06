@@ -8,8 +8,16 @@
         <name>Kiwamu Okabe</name>
         <email>kiwamu@debian.or.jp</email>
     </author>
-    <updated>2016-09-17T00:00:00Z</updated>
+    <updated>2017-02-05T00:00:00Z</updated>
     <entry>
+    <title>Hands-on VeriFast with STM32 microcontroller</title>
+    <link href="http://metasepi.org//en/posts/2017-02-05-verifast-hans-on.html" />
+    <id>http://metasepi.org//en/posts/2017-02-05-verifast-hans-on.html</id>
+    <published>2017-02-05T00:00:00Z</published>
+    <updated>2017-02-05T00:00:00Z</updated>
+    <summary type="html"><![CDATA[Verify ChibiOS/RT sample application using VeriFast]]></summary>
+</entry>
+<entry>
     <title>c2ats - An utility to generate ATS interface from C code</title>
     <link href="http://metasepi.org//en/posts/2016-09-17-c2ats.html" />
     <id>http://metasepi.org//en/posts/2016-09-17-c2ats.html</id>
@@ -80,14 +88,6 @@
     <published>2014-08-02T00:00:00Z</published>
     <updated>2014-08-02T00:00:00Z</updated>
     <summary type="html"><![CDATA[Why ATS language is safe?]]></summary>
-</entry>
-<entry>
-    <title>Metasepi team meeting</title>
-    <link href="http://metasepi.org//en/posts/2014-07-26-ajhc-tlug.html" />
-    <id>http://metasepi.org//en/posts/2014-07-26-ajhc-tlug.html</id>
-    <published>2014-07-26T00:00:00Z</published>
-    <updated>2014-07-26T00:00:00Z</updated>
-    <summary type="html"><![CDATA[Let's practice presentation for Haskell Symposium 2014!]]></summary>
 </entry>
 
 </feed>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>Hands-on VeriFast with STM32 microcontroller - Metasepi</title>
+
+  <meta name="description" content="metasepi.org">
+  <meta name="author" content="Kiwamu Okabe">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="http://metasepi.org/rss_en.xml" rel="alternate" title="Blog" type="application/rss+xml">
+
+  <!-- CSS concatenated and minified via ant build script-->
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="../../css/syntax.css">
+  <link rel="stylesheet" href="../../css/calendar.css">
+  <!-- end CSS-->
+
+  <link rel="stylesheet" href="../../css/default.css">
+
+  <script src="../../js/libs/modernizr-2.0.6.min.js"></script>
+</head>
+
+<body onload="prettyPrint()">
+  <div id="fb-root"></div>
+  <script>
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = '//connect.facebook.net/ja_JP/all.js#xfbml=1';
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
+
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <a href="../../">Metasepi</a>
+      </div>
+
+      <div class="nav">
+        <li><a href="../../">Home</a></li>
+        <li><a href="../../en/posts.html">Blog</a>(<a href="../../posts.html">old</a>)</li>
+        <li><a href="../../papers.html">Papers</a></li>
+        <li><a href="../../map.html">Map</a></li>
+        <li><a href="../../memories.html">Memories</a></li>
+        <li><a href="../../about.html">About</a></li>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="content clearfix">
+      <h1>Hands-on VeriFast with STM32 microcontroller</h1>
+<div class="info">Posted on February  5, 2017 / Tags: <a href="../../en/tags/c.html">c</a>, <a href="../../en/tags/verifast.html">verifast</a>, <a href="../../en/tags/stm32.html">stm32</a>, <a href="../../en/tags/arm.html">arm</a>, <a href="../../en/tags/chibios.html">chibios</a></div>
+<h2>Table of contents</h2>
+<ul>
+<li><a href="#source-code">Source code</a></li>
+<li><a href="#slide">Slide</a></li>
+<li><a href="#participants">Participants</a></li>
+</ul>
+<hr>
+<div class="figure">
+<img src="../../img/NUCLEO-F091RC.jpg" />
+
+</div>
+<p>We had “Hands-on VeriFast with STM32 microcontroller” on <a href="https://metasepi.connpass.com/event/45594/">静的コード解析の会</a> at <a href="https://en.wikipedia.org/wiki/Tokyo">Tokyo</a>.</p>
+<p>This hands-on purpose is that non-professional person for embedded programming understands the development method and verification using <a href="https://people.cs.kuleuven.be/~bart.jacobs/verifast/">VeriFast</a>. The VeriFast is a verifier for single-threaded and multithreaded C language programs annotated with preconditions and postconditions written in separation logic. And VeriFast is easy to use with the graphical IDE.</p>
+<p>The hands-on was going as following steps:</p>
+<ul>
+<li>Introduce <a href="http://www.chibios.org/">ChibiOS/RT</a> which is a RTOS</li>
+<li>Get development environment for ChibiOS/RT</li>
+<li>Build sample application on ChibiOS/RT</li>
+<li>Introduce <a href="http://www.st.com/content/st_com/en/products/microcontrollers/stm32-32-bit-arm-cortex-mcus.html">STM32</a> microcontroller</li>
+<li>Run the application on STM32 board</li>
+<li>Introduce VeriFast</li>
+<li>Verify the application using VeriFast</li>
+</ul>
+<p>All of participants have had VeriFast verification platform, and feel the verification way of VeriFast for ChibiOS/RT on STM32 microcontroller. STMicroelectronics kindly gives me their MCU board <a href="https://developer.mbed.org/platforms/ST-Nucleo-F091RC/">NUCLEO-F091RC</a>, for free. Thanks a lot!</p>
+<p>We are planning same hands-on on <a href="https://www.ospn.jp/osc2017-do/">OSC2017</a> at <a href="https://en.wikipedia.org/wiki/Hokkaido">Hokkaido</a>. Let’s propagandize verification method by VeriFast for embedded application!</p>
+<h2 id="source-code">Source code</h2>
+<ul>
+<li><a href="https://github.com/fpiot/chibios-verifast" class="uri">https://github.com/fpiot/chibios-verifast</a></li>
+</ul>
+<h2 id="slide">Slide</h2>
+<iframe src="//www.slideshare.net/slideshow/embed_code/key/ECKlZ2g2hdkFlF" width="595" height="485" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC; border-width:1px; margin-bottom:5px; max-width: 100%;" allowfullscreen>
+</iframe>
+<div style="margin-bottom:5px">
+<strong> <a href="//www.slideshare.net/master_q/handson-verifast-with-stm32-microcontroller" title="Hands-on VeriFast with STM32 microcontroller" target="_blank">Hands-on VeriFast with STM32 microcontroller</a> </strong> from <strong><a target="_blank" href="//www.slideshare.net/master_q">Kiwamu Okabe</a></strong>
+</div>
+<h2 id="participants">Participants</h2>
+<div class="figure">
+<img src="../../img/2017-02-05-verifast-hands-on-participants.jpg" />
+
+</div>
+<p>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_shortname = 'metasepi';
+    var disqus_identifier = '/en/posts/2017-02-05-verifast-hans-on.html';
+    var disqus_url = 'http://metasepi.org' + '/en/posts/2017-02-05-verifast-hans-on.html';
+    var disqus_title = 'Hands-on VeriFast with STM32 microcontroller';
+    var disqus_developer = 1;
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>
+    Please enable JavaScript to view the 
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  <a href="http://disqus.com" class="dsq-brlink">
+    blog comments powered by <span.logo-disqus>Disqus</span>
+  </a>
+</p>
+
+    </div>
+
+    <footer>
+      <p>
+        This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
+        <br>
+        Metasepi project is supported by
+        <a href="http://seltech.co.jp/en/"><img alt="SELTECH CORPORATION" style="border-width:0" src="../../img/seltech_126x25.png" /></a> ×
+        <a href="http://www.aics.riken.jp/en/"><img alt="RIKEN AICS" style="border-width:0" src="../../img/riken-logo_55x25.png" /></a> ×
+        <a href="http://www.st.com/"><img alt="STMicroelectronics" style="border-width:0" src="../../img/stlogo_x25.png" /></a> ×
+        <a href="http://www.metasepi-design.com/"><img alt="METASEPI DESIGN" style="border-width:0" src="../../img/metasepi_design_logo_82x25.png" /></a> ×
+        <a href="../../past-supporters.html">Past Supporters</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="/js/libs/jquery-1.6.2.min.js"><\/script>')</script>
+
+  <!-- scripts concatenated and minified via ant build script-->
+  <script defer src="../../js/plugins.js"></script>
+  <script defer src="../../js/script.js"></script>
+  <!-- end scripts-->
+
+  <script>
+    window._gaq = [['_setAccount','UA-158383-8'],['_trackPageview'],['_trackPageLoadTime']];
+    Modernizr.load({
+      load: ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js'
+    });
+  </script>
+
+  <!--[if lt IE 7 ]>
+    <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js">
+    <script>
+      window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})
+  <![endif]-->
+</body>
