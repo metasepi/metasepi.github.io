@@ -170,7 +170,7 @@ newStablePtr x <span class="fu">=</span> <span class="kw">do</span>
         number_stack = gc - gc_stack_base;
         <span class="cf">for</span>(<span class="dt">unsigned</span> i = <span class="dv">0</span>; i &lt; number_stack; i++) {
                 debugf(<span class="st">&quot; |&quot;</span>);
-                <span class="co">// TODO - short circuit redirects on stack</span>
+                <span class="co">// </span><span class="al">TODO</span><span class="co"> - short circuit redirects on stack</span>
                 sptr_t ptr = gc_stack_base[i];
                 <span class="cf">if</span>(<span class="dv">1</span> &amp;&amp; (IS_LAZY(ptr))) {
                         assert(GET_PTYPE(ptr) == P_LAZY);
@@ -292,7 +292,7 @@ fR$__fJhc_Basics_$pp(gc_t gc,sptr_t v80776080,sptr_t v58800110)
         This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
         <br>
         Metasepi project is supported by
-        <a href="http://seltech.co.jp/en/"><img alt="SELTECH CORPORATION" style="border-width:0" src="../img/seltech_126x25.png" /></a> ×
+        <a href="http://seltech.co.jp/en/"><img alt="SELTECH CORPORATION" style="border-width:0" src="../img/LOGO_SELTECH_152x25.png" /></a> ×
         <a href="http://www.aics.riken.jp/en/"><img alt="RIKEN AICS" style="border-width:0" src="../img/riken-logo_55x25.png" /></a> ×
         <a href="http://www.st.com/"><img alt="STMicroelectronics" style="border-width:0" src="../img/stlogo_x25.png" /></a> ×
         <a href="http://www.metasepi-design.com/"><img alt="METASEPI DESIGN" style="border-width:0" src="../img/metasepi_design_logo_82x25.png" /></a> ×

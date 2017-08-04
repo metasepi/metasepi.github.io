@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<project name="" company="" manager="" phase="" project-start="20170201T000000Z" mrproject-version="2" calendar="1">
+<project name="Metasepi Plan for Chiers/Bohai iteration" company="Metasepi" manager="" phase="" project-start="20170201T000000Z" mrproject-version="2" calendar="1">
   <properties/>
   <phases/>
   <calendars>
@@ -89,66 +89,134 @@
         <predecessor id="1" predecessor-id="13" type="FS"/>
       </predecessors>
     </task>
-    <task id="15" name="Translate VeriFast tutorial" note="" work="3067200" start="20170201T000000Z" end="20170629T120000Z" work-start="20170201T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work"/>
-    <task id="16" name="Deadline of Functional Ikamusume" note="" work="0" start="20170630T000000Z" end="20170630T000000Z" work-start="20170630T080000Z" percent-complete="0" priority="0" type="milestone" scheduling="fixed-work">
-      <constraint type="must-start-on" time="20170630T000000Z"/>
+    <task id="15" name="&#x9759;&#x7684;&#x30B3;&#x30FC;&#x30C9;&#x89E3;&#x6790;&#x306E;&#x4F1A; #3 @&#x540D;&#x53E4;&#x5C4B;" note="" work="0" start="20170528T000000Z" end="20170528T000000Z" work-start="20170529T080000Z" percent-complete="0" priority="0" type="milestone" scheduling="fixed-work">
+      <constraint type="must-start-on" time="20170528T000000Z"/>
       <predecessors>
-        <predecessor id="1" predecessor-id="15" type="FS"/>
+        <predecessor id="1" predecessor-id="10" type="FS"/>
+        <predecessor id="1" predecessor-id="38" type="FS"/>
       </predecessors>
     </task>
-    <task id="17" name="Survey NetBSD Rump" note="" work="576000" start="20170913T131500Z" end="20171011T131500Z" work-start="20170913T131500Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
+    <task id="16" name="Translate VeriFast tutorial" note="" work="3067200" start="20170201T000000Z" end="20170629T120000Z" work-start="20170201T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work"/>
+    <task id="17" name="Deadline of Functional Ikamusume" note="" work="0" start="20170630T000000Z" end="20170630T000000Z" work-start="20170630T080000Z" percent-complete="0" priority="0" type="milestone" scheduling="fixed-work">
+      <constraint type="must-start-on" time="20170630T000000Z"/>
+      <predecessors>
+        <predecessor id="1" predecessor-id="16" type="FS"/>
+      </predecessors>
+    </task>
+    <task id="18" name="Survey NetBSD Rump" note="" work="647100" start="20170913T131500Z" end="20171013T170000Z" work-start="20170913T131500Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
       <predecessors>
         <predecessor id="1" predecessor-id="14" type="FS"/>
       </predecessors>
     </task>
-    <task id="18" name="&#x9759;&#x7684;&#x30B3;&#x30FC;&#x30C9;&#x89E3;&#x6790;&#x306E;&#x4F1A; #3 @&#x540D;&#x53E4;&#x5C4B;" note="" work="0" start="20170528T000000Z" end="20170528T000000Z" work-start="20170529T080000Z" percent-complete="0" priority="0" type="milestone" scheduling="fixed-work">
-      <constraint type="must-start-on" time="20170528T000000Z"/>
-      <predecessors>
-        <predecessor id="1" predecessor-id="10" type="FS"/>
-        <predecessor id="1" predecessor-id="23" type="FS"/>
-      </predecessors>
-    </task>
-    <task id="19" name="&#x9759;&#x7684;&#x30B3;&#x30FC;&#x30C9;&#x89E3;&#x6790;&#x306E;&#x4F1A; #5 @&#x5317;&#x6D77;&#x9053;" note="" work="0" start="20170716T000000Z" end="20170716T000000Z" work-start="20170717T080000Z" percent-complete="0" priority="0" type="milestone" scheduling="fixed-work">
-      <constraint type="must-start-on" time="20170716T000000Z"/>
-      <predecessors>
-        <predecessor id="1" predecessor-id="24" type="FS"/>
-      </predecessors>
-    </task>
-    <task id="20" name="Work on FreeRTOS" note="" work="576000" start="20170201T000000Z" end="20170228T170000Z" work-start="20170201T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work"/>
-    <task id="21" name="Setup FreeRTOS environment" note="" work="0" start="20170301T000000Z" end="20170301T000000Z" work-start="20170301T080000Z" percent-complete="0" priority="0" type="milestone" scheduling="fixed-work">
+    <task id="19" name="Work on FreeRTOS" note="" work="576000" start="20170201T000000Z" end="20170228T170000Z" work-start="20170201T080000Z" percent-complete="100" priority="0" type="normal" scheduling="fixed-work"/>
+    <task id="20" name="Setup FreeRTOS environment" note="" work="0" start="20170301T000000Z" end="20170301T000000Z" work-start="20170301T080000Z" percent-complete="0" priority="0" type="milestone" scheduling="fixed-work">
       <constraint type="must-start-on" time="20170301T000000Z"/>
       <predecessors>
-        <predecessor id="1" predecessor-id="20" type="FS"/>
+        <predecessor id="1" predecessor-id="19" type="FS"/>
       </predecessors>
     </task>
-    <task id="22" name="Secure OS prototype" note="" work="662400" start="20170228T170000Z" end="20170331T170000Z" work-start="20170301T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
+    <task id="21" name="Secure OS prototype1" note="" work="1209600" start="20170228T170000Z" end="20170427T170000Z" work-start="20170301T080000Z" percent-complete="100" priority="0" type="normal" scheduling="fixed-work">
       <predecessors>
-        <predecessor id="1" predecessor-id="20" type="FS"/>
+        <predecessor id="1" predecessor-id="19" type="FS"/>
       </predecessors>
     </task>
-    <task id="23" name="VeriFast on production" note="" work="1152000" start="20170331T170000Z" end="20170526T170000Z" work-start="20170403T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
+    <task id="22" name="Demo meeting" note="" work="0" start="20170428T000000Z" end="20170428T000000Z" work-start="20170428T080000Z" percent-complete="0" priority="0" type="milestone" scheduling="fixed-work">
+      <constraint type="must-start-on" time="20170428T000000Z"/>
       <predecessors>
-        <predecessor id="1" predecessor-id="22" type="FS"/>
+        <predecessor id="1" predecessor-id="21" type="FS"/>
       </predecessors>
     </task>
-    <task id="24" name="Survey VeriFast internal" note="" work="576000" start="20170526T170000Z" end="20170623T170000Z" work-start="20170529T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
+    <task id="23" name="Secure OS prototype2" note="" work="1180800" start="20170427T170000Z" end="20170623T170000Z" work-start="20170428T080000Z" percent-complete="50" priority="0" type="normal" scheduling="fixed-work">
+      <predecessors>
+        <predecessor id="1" predecessor-id="21" type="FS"/>
+      </predecessors>
+    </task>
+    <task id="24" name="Choose RTOS for demo" note="" work="201600" start="20170623T170000Z" end="20170704T170000Z" work-start="20170626T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
       <predecessors>
         <predecessor id="1" predecessor-id="23" type="FS"/>
       </predecessors>
     </task>
-    <task id="25" name="C99 compat VeriFast" note="" work="2201400" start="20170623T170000Z" end="20171010T113000Z" work-start="20170626T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
+    <task id="25" name="Write demo spec" note="" work="144000" start="20170704T170000Z" end="20170711T170000Z" work-start="20170705T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
       <predecessors>
         <predecessor id="1" predecessor-id="24" type="FS"/>
       </predecessors>
     </task>
-    <task id="26" name="Secure OS on hypervisor" note="" work="576000" start="20170331T170000Z" end="20170428T170000Z" work-start="20170403T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
+    <task id="26" name="Write requirement" note="" work="144000" start="20170711T170000Z" end="20170718T170000Z" work-start="20170712T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
       <predecessors>
-        <predecessor id="1" predecessor-id="22" type="FS"/>
+        <predecessor id="1" predecessor-id="25" type="FS"/>
       </predecessors>
     </task>
-    <task id="27" name="Secure OS functions" note="" work="3340800" start="20170428T170000Z" end="20171009T170000Z" work-start="20170501T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
+    <task id="27" name="Create bridge between Client/TA" note="" work="432000" start="20170718T170000Z" end="20170808T170000Z" work-start="20170719T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
       <predecessors>
         <predecessor id="1" predecessor-id="26" type="FS"/>
+      </predecessors>
+    </task>
+    <task id="28" name="Maintain interrupt on TEE" note="" work="288000" start="20170808T170000Z" end="20170822T170000Z" work-start="20170809T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
+      <predecessors>
+        <predecessor id="1" predecessor-id="27" type="FS"/>
+      </predecessors>
+    </task>
+    <task id="29" name="Watch REE from TEE" note="" work="432000" start="20170822T170000Z" end="20170912T170000Z" work-start="20170823T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
+      <predecessors>
+        <predecessor id="1" predecessor-id="28" type="FS"/>
+      </predecessors>
+    </task>
+    <task id="30" name="Fix external API" note="" work="144000" start="20170912T170000Z" end="20170919T170000Z" work-start="20170913T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
+      <predecessors>
+        <predecessor id="1" predecessor-id="29" type="FS"/>
+      </predecessors>
+    </task>
+    <task id="31" name="Fix internal API" note="" work="144000" start="20170919T170000Z" end="20170926T170000Z" work-start="20170920T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
+      <predecessors>
+        <predecessor id="1" predecessor-id="30" type="FS"/>
+      </predecessors>
+    </task>
+    <task id="32" name="Write test code/doc" note="" work="432000" start="20170926T170000Z" end="20171017T170000Z" work-start="20170927T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
+      <predecessors>
+        <predecessor id="1" predecessor-id="31" type="FS"/>
+      </predecessors>
+    </task>
+    <task id="33" name="Start to write demo" note="" work="0" start="20170915T000000Z" end="20170915T000000Z" work-start="20170915T080000Z" percent-complete="0" priority="0" type="milestone" scheduling="fixed-work">
+      <constraint type="must-start-on" time="20170915T000000Z"/>
+    </task>
+    <task id="34" name="Write demo" note="" work="864000" start="20170915T000000Z" end="20171026T170000Z" work-start="20170915T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
+      <predecessors>
+        <predecessor id="1" predecessor-id="33" type="FS"/>
+      </predecessors>
+    </task>
+    <task id="35" name="Start to port demo on uFOX" note="" work="0" start="20171016T000000Z" end="20171016T000000Z" work-start="20171016T080000Z" percent-complete="0" priority="0" type="milestone" scheduling="fixed-work">
+      <constraint type="must-start-on" time="20171016T000000Z"/>
+    </task>
+    <task id="36" name="Port demo on uFOX" note="" work="1526400" start="20171016T000000Z" end="20171227T170000Z" work-start="20171016T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
+      <predecessors>
+        <predecessor id="1" predecessor-id="35" type="FS"/>
+      </predecessors>
+    </task>
+    <task id="37" name="1st demo release" note="" work="0" start="20171228T000000Z" end="20171228T000000Z" work-start="20171228T080000Z" percent-complete="0" priority="0" type="milestone" scheduling="fixed-work">
+      <constraint type="must-start-on" time="20171228T000000Z"/>
+      <predecessors>
+        <predecessor id="1" predecessor-id="36" type="FS"/>
+        <predecessor id="1" predecessor-id="41" type="FS"/>
+      </predecessors>
+    </task>
+    <task id="38" name="VeriFast on production" note="" work="604800" start="20170427T170000Z" end="20170526T170000Z" work-start="20170428T080000Z" percent-complete="50" priority="0" type="normal" scheduling="fixed-work">
+      <predecessors>
+        <predecessor id="1" predecessor-id="21" type="FS"/>
+      </predecessors>
+    </task>
+    <task id="39" name="Survey clang parser" note="" work="1440000" start="20170526T170000Z" end="20170804T170000Z" work-start="20170529T080000Z" percent-complete="10" priority="0" type="normal" scheduling="fixed-work">
+      <predecessors>
+        <predecessor id="1" predecessor-id="38" type="FS"/>
+      </predecessors>
+    </task>
+    <task id="40" name="Survey VeriFast internal" note="" work="576000" start="20170804T170000Z" end="20170901T170000Z" work-start="20170807T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
+      <predecessors>
+        <predecessor id="1" predecessor-id="39" type="FS"/>
+      </predecessors>
+    </task>
+    <task id="41" name="C99 compat VeriFast" note="" work="2304000" start="20170901T170000Z" end="20171222T170000Z" work-start="20170904T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
+      <predecessors>
+        <predecessor id="1" predecessor-id="40" type="FS"/>
       </predecessors>
     </task>
   </tasks>
