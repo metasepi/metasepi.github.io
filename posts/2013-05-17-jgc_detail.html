@@ -87,33 +87,33 @@
 <p>とすると、jgcに対してもう少し突っ込んだ理解を今しておいた方が良さそうでゲソ。</p>
 <h2 id="gcのルート">GCのルート</h2>
 <p>gc_perform_gc関数の前半でヒープにマーキングしているはずなので、読めばわかるはずじゃなイカ。</p>
-<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="dt">void</span> A_STD
-gc_perform_gc(gc_t gc)
-{
-        profile_push(&amp;gc_gc_time);
-        arena-&gt;number_gcs++;
-
-        <span class="dt">unsigned</span> number_redirects = <span class="dv">0</span>;
-        <span class="dt">unsigned</span> number_stack = <span class="dv">0</span>;
-        <span class="dt">unsigned</span> number_ptr = <span class="dv">0</span>;
-        <span class="kw">struct</span> stack stack = EMPTY_STACK;
-
-        clear_used_bits(arena);
-
-        debugf(<span class="st">&quot;Setting Roots:&quot;</span>);
-        stack_check(&amp;stack, root_stack.ptr);
-        <span class="cf">for</span>(<span class="dt">unsigned</span> i = <span class="dv">0</span>; i &lt; root_stack.ptr; i++) {
-                gc_add_grey(&amp;stack, root_stack.stack[i]);
-                debugf(<span class="st">&quot; %p&quot;</span>, root_stack.stack[i]);
-        }
-        debugf(<span class="st">&quot; # &quot;</span>);
-        <span class="kw">struct</span> StablePtr *sp;
-        LIST_FOREACH(sp, &amp;root_StablePtrs, link) {
-            gc_add_grey(&amp;stack, (entry_t *)sp);
-            debugf(<span class="st">&quot; %p&quot;</span>, root_stack.stack[i]);
-        }</code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="dt">void</span> A_STD</a>
+<a class="sourceLine" id="cb1-2" data-line-number="2">gc_perform_gc(gc_t gc)</a>
+<a class="sourceLine" id="cb1-3" data-line-number="3">{</a>
+<a class="sourceLine" id="cb1-4" data-line-number="4">        profile_push(&amp;gc_gc_time);</a>
+<a class="sourceLine" id="cb1-5" data-line-number="5">        arena-&gt;number_gcs++;</a>
+<a class="sourceLine" id="cb1-6" data-line-number="6"></a>
+<a class="sourceLine" id="cb1-7" data-line-number="7">        <span class="dt">unsigned</span> number_redirects = <span class="dv">0</span>;</a>
+<a class="sourceLine" id="cb1-8" data-line-number="8">        <span class="dt">unsigned</span> number_stack = <span class="dv">0</span>;</a>
+<a class="sourceLine" id="cb1-9" data-line-number="9">        <span class="dt">unsigned</span> number_ptr = <span class="dv">0</span>;</a>
+<a class="sourceLine" id="cb1-10" data-line-number="10">        <span class="kw">struct</span> stack stack = EMPTY_STACK;</a>
+<a class="sourceLine" id="cb1-11" data-line-number="11"></a>
+<a class="sourceLine" id="cb1-12" data-line-number="12">        clear_used_bits(arena);</a>
+<a class="sourceLine" id="cb1-13" data-line-number="13"></a>
+<a class="sourceLine" id="cb1-14" data-line-number="14">        debugf(<span class="st">&quot;Setting Roots:&quot;</span>);</a>
+<a class="sourceLine" id="cb1-15" data-line-number="15">        stack_check(&amp;stack, root_stack.ptr);</a>
+<a class="sourceLine" id="cb1-16" data-line-number="16">        <span class="cf">for</span>(<span class="dt">unsigned</span> i = <span class="dv">0</span>; i &lt; root_stack.ptr; i++) {</a>
+<a class="sourceLine" id="cb1-17" data-line-number="17">                gc_add_grey(&amp;stack, root_stack.stack[i]);</a>
+<a class="sourceLine" id="cb1-18" data-line-number="18">                debugf(<span class="st">&quot; %p&quot;</span>, root_stack.stack[i]);</a>
+<a class="sourceLine" id="cb1-19" data-line-number="19">        }</a>
+<a class="sourceLine" id="cb1-20" data-line-number="20">        debugf(<span class="st">&quot; # &quot;</span>);</a>
+<a class="sourceLine" id="cb1-21" data-line-number="21">        <span class="kw">struct</span> StablePtr *sp;</a>
+<a class="sourceLine" id="cb1-22" data-line-number="22">        LIST_FOREACH(sp, &amp;root_StablePtrs, link) {</a>
+<a class="sourceLine" id="cb1-23" data-line-number="23">            gc_add_grey(&amp;stack, (entry_t *)sp);</a>
+<a class="sourceLine" id="cb1-24" data-line-number="24">            debugf(<span class="st">&quot; %p&quot;</span>, root_stack.stack[i]);</a>
+<a class="sourceLine" id="cb1-25" data-line-number="25">        }</a></code></pre></div>
 <p>gc_perform_gc関数が開始すると…</p>
-<ol style="list-style-type: decimal">
+<ol type="1">
 <li>stack一時変数を初期化</li>
 <li>arenaの中身のused_bitを一般0クリア</li>
 <li>stack_check関数を呼び出してstack一時変数がroot_stack.ptr個分のエントリを格納できるか調べ</li>
@@ -129,110 +129,110 @@ gc_perform_gc(gc_t gc)
 <p>ところでちょっと気になるんでゲソが、 root_StablePtrsをgc_add_grey関数にかける前にstack_checkをもう一度呼び出してstack一時変数のサイズが足りてるかチェックした方がいいんじゃなイカ… このままだとStablePtrの個数が多い場合にはふっとぶ気がするでゲソ。</p>
 <h3 id="root_stackとは何か">root_stackとは何か</h3>
 <p>これはふつーのプログラムでは使われないようでゲソ。 jhcのGrinがgc_add_root関数を使うコード吐き出すことがあるようでゲソ。</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/src/C/FromGrin2.hs</span>
-declareEvalFunc isCAF n <span class="fu">=</span> <span class="kw">do</span>
-    fn <span class="ot">&lt;-</span> tagToFunction n
-    grin <span class="ot">&lt;-</span> asks rGrin
-    declareStruct n
-    nt <span class="ot">&lt;-</span> nodeType n
-    <span class="kw">let</span> ts <span class="fu">=</span> runIdentity <span class="fu">$</span> findArgs (grinTypeEnv grin) n
-        fname <span class="fu">=</span> toName <span class="fu">$</span> <span class="st">&quot;E_&quot;</span> <span class="fu">++</span> show fn
-        aname <span class="fu">=</span> name <span class="st">&quot;arg&quot;</span>
-        rvar <span class="fu">=</span> localVariable wptr_t (name <span class="st">&quot;r&quot;</span>)
-        atype <span class="fu">=</span> ptrType nt
-        body <span class="fu">=</span> rvar <span class="fu">=*</span> functionCall (toName (show <span class="fu">$</span> fn)) (mgc [ project' (arg i) (variable aname) <span class="fu">|</span> _ <span class="ot">&lt;-</span> ts <span class="fu">|</span> i <span class="ot">&lt;-</span> [(<span class="dv">1</span><span class="ot"> ::</span> <span class="dt">Int</span>) <span class="fu">..</span> ] ])
-        update <span class="fu">=</span>  f_update (variable aname) rvar
-        addroot <span class="fu">=</span>  <span class="kw">if</span> isCAF <span class="fu">&amp;&amp;</span> fopts <span class="dt">FO.Jgc</span> <span class="kw">then</span> f_gc_add_root (cast sptr_t rvar) <span class="kw">else</span> emptyExpression
-        body' <span class="fu">=</span> <span class="kw">if</span> not isCAF <span class="fu">&amp;&amp;</span> fopts <span class="dt">FO.Jgc</span> <span class="kw">then</span> subBlock (gc_roots [f_MKLAZY(variable aname)] <span class="fu">&amp;</span> rest) <span class="kw">else</span> rest
-        rest <span class="fu">=</span> body <span class="fu">&amp;</span> update <span class="fu">&amp;</span> addroot <span class="fu">&amp;</span> creturn rvar
-    tellFunctions [function fname wptr_t (mgct [(aname,atype)]) [a_STD, a_FALIGNED] body']
-    return fname</code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="co">-- File: ajhc/src/C/FromGrin2.hs</span></a>
+<a class="sourceLine" id="cb2-2" data-line-number="2">declareEvalFunc isCAF n <span class="fu">=</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb2-3" data-line-number="3">    fn <span class="ot">&lt;-</span> tagToFunction n</a>
+<a class="sourceLine" id="cb2-4" data-line-number="4">    grin <span class="ot">&lt;-</span> asks rGrin</a>
+<a class="sourceLine" id="cb2-5" data-line-number="5">    declareStruct n</a>
+<a class="sourceLine" id="cb2-6" data-line-number="6">    nt <span class="ot">&lt;-</span> nodeType n</a>
+<a class="sourceLine" id="cb2-7" data-line-number="7">    <span class="kw">let</span> ts <span class="fu">=</span> runIdentity <span class="fu">$</span> findArgs (grinTypeEnv grin) n</a>
+<a class="sourceLine" id="cb2-8" data-line-number="8">        fname <span class="fu">=</span> toName <span class="fu">$</span> <span class="st">&quot;E_&quot;</span> <span class="fu">++</span> show fn</a>
+<a class="sourceLine" id="cb2-9" data-line-number="9">        aname <span class="fu">=</span> name <span class="st">&quot;arg&quot;</span></a>
+<a class="sourceLine" id="cb2-10" data-line-number="10">        rvar <span class="fu">=</span> localVariable wptr_t (name <span class="st">&quot;r&quot;</span>)</a>
+<a class="sourceLine" id="cb2-11" data-line-number="11">        atype <span class="fu">=</span> ptrType nt</a>
+<a class="sourceLine" id="cb2-12" data-line-number="12">        body <span class="fu">=</span> rvar <span class="fu">=*</span> functionCall (toName (show <span class="fu">$</span> fn)) (mgc [ project' (arg i) (variable aname) <span class="fu">|</span> _ <span class="ot">&lt;-</span> ts <span class="fu">|</span> i <span class="ot">&lt;-</span> [(<span class="dv">1</span><span class="ot"> ::</span> <span class="dt">Int</span>) <span class="fu">..</span> ] ])</a>
+<a class="sourceLine" id="cb2-13" data-line-number="13">        update <span class="fu">=</span>  f_update (variable aname) rvar</a>
+<a class="sourceLine" id="cb2-14" data-line-number="14">        addroot <span class="fu">=</span>  <span class="kw">if</span> isCAF <span class="fu">&amp;&amp;</span> fopts <span class="dt">FO.Jgc</span> <span class="kw">then</span> f_gc_add_root (cast sptr_t rvar) <span class="kw">else</span> emptyExpression</a>
+<a class="sourceLine" id="cb2-15" data-line-number="15">        body' <span class="fu">=</span> <span class="kw">if</span> not isCAF <span class="fu">&amp;&amp;</span> fopts <span class="dt">FO.Jgc</span> <span class="kw">then</span> subBlock (gc_roots [f_MKLAZY(variable aname)] <span class="fu">&amp;</span> rest) <span class="kw">else</span> rest</a>
+<a class="sourceLine" id="cb2-16" data-line-number="16">        rest <span class="fu">=</span> body <span class="fu">&amp;</span> update <span class="fu">&amp;</span> addroot <span class="fu">&amp;</span> creturn rvar</a>
+<a class="sourceLine" id="cb2-17" data-line-number="17">    tellFunctions [function fname wptr_t (mgct [(aname,atype)]) [a_STD, a_FALIGNED] body']</a>
+<a class="sourceLine" id="cb2-18" data-line-number="18">    return fname</a></code></pre></div>
 <p>ちょっとコードの意図が取りにくいでゲソが“E_”ではじまる関数はサンクの評価関数であるはずなので、 スタティックサンクだとGCルートになるんじゃなイカ？ その時に“E_”ではじまる評価関数の中にgc_add_root関数が埋め込まれるはずでゲソ。 …でもなんかそのケースは稀な気がするでゲソ。 grinの最適化の中でほとんどのスタティックサンクは使用元の関数の中に展開されてしまいそうでゲソ。 簡単な例を作ってみてもgc_add_root関数が埋め込まれたC言語コードをajhcは吐き出さないようでゲソ。 まぁここではこんなものがGCルートになる可能性があるよ、ということでいいんじゃなイカ？</p>
 <h3 id="root_stableptrsとは何か">root_StablePtrsとは何か</h3>
 <p><a href="http://www.haskell.org/ghc/docs/latest/html/libraries/base/Foreign-StablePtr.html#v:newStablePtr">Foreign.StablePtr.newStablePtr(これはGHCのAPI)</a> をHaskellコードから呼ぶとstruct StablePtrがstableptr.cでmalloc確保されて、 root_StablePtrsに繋がれるんでゲソ。 つまりStablePtrを保管する器ということじゃなイカ。リストより木構造の方が良い気もするでゲソ…</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- | newStablePtr will seq its argument to get rid of nasty GC issues and be</span>
-<span class="co">-- compatible with FFI calling conventions, if this is an issue, you can put an</span>
-<span class="co">-- extra box around it.</span>
-<span class="ot">newStablePtr ::</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">StablePtr</span> a)
-newStablePtr x <span class="fu">=</span> <span class="kw">do</span>
-    fromUIO <span class="fu">$</span> \w <span class="ot">-&gt;</span> <span class="kw">case</span> c_newStablePtr (toBang_ x) w <span class="kw">of</span>
-        (<span class="fu">#</span> w', s <span class="fu">#</span>) <span class="ot">-&gt;</span> (<span class="fu">#</span> w', fromBang_ s <span class="fu">#</span>)</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c">wptr_t c_newStablePtr(sptr_t c) {
-    <span class="kw">struct</span> StablePtr* sp = malloc(<span class="kw">sizeof</span>(<span class="kw">struct</span> StablePtr));
-    sp-&gt;contents = c;
-    LIST_INSERT_HEAD(&amp;root_StablePtrs, sp, link);
-    assert(GET_PTYPE(sp) == <span class="dv">0</span>);
-    <span class="cf">return</span> (wptr_t)TO_SPTR(P_VALUE,(wptr_t)sp);
-}</code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="co">-- | newStablePtr will seq its argument to get rid of nasty GC issues and be</span></a>
+<a class="sourceLine" id="cb3-2" data-line-number="2"><span class="co">-- compatible with FFI calling conventions, if this is an issue, you can put an</span></a>
+<a class="sourceLine" id="cb3-3" data-line-number="3"><span class="co">-- extra box around it.</span></a>
+<a class="sourceLine" id="cb3-4" data-line-number="4"><span class="ot">newStablePtr ::</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">StablePtr</span> a)</a>
+<a class="sourceLine" id="cb3-5" data-line-number="5">newStablePtr x <span class="fu">=</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb3-6" data-line-number="6">    fromUIO <span class="fu">$</span> \w <span class="ot">-&gt;</span> <span class="kw">case</span> c_newStablePtr (toBang_ x) w <span class="kw">of</span></a>
+<a class="sourceLine" id="cb3-7" data-line-number="7">        (<span class="fu">#</span> w', s <span class="fu">#</span>) <span class="ot">-&gt;</span> (<span class="fu">#</span> w', fromBang_ s <span class="fu">#</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb4-1" data-line-number="1">wptr_t c_newStablePtr(sptr_t c) {</a>
+<a class="sourceLine" id="cb4-2" data-line-number="2">    <span class="kw">struct</span> StablePtr* sp = malloc(<span class="kw">sizeof</span>(<span class="kw">struct</span> StablePtr));</a>
+<a class="sourceLine" id="cb4-3" data-line-number="3">    sp-&gt;contents = c;</a>
+<a class="sourceLine" id="cb4-4" data-line-number="4">    LIST_INSERT_HEAD(&amp;root_StablePtrs, sp, link);</a>
+<a class="sourceLine" id="cb4-5" data-line-number="5">    assert(GET_PTYPE(sp) == <span class="dv">0</span>);</a>
+<a class="sourceLine" id="cb4-6" data-line-number="6">    <span class="cf">return</span> (wptr_t)TO_SPTR(P_VALUE,(wptr_t)sp);</a>
+<a class="sourceLine" id="cb4-7" data-line-number="7">}</a></code></pre></div>
 <h3 id="他にgcルートになるものは">他にGCルートになるものは？</h3>
 <p>さすがに上の2つだけがGCルートのはずないでゲソ。根っこがスカスカじゃなイカ。 もう一つGCルートがあり、それはC言語のミューテターがコツコツ作るGCスタックでゲソ。 gc_perform_gc関数の続きを読むと…</p>
-<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c">        stack_check(&amp;stack, gc - gc_stack_base);
-        number_stack = gc - gc_stack_base;
-        <span class="cf">for</span>(<span class="dt">unsigned</span> i = <span class="dv">0</span>; i &lt; number_stack; i++) {
-                debugf(<span class="st">&quot; |&quot;</span>);
-                <span class="co">// </span><span class="al">TODO</span><span class="co"> - short circuit redirects on stack</span>
-                sptr_t ptr = gc_stack_base[i];
-                <span class="cf">if</span>(<span class="dv">1</span> &amp;&amp; (IS_LAZY(ptr))) {
-                        assert(GET_PTYPE(ptr) == P_LAZY);
-                        VALGRIND_MAKE_MEM_DEFINED(FROM_SPTR(ptr), <span class="kw">sizeof</span>(<span class="dt">uintptr_t</span>));
-                        <span class="cf">if</span>(!IS_LAZY(GETHEAD(FROM_SPTR(ptr)))) {
-                                <span class="dt">void</span> *gptr = TO_GCPTR(ptr);
-                                <span class="cf">if</span>(gc_check_heap(gptr))
-                                        s_set_used_bit(gptr);
-                                number_redirects++;
-                                debugf(<span class="st">&quot; *&quot;</span>);
-                                ptr = (sptr_t)GETHEAD(FROM_SPTR(ptr));
-                        }
-                }
-                <span class="cf">if</span>(__predict_false(!IS_PTR(ptr))) {
-                        debugf(<span class="st">&quot; -&quot;</span>);
-                        <span class="cf">continue</span>;
-                }
-                number_ptr++;
-                entry_t *e = TO_GCPTR(ptr);
-                debugf(<span class="st">&quot; %p&quot;</span>,(<span class="dt">void</span> *)e);
-                gc_add_grey(&amp;stack, e);
-        }</code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb5-1" data-line-number="1">        stack_check(&amp;stack, gc - gc_stack_base);</a>
+<a class="sourceLine" id="cb5-2" data-line-number="2">        number_stack = gc - gc_stack_base;</a>
+<a class="sourceLine" id="cb5-3" data-line-number="3">        <span class="cf">for</span>(<span class="dt">unsigned</span> i = <span class="dv">0</span>; i &lt; number_stack; i++) {</a>
+<a class="sourceLine" id="cb5-4" data-line-number="4">                debugf(<span class="st">&quot; |&quot;</span>);</a>
+<a class="sourceLine" id="cb5-5" data-line-number="5">                <span class="co">// </span><span class="al">TODO</span><span class="co"> - short circuit redirects on stack</span></a>
+<a class="sourceLine" id="cb5-6" data-line-number="6">                sptr_t ptr = gc_stack_base[i];</a>
+<a class="sourceLine" id="cb5-7" data-line-number="7">                <span class="cf">if</span>(<span class="dv">1</span> &amp;&amp; (IS_LAZY(ptr))) {</a>
+<a class="sourceLine" id="cb5-8" data-line-number="8">                        assert(GET_PTYPE(ptr) == P_LAZY);</a>
+<a class="sourceLine" id="cb5-9" data-line-number="9">                        VALGRIND_MAKE_MEM_DEFINED(FROM_SPTR(ptr), <span class="kw">sizeof</span>(<span class="dt">uintptr_t</span>));</a>
+<a class="sourceLine" id="cb5-10" data-line-number="10">                        <span class="cf">if</span>(!IS_LAZY(GETHEAD(FROM_SPTR(ptr)))) {</a>
+<a class="sourceLine" id="cb5-11" data-line-number="11">                                <span class="dt">void</span> *gptr = TO_GCPTR(ptr);</a>
+<a class="sourceLine" id="cb5-12" data-line-number="12">                                <span class="cf">if</span>(gc_check_heap(gptr))</a>
+<a class="sourceLine" id="cb5-13" data-line-number="13">                                        s_set_used_bit(gptr);</a>
+<a class="sourceLine" id="cb5-14" data-line-number="14">                                number_redirects++;</a>
+<a class="sourceLine" id="cb5-15" data-line-number="15">                                debugf(<span class="st">&quot; *&quot;</span>);</a>
+<a class="sourceLine" id="cb5-16" data-line-number="16">                                ptr = (sptr_t)GETHEAD(FROM_SPTR(ptr));</a>
+<a class="sourceLine" id="cb5-17" data-line-number="17">                        }</a>
+<a class="sourceLine" id="cb5-18" data-line-number="18">                }</a>
+<a class="sourceLine" id="cb5-19" data-line-number="19">                <span class="cf">if</span>(__predict_false(!IS_PTR(ptr))) {</a>
+<a class="sourceLine" id="cb5-20" data-line-number="20">                        debugf(<span class="st">&quot; -&quot;</span>);</a>
+<a class="sourceLine" id="cb5-21" data-line-number="21">                        <span class="cf">continue</span>;</a>
+<a class="sourceLine" id="cb5-22" data-line-number="22">                }</a>
+<a class="sourceLine" id="cb5-23" data-line-number="23">                number_ptr++;</a>
+<a class="sourceLine" id="cb5-24" data-line-number="24">                entry_t *e = TO_GCPTR(ptr);</a>
+<a class="sourceLine" id="cb5-25" data-line-number="25">                debugf(<span class="st">&quot; %p&quot;</span>,(<span class="dt">void</span> *)e);</a>
+<a class="sourceLine" id="cb5-26" data-line-number="26">                gc_add_grey(&amp;stack, e);</a>
+<a class="sourceLine" id="cb5-27" data-line-number="27">        }</a></code></pre></div>
 <p>このコードはgcからgc_stack_baseまでの領域の差す先を entry_tポインタとしてgc_add_grey関数に食わせるでゲソ。 gcとgc_stack_baseはプログラム起動時には同じ場所を指しているでゲソ。</p>
-<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="dt">void</span>
-jhc_alloc_init(<span class="dt">void</span>) {
-        VALGRIND_PRINTF(<span class="st">&quot;Jhc-Valgrind mode active.</span><span class="sc">\n</span><span class="st">&quot;</span>);
-<span class="pp">#ifdef _JHC_JGC_FIXED_MEGABLOCK</span>
-        saved_gc = gc_stack_base = (<span class="dt">void</span> *) gc_stack_base_area;
-<span class="pp">#else</span>
-        saved_gc = gc_stack_base = malloc((1UL &lt;&lt; <span class="dv">18</span>)*<span class="kw">sizeof</span>(gc_stack_base[<span class="dv">0</span>]));
-<span class="pp">#endif</span>
-        arena = new_arena();</code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb6-1" data-line-number="1"><span class="dt">void</span></a>
+<a class="sourceLine" id="cb6-2" data-line-number="2">jhc_alloc_init(<span class="dt">void</span>) {</a>
+<a class="sourceLine" id="cb6-3" data-line-number="3">        VALGRIND_PRINTF(<span class="st">&quot;Jhc-Valgrind mode active.</span><span class="sc">\n</span><span class="st">&quot;</span>);</a>
+<a class="sourceLine" id="cb6-4" data-line-number="4"><span class="pp">#ifdef _JHC_JGC_FIXED_MEGABLOCK</span></a>
+<a class="sourceLine" id="cb6-5" data-line-number="5">        saved_gc = gc_stack_base = (<span class="dt">void</span> *) gc_stack_base_area;</a>
+<a class="sourceLine" id="cb6-6" data-line-number="6"><span class="pp">#else</span></a>
+<a class="sourceLine" id="cb6-7" data-line-number="7">        saved_gc = gc_stack_base = malloc((1UL &lt;&lt; <span class="dv">18</span>)*<span class="kw">sizeof</span>(gc_stack_base[<span class="dv">0</span>]));</a>
+<a class="sourceLine" id="cb6-8" data-line-number="8"><span class="pp">#endif</span></a>
+<a class="sourceLine" id="cb6-9" data-line-number="9">        arena = new_arena();</a></code></pre></div>
 <p>ところがミューテターの中にgc_frame0関数というのがよくあらわれるでゲソ。</p>
-<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="dt">static</span> wptr_t A_STD A_MALLOC
-fR$__fJhc_Basics_$pp(gc_t gc,sptr_t v80776080,sptr_t v58800110)
-{
-        {   gc_frame0(gc,<span class="dv">1</span>,v58800110); <span class="co">// &lt;= GCルートにv58800110を登録</span>
-            wptr_t v100444 = eval(gc,v80776080);
-            <span class="cf">if</span> (SET_RAW_TAG(CJhc_Prim_Prim_$BE) == v100444) {
-                <span class="cf">return</span> eval(gc,v58800110);
-            } <span class="cf">else</span> {
-                sptr_t v106;
-                sptr_t v108;
-                <span class="co">/* (&quot;CJhc.Prim.Prim.:&quot; ni106 ni108) */</span>
-                v106 = ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)v100444)-&gt;a1;
-                v108 = ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)v100444)-&gt;a2;
-                {   gc_frame0(gc,<span class="dv">2</span>,v106,v108); <span class="co">// &lt;= GCルートにv106とv108を登録</span>
-                    sptr_t x7 = s_alloc(gc,cFR$__fJhc_Basics_$pp);
-                    ((<span class="kw">struct</span> sFR$__fJhc_Basics_$pp*)x7)-&gt;head = TO_FPTR(&amp;E__fR$__fJhc_Basics_$pp);
-                    ((<span class="kw">struct</span> sFR$__fJhc_Basics_$pp*)x7)-&gt;a1 = v108;
-                    ((<span class="kw">struct</span> sFR$__fJhc_Basics_$pp*)x7)-&gt;a2 = v58800110;
-                    sptr_t v69834446 = MKLAZY(x7);
-                    {   gc_frame0(gc,<span class="dv">1</span>,v69834446); <span class="co">// &lt;= GCルートにv69834446を登録</span>
-                        wptr_t x8 = s_alloc(gc,cCJhc_Prim_Prim_$x3a);
-                        ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x8)-&gt;a1 = v106;
-                        ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x8)-&gt;a2 = v69834446;
-                        <span class="cf">return</span> x8;
-                    }
-                }
-            }
-        }
-}</code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb7-1" data-line-number="1"><span class="dt">static</span> wptr_t A_STD A_MALLOC</a>
+<a class="sourceLine" id="cb7-2" data-line-number="2">fR$__fJhc_Basics_$pp(gc_t gc,sptr_t v80776080,sptr_t v58800110)</a>
+<a class="sourceLine" id="cb7-3" data-line-number="3">{</a>
+<a class="sourceLine" id="cb7-4" data-line-number="4">        {   gc_frame0(gc,<span class="dv">1</span>,v58800110); <span class="co">// &lt;= GCルートにv58800110を登録</span></a>
+<a class="sourceLine" id="cb7-5" data-line-number="5">            wptr_t v100444 = eval(gc,v80776080);</a>
+<a class="sourceLine" id="cb7-6" data-line-number="6">            <span class="cf">if</span> (SET_RAW_TAG(CJhc_Prim_Prim_$BE) == v100444) {</a>
+<a class="sourceLine" id="cb7-7" data-line-number="7">                <span class="cf">return</span> eval(gc,v58800110);</a>
+<a class="sourceLine" id="cb7-8" data-line-number="8">            } <span class="cf">else</span> {</a>
+<a class="sourceLine" id="cb7-9" data-line-number="9">                sptr_t v106;</a>
+<a class="sourceLine" id="cb7-10" data-line-number="10">                sptr_t v108;</a>
+<a class="sourceLine" id="cb7-11" data-line-number="11">                <span class="co">/* (&quot;CJhc.Prim.Prim.:&quot; ni106 ni108) */</span></a>
+<a class="sourceLine" id="cb7-12" data-line-number="12">                v106 = ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)v100444)-&gt;a1;</a>
+<a class="sourceLine" id="cb7-13" data-line-number="13">                v108 = ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)v100444)-&gt;a2;</a>
+<a class="sourceLine" id="cb7-14" data-line-number="14">                {   gc_frame0(gc,<span class="dv">2</span>,v106,v108); <span class="co">// &lt;= GCルートにv106とv108を登録</span></a>
+<a class="sourceLine" id="cb7-15" data-line-number="15">                    sptr_t x7 = s_alloc(gc,cFR$__fJhc_Basics_$pp);</a>
+<a class="sourceLine" id="cb7-16" data-line-number="16">                    ((<span class="kw">struct</span> sFR$__fJhc_Basics_$pp*)x7)-&gt;head = TO_FPTR(&amp;E__fR$__fJhc_Basics_$pp);</a>
+<a class="sourceLine" id="cb7-17" data-line-number="17">                    ((<span class="kw">struct</span> sFR$__fJhc_Basics_$pp*)x7)-&gt;a1 = v108;</a>
+<a class="sourceLine" id="cb7-18" data-line-number="18">                    ((<span class="kw">struct</span> sFR$__fJhc_Basics_$pp*)x7)-&gt;a2 = v58800110;</a>
+<a class="sourceLine" id="cb7-19" data-line-number="19">                    sptr_t v69834446 = MKLAZY(x7);</a>
+<a class="sourceLine" id="cb7-20" data-line-number="20">                    {   gc_frame0(gc,<span class="dv">1</span>,v69834446); <span class="co">// &lt;= GCルートにv69834446を登録</span></a>
+<a class="sourceLine" id="cb7-21" data-line-number="21">                        wptr_t x8 = s_alloc(gc,cCJhc_Prim_Prim_$x3a);</a>
+<a class="sourceLine" id="cb7-22" data-line-number="22">                        ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x8)-&gt;a1 = v106;</a>
+<a class="sourceLine" id="cb7-23" data-line-number="23">                        ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x8)-&gt;a2 = v69834446;</a>
+<a class="sourceLine" id="cb7-24" data-line-number="24">                        <span class="cf">return</span> x8;</a>
+<a class="sourceLine" id="cb7-25" data-line-number="25">                    }</a>
+<a class="sourceLine" id="cb7-26" data-line-number="26">                }</a>
+<a class="sourceLine" id="cb7-27" data-line-number="27">            }</a>
+<a class="sourceLine" id="cb7-28" data-line-number="28">        }</a>
+<a class="sourceLine" id="cb7-29" data-line-number="29">}</a></code></pre></div>
 <p>このgc_frame0関数はイカのような実装で、つまり上のミューテターはGCルートに</p>
 <ul>
 <li>v58800110: 関数の引数の一つ</li>
@@ -240,9 +240,9 @@ fR$__fJhc_Basics_$pp(gc_t gc,sptr_t v80776080,sptr_t v58800110)
 <li>v69834446: s_alloc関数で確保したx7スマートポインタに遅延ビットを立てたもの</li>
 </ul>
 <p>の4つを登録しているでゲソ。</p>
-<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="pp">#define gc_frame0(gc,n,...) void *ptrs[n] = { __VA_ARGS__ }; \</span>
-<span class="pp">        for(int i = 0; i &lt; n; i++) gc[i] = (sptr_t)ptrs[i]; \</span>
-<span class="pp">        gc_t sgc = gc;  gc_t gc = sgc + n;</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="pp">#define gc_frame0(gc,n,...) void *ptrs[n] = { __VA_ARGS__ }; \</span></a>
+<a class="sourceLine" id="cb8-2" data-line-number="2"><span class="pp">        for(int i = 0; i &lt; n; i++) gc[i] = (sptr_t)ptrs[i]; \</span></a>
+<a class="sourceLine" id="cb8-3" data-line-number="3"><span class="pp">        gc_t sgc = gc;  gc_t gc = sgc + n;</span></a></code></pre></div>
 <p>どーせs_alloc関数を呼ばないかぎりはGCは走らないので、 GCルートに追加するタイミングはs_alloc関数の直前まではあんまり厳密にしなくても良いはずでゲソ。 また、eval関数はサンクの評価を行なう可能性があり、その中でs_alloc関数を呼び出す可能性があるので、 その直前でGCルートを最新の情報に更新しておく必要があるはずでゲソ。</p>
 <p>ミューテターをC言語で書いていても、コンパイルパイプラインで自動生成するようにすれば、 gc_frame0関数の挿入のようなアイデアも実装漏れが起きることを気にしないで実現できるでゲソ。 いいじゃなイカ! しかもこの“gc”という参照でゲソが、スコープを抜けると元の位置を自動的に指すようになっているでゲソ。 C言語のスコープを使った上手いスタックの実現方法でゲソ。</p>
 <p>ただしこのjgcのGCスタックはC言語のスタックに強く紐づいているため、 再入を実現するためにはGCスタックもコンテキスト分持つ必要があるでゲソ。 例えばLWP毎に一つ必要になるはずでゲソ。 さらに多重割り込みを考慮すると割り込み毎に一つ必要になるはずじゃなイカ。</p>
@@ -293,7 +293,7 @@ fR$__fJhc_Basics_$pp(gc_t gc,sptr_t v80776080,sptr_t v58800110)
         <br>
         Metasepi project is supported by
         <a href="https://www.shinkawa.com/en/"><img alt="Shinkawa Ltd." style="border-width:0" src="../img/shinkawa_logo.png" /></a> ×
-        <a href="http://www.st.com/"><img alt="STMicroelectronics" style="border-width:0" src="../img/stlogo_x25.png" /></a> ×
+        <a href="http://www.kyushu-u.ac.jp/en/"><img alt="KYUSHU UNIVERSITY" style="border-width:0" src="../img/qlogo_x25.png" /></a> ×
         <a href="http://www.metasepi-design.com/"><img alt="METASEPI DESIGN" style="border-width:0" src="../img/metasepi_design_logo_82x25.png" /></a> ×
         <a href="../past-supporters.html">Past Supporters</a>
       </p>

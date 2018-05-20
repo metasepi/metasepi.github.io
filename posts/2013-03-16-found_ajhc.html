@@ -66,8 +66,8 @@
 <li><a href="#ajhcプロジェクトはどこへ向かうの">Ajhcプロジェクトはどこへ向かうの？</a></li>
 </ul>
 <hr>
-<p>これまで <a href="http://repetae.net/computer/jhc/">jhc</a> のソースコードを読みながら少しずつ改造をして遊んでいたでゲソが、 そろそろpatchが増えてきてまっとうなリポジトリを用意しないと破綻しそうでゲソ。 できればpatchをjhc本家に取り込んでもらいたいところでゲソ。 ところが原作者の<a href="http://repetae.net/pictures/pirate1.jpg">John</a>がどうも忙しいらしく、なかなかmergeしてくれないでゲソ… <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
-<p>あまりプロジェクトのforkをしたくないところでゲソが、 このままでは作業が進まないのでjhc向けpatchを貯めるだけのプロジェクトを作ったでゲソ。 その名も <a href="http://ajhc.masterq.net/">Ajhc - arafura-jhc</a> <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> でゲッソ!</p>
+<p>これまで <a href="http://repetae.net/computer/jhc/">jhc</a> のソースコードを読みながら少しずつ改造をして遊んでいたでゲソが、 そろそろpatchが増えてきてまっとうなリポジトリを用意しないと破綻しそうでゲソ。 できればpatchをjhc本家に取り込んでもらいたいところでゲソ。 ところが原作者の<a href="http://repetae.net/pictures/pirate1.jpg">John</a>がどうも忙しいらしく、なかなかmergeしてくれないでゲソ… <a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></p>
+<p>あまりプロジェクトのforkをしたくないところでゲソが、 このままでは作業が進まないのでjhc向けpatchを貯めるだけのプロジェクトを作ったでゲソ。 その名も <a href="http://ajhc.masterq.net/">Ajhc - arafura-jhc</a> <a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> でゲッソ!</p>
 <h2 id="まず最初の改造は">まず最初の改造は？</h2>
 <p>とはいえ改造にあたって何かテーマを決めたいでゲソ。 jhcは小さなバイナリを吐けるのだから、小さなマイコンでHaskellコードを動かすとかどうでゲソ？ 例えば以下のようなマイコンであればある程度メモリもあるのでなんとなるんじゃなイカ？JTAGも付いてるのでgdbでデバッグもできるでゲソ。 しかも秋月価格で<a href="http://akizukidenshi.com/catalog/g/gM-06268/">￥950(税込)</a> と無茶苦茶安いでゲソ。 ところでこの挑発的な価格はいったいなんなんでゲソ… ST、怒らせると怖い子でゲソ…</p>
 <p><a href="http://www.st.com/web/en/catalog/tools/FM116/SC959/SS1532/PF254044"><img src="https://raw.github.com/ajhc/demo-cortex-m3/master/img/stm32f3-discovery.jpg" /></a></p>
@@ -90,7 +90,7 @@ $ arm-none-eabi-size main.elf
 </noscript>
 <h2 id="どこらへんを修正したの">どこらへんを修正したの？</h2>
 <p>Ajhcへの変更は <a href="https://github.com/ajhc/ajhc/commit/3167551530b0576cf1f42f928865868ce9aa0b50">このpatch</a> だけでゲソ。 修正内容を解説するでゲソー。</p>
-<ol style="list-style-type: decimal">
+<ol type="1">
 <li>BLOCK_SIZEとMEGABLOCK_SIZEをMakefileから調整できるように</li>
 <li>MEGABLOCKを唯一1つだけ使い、動的確保しないように</li>
 <li>Cortex-M3では関数ポインタジャンプのアドレスbit0を1立てる (<a href="http://communities.mentor.com/community/cs/archives/arm-gnu/msg01904.html">詳細</a>)</li>
@@ -101,13 +101,13 @@ $ arm-none-eabi-size main.elf
 <h2 id="ajhcプロジェクトはどこへ向かうの">Ajhcプロジェクトはどこへ向かうの？</h2>
 <p>完全にjhcをforkして一人歩きする予定はAjhcプロジェクトにはないでゲソ。 Ajhcはあくまでjhcにmergeされていないpatchをためておくための器にすぎないのでゲソ。 そのため有用なpatchは <a href="http://www.haskell.org/mailman/listinfo/jhc">jhcメーリングリスト</a> にて協議の上 <a href="https://github.com/ajhc/ajhc#for-developing">jhcにmerge</a> してもらわなければならないでゲソ。 在りし日の <a href="http://ja.wikipedia.org/wiki/GNU%E3%82%B3%E3%83%B3%E3%83%91%E3%82%A4%E3%83%A9%E3%82%B3%E3%83%AC%E3%82%AF%E3%82%B7%E3%83%A7%E3%83%B3#EGCS">EGCS (Experimental/Enhanced GNU Compiler System)</a> のように、jhc本体の活動が活発になったらAjhcは消滅すべきプロジェクトでゲソ。</p>
 <p>Ajhcプロジェクトの <a href="https://github.com/ajhc/ajhc#future-plan">ロードマップ的なにか</a> を書いてみたでゲソが、予定は未定。どーなるかわからないでゲソ。</p>
-<div class="footnotes">
+<section class="footnotes">
 <hr />
 <ol>
-<li id="fn1"><p><a href="http://www.haskell.org/pipermail/haskell-cafe/2013-March/107013.html">Ajhcのファーストリリース</a> をしたら <a href="http://repetae.net/dw/darcsweb.cgi?r=jhc">全部merge</a>してくれたでゲソ。 <a href="http://repetae.net/pictures/cso/john_cso2_small.jpg">Johnはやる気になればデキる男</a>なんでゲソ!<a href="#fnref1">↩</a></p></li>
-<li id="fn2"><p>もしくは単に“A fork of jhc”を略して“Ajhc”<a href="#fnref2">↩</a></p></li>
+<li id="fn1"><p><a href="http://www.haskell.org/pipermail/haskell-cafe/2013-March/107013.html">Ajhcのファーストリリース</a> をしたら <a href="http://repetae.net/dw/darcsweb.cgi?r=jhc">全部merge</a>してくれたでゲソ。 <a href="http://repetae.net/pictures/cso/john_cso2_small.jpg">Johnはやる気になればデキる男</a>なんでゲソ!<a href="#fnref1" class="footnote-back">↩</a></p></li>
+<li id="fn2"><p>もしくは単に“A fork of jhc”を略して“Ajhc”<a href="#fnref2" class="footnote-back">↩</a></p></li>
 </ol>
-</div>
+</section>
 <p>
   <div id="disqus_thread"></div>
   <script type="text/javascript">
@@ -139,7 +139,7 @@ $ arm-none-eabi-size main.elf
         <br>
         Metasepi project is supported by
         <a href="https://www.shinkawa.com/en/"><img alt="Shinkawa Ltd." style="border-width:0" src="../img/shinkawa_logo.png" /></a> ×
-        <a href="http://www.st.com/"><img alt="STMicroelectronics" style="border-width:0" src="../img/stlogo_x25.png" /></a> ×
+        <a href="http://www.kyushu-u.ac.jp/en/"><img alt="KYUSHU UNIVERSITY" style="border-width:0" src="../img/qlogo_x25.png" /></a> ×
         <a href="http://www.metasepi-design.com/"><img alt="METASEPI DESIGN" style="border-width:0" src="../img/metasepi_design_logo_82x25.png" /></a> ×
         <a href="../past-supporters.html">Past Supporters</a>
       </p>

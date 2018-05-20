@@ -68,85 +68,73 @@
 <hr>
 <p>調査を繰り返していても、設計は進まないでゲソ。 まずは第一歩、なにか作ってみればわかることもあるんじゃなイカ？ まずコードを書く前におおざっぱな設計を決めるでゲソ。 このエントリは何度も書き直すかもしれないでゲソ。</p>
 <h2 id="最初のデザイン">最初のデザイン</h2>
-<p><a href="2012-08-18-haskell-or-ocaml-os.html">Haskell/OCaml製のOSって何があるんでゲソ？</a> でも書いたでゲソが、短時間でドッグフード可能 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> なkernelを得るには、関数型言語としてキレイな設計を考えている時間はないでゲソ。 むしろ純朴な実装で良いから、モノリシックkernelを関数型言語の設計に写像してしまった方が良いのではなイカ？</p>
+<p><a href="2012-08-18-haskell-or-ocaml-os.html">Haskell/OCaml製のOSって何があるんでゲソ？</a> でも書いたでゲソが、短時間でドッグフード可能 <a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> なkernelを得るには、関数型言語としてキレイな設計を考えている時間はないでゲソ。 むしろ純朴な実装で良いから、モノリシックkernelを関数型言語の設計に写像してしまった方が良いのではなイカ？</p>
 <p>ここでは写像するモノリシックkernelとしてNetBSDを選定するでゲソ。 ソースコードが読みやすい、などの理由があるでゲソが、単にワシの趣味でゲソ。</p>
 <p>このC言語で書かれたNetBSD kernelをいきなり型付き言語でスクラッチから書き直すのもやはりシンドイでゲソ。 もう少し楽できなイカ？ そこでいきなり全部ではなく、コンパイル可能/実行可能な状態を保ちながら少しずつ型付き言語で同じ機能を再実装するでゲソ。 少しずつ型をつけていけば、 いつかは全てのコードが型付き言語で動くようになるんじゃなイカ？</p>
-<div class="figure">
-<img src="../draw/2012-12-27-arafura_design.png" />
-
-</div>
-<p>この「NetBSD kernelを型付き言語で少しずつ <a href="http://ja.wikipedia.org/wiki/%E3%82%B9%E3%83%8A%E3%83%83%E3%83%81%E3%83%A3%E3%83%BC">スナッチ</a> する」というデザインを <a href="http://ja.wikipedia.org/wiki/%E3%82%A2%E3%83%A9%E3%83%95%E3%83%A9%E6%B5%B7">アラフラ</a> (<a href="http://en.wikipedia.org/wiki/Arafura_Sea">Arafura</a>)と呼ぼうと思うでゲソ。 “A”からはじまる海の名前、最初の船出にはぴったりじゃなイカ! <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> もしこの海で航海に失敗しても、今度は“B”で始まる海(デザイン)を選べばいいんでゲソ。 合言葉は“ネバーギブアップ”でゲッソ!!!</p>
+<p><img src="../draw/2012-12-27-arafura_design.png" /></p>
+<p>この「NetBSD kernelを型付き言語で少しずつ <a href="http://ja.wikipedia.org/wiki/%E3%82%B9%E3%83%8A%E3%83%83%E3%83%81%E3%83%A3%E3%83%BC">スナッチ</a> する」というデザインを <a href="http://ja.wikipedia.org/wiki/%E3%82%A2%E3%83%A9%E3%83%95%E3%83%A9%E6%B5%B7">アラフラ</a> (<a href="http://en.wikipedia.org/wiki/Arafura_Sea">Arafura</a>)と呼ぼうと思うでゲソ。 “A”からはじまる海の名前、最初の船出にはぴったりじゃなイカ! <a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> もしこの海で航海に失敗しても、今度は“B”で始まる海(デザイン)を選べばいいんでゲソ。 合言葉は“ネバーギブアップ”でゲッソ!!!</p>
 <h2 id="やってみよう">やってみよう!</h2>
 <p>これまでの調査でjhcがMetasepiの設計に使えそうなことが判明したでゲソ。 NetBSD kernelは割り込みハンドラを作ったりしなければならないので、 もっと簡単なNetBSD bootloaderを手始めにjhcを使ってスナッチしてみるでゲソ。 何事もトレーニングでゲッソ。</p>
-<div class="figure">
-<img src="../draw/2012-12-27-loader.png" />
-
-</div>
-<p>NetBSD bootloaderのモジュールの構造は上図のようになっているでゲソ。 とりあえずboot2.cの中にあるコマンドラインループをjhcを使って書いてみたでゲソ。 <a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Control.Monad</span>
-<span class="kw">import </span><span class="dt">Data.Maybe</span>
-<span class="kw">import </span><span class="dt">Data.Map</span> (<span class="dt">Map</span>)
-<span class="kw">import qualified</span> <span class="dt">Data.Map</span> <span class="kw">as</span> <span class="dt">Map</span>
-<span class="kw">import </span><span class="dt">Foreign.C.Types</span>
-<span class="kw">import </span><span class="dt">Foreign.Ptr</span>
-
-foreign <span class="kw">import </span>ccall &quot;glue_netbsdstand.h command_boot&quot; c_command_boot :: <span class="dt">Ptr</span> a -&gt; <span class="dt">IO</span> ()
-
-<span class="ot">commands ::</span> <span class="dt">Map</span> <span class="dt">String</span> (<span class="dt">IO</span> ())
-commands <span class="fu">=</span> Map.fromList [(<span class="st">&quot;help&quot;</span>, command_help),
-                         (<span class="st">&quot;?&quot;</span>, command_help),
-                         (<span class="st">&quot;boot&quot;</span>, c_command_boot nullPtr)]
-
-<span class="ot">command_help ::</span> <span class="dt">IO</span> ()
-command_help <span class="fu">=</span> putStr <span class="fu">$</span> <span class="st">&quot;\</span>
-<span class="st">\commands are:\n\</span>
-<span class="st">\boot [xdNx:][filename] [-12acdqsvxz]\n\</span>
-<span class="st">\     (ex. \&quot;hd0a:netbsd.old -s\&quot;\n\</span>
-<span class="st">--snip--</span>
-<span class="st">\help|?\n\</span>
-<span class="st">\quit\n&quot;</span>
-
-<span class="ot">main ::</span> <span class="dt">IO</span> ()
-main <span class="fu">=</span> <span class="kw">do</span>
-  putStrLn <span class="st">&quot;Haskell bootmenu&quot;</span>
-  forever <span class="fu">$</span> <span class="kw">do</span>
-    putStr <span class="st">&quot;&gt; &quot;</span>
-    s <span class="ot">&lt;-</span> getLine
-    fromMaybe (putStr s) <span class="fu">$</span> Map.lookup s commands</code></pre></div>
+<p><img src="../draw/2012-12-27-loader.png" /></p>
+<p>NetBSD bootloaderのモジュールの構造は上図のようになっているでゲソ。 とりあえずboot2.cの中にあるコマンドラインループをjhcを使って書いてみたでゲソ。 <a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw">import</span> <span class="dt">Control.Monad</span></a>
+<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw">import</span> <span class="dt">Data.Maybe</span></a>
+<a class="sourceLine" id="cb1-3" data-line-number="3"><span class="kw">import</span> <span class="dt">Data.Map</span> (<span class="dt">Map</span>)</a>
+<a class="sourceLine" id="cb1-4" data-line-number="4"><span class="kw">import</span> <span class="kw">qualified</span> <span class="dt">Data.Map</span> <span class="kw">as</span> <span class="dt">Map</span></a>
+<a class="sourceLine" id="cb1-5" data-line-number="5"><span class="kw">import</span> <span class="dt">Foreign.C.Types</span></a>
+<a class="sourceLine" id="cb1-6" data-line-number="6"><span class="kw">import</span> <span class="dt">Foreign.Ptr</span></a>
+<a class="sourceLine" id="cb1-7" data-line-number="7"></a>
+<a class="sourceLine" id="cb1-8" data-line-number="8">foreign <span class="kw">import</span> ccall &quot;glue_netbsdstand.h command_boot&quot; c_command_boot :: <span class="dt">Ptr</span> a -&gt; <span class="dt">IO</span> ()</a>
+<a class="sourceLine" id="cb1-9" data-line-number="9"></a>
+<a class="sourceLine" id="cb1-10" data-line-number="10"><span class="ot">commands ::</span> <span class="dt">Map</span> <span class="dt">String</span> (<span class="dt">IO</span> ())</a>
+<a class="sourceLine" id="cb1-11" data-line-number="11">commands <span class="fu">=</span> Map.fromList [(<span class="st">&quot;help&quot;</span>, command_help),</a>
+<a class="sourceLine" id="cb1-12" data-line-number="12">                         (<span class="st">&quot;?&quot;</span>, command_help),</a>
+<a class="sourceLine" id="cb1-13" data-line-number="13">                         (<span class="st">&quot;boot&quot;</span>, c_command_boot nullPtr)]</a>
+<a class="sourceLine" id="cb1-14" data-line-number="14"></a>
+<a class="sourceLine" id="cb1-15" data-line-number="15"><span class="ot">command_help ::</span> <span class="dt">IO</span> ()</a>
+<a class="sourceLine" id="cb1-16" data-line-number="16">command_help <span class="fu">=</span> putStr <span class="fu">$</span> <span class="st">&quot;\</span></a>
+<a class="sourceLine" id="cb1-17" data-line-number="17"><span class="st">\commands are:\n\</span></a>
+<a class="sourceLine" id="cb1-18" data-line-number="18"><span class="st">\boot [xdNx:][filename] [-12acdqsvxz]\n\</span></a>
+<a class="sourceLine" id="cb1-19" data-line-number="19"><span class="st">\     (ex. \&quot;hd0a:netbsd.old -s\&quot;\n\</span></a>
+<a class="sourceLine" id="cb1-20" data-line-number="20"><span class="st">--snip--</span></a>
+<a class="sourceLine" id="cb1-21" data-line-number="21"><span class="st">\help|?\n\</span></a>
+<a class="sourceLine" id="cb1-22" data-line-number="22"><span class="st">\quit\n&quot;</span></a>
+<a class="sourceLine" id="cb1-23" data-line-number="23"></a>
+<a class="sourceLine" id="cb1-24" data-line-number="24"><span class="ot">main ::</span> <span class="dt">IO</span> ()</a>
+<a class="sourceLine" id="cb1-25" data-line-number="25">main <span class="fu">=</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb1-26" data-line-number="26">  putStrLn <span class="st">&quot;Haskell bootmenu&quot;</span></a>
+<a class="sourceLine" id="cb1-27" data-line-number="27">  forever <span class="fu">$</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb1-28" data-line-number="28">    putStr <span class="st">&quot;&gt; &quot;</span></a>
+<a class="sourceLine" id="cb1-29" data-line-number="29">    s <span class="ot">&lt;-</span> getLine</a>
+<a class="sourceLine" id="cb1-30" data-line-number="30">    fromMaybe (putStr s) <span class="fu">$</span> Map.lookup s commands</a></code></pre></div>
 <p>helpの表示はまぁいいとして、 kernelの読み込み+起動は既存コードにFFIで丸投げでゲソ。 このソースコードをイカのような方法でコンパイルしてみるでゲソ。</p>
-<div class="figure">
-<img src="../draw/2012-12-27-compile.png" />
-
-</div>
+<p><img src="../draw/2012-12-27-compile.png" /></p>
 <p>ほいでもってコンパイルして生成されたbootloaderバイナリをqemuで動かしてみるでゲッソ! (動画だと2:15ぐらいからMetasepi arafura版bootloaderをqemu上で起動しているでゲソ。)</p>
 <script type="text/javascript" src="http://ext.nicovideo.jp/thumb_watch/sm19788831"></script>
 <noscript>
 <a href="http://www.nicovideo.jp/watch/sm19788831">【ニコニコ動画】Metasepi arafura first boot.</a>
 </noscript>
 <p>うん、helpの表示とkernelの起動はできているようでゲソ。まずは実験成功でゲソ! ところでくれぐれも勘違いしてほしくないのは、 今回作ったbootloaderの99%はまだC言語製だということでゲソ。 このbootloaderの動きをシーケンス図で描いてみるとイカのようになるでゲソ。</p>
-<div class="figure">
-<img src="../draw/2013-01-09-sequence_diagram.png" />
-
-</div>
+<p><img src="../draw/2013-01-09-sequence_diagram.png" /></p>
 <p>なんと残念!かんじんの部分は既存のC言語ソースコードのままでゲソ。 でもこれから少しずつスナッチを繰り返すことで、 上図のシーケンスの多くの部分をHaskellのような型付き言語で記述することも夢ではないんじゃなイカ？</p>
 <h2 id="今見えている課題">今見えている課題</h2>
 <p>まだbootloaderのスナッチははじまったばかりでゲソ。 kernelのことはまぁ置いといて、こんな小さなモジュールをスナッチしてみるだけでも色々な課題が見えてくるでゲソ。</p>
-<ol style="list-style-type: lower-alpha">
+<ol type="a">
 <li>コマンドライン引数を扱えるように</li>
 <li>カスタムRTSに起因する問題が頻発している。ユーザ空間でカスタムRTSをデバッグできた方がいい</li>
-<li>GCの使うヒープをallocで確保するのをやめて固定値に<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></li>
+<li>GCの使うヒープをallocで確保するのをやめて固定値に<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a></li>
 <li>bootloaderのヒープをRTSのヒープと共用すると、RTSがヒープを圧迫する。分割管理すべき</li>
 </ol>
 <p>今年いっぱいはjhc本体の調査と平行して、 このbootloaderのスナッチは継続してやってみると色々な問題を洗い出せて面白いかもしれないでゲソ。</p>
-<div class="footnotes">
+<section class="footnotes">
 <hr />
 <ol>
-<li id="fn1"><p>開発対象のkernelの上で当該kernelの開発/コンパイルができるようになること<a href="#fnref1">↩</a></p></li>
-<li id="fn2"><p>また、コウイカの一種で色を変える小さなイカ <a href="http://en.wikipedia.org/wiki/Metasepia_pfefferi">Metasepia pfefferi</a> が住んでいて、アラフラは「自由人」を意味するポルトガル語の古語に由来そうでゲソ。 でも“珊瑚礁からなる浅瀬が多く、航行の障害となる箇所も多数ある”そうでゲソ…<a href="#fnref2">↩</a></p></li>
-<li id="fn3"><p><a href="https://gitorious.org/metasepi/netbsd-arafura/blobs/52c9e9c31425bdf983d0850b4e503c899a511edc/metasepi-arafura/sys/arch/i386/stand/boot/Boot2Ara.hs">元ソース</a><a href="#fnref3">↩</a></p></li>
-<li id="fn4"><p>最悪1MB以降のメモリをヒープのために使っても良いが、他への応用を考えるとコンベンショナルメモリだけで挑戦する価値はある<a href="#fnref4">↩</a></p></li>
+<li id="fn1"><p>開発対象のkernelの上で当該kernelの開発/コンパイルができるようになること<a href="#fnref1" class="footnote-back">↩</a></p></li>
+<li id="fn2"><p>また、コウイカの一種で色を変える小さなイカ <a href="http://en.wikipedia.org/wiki/Metasepia_pfefferi">Metasepia pfefferi</a> が住んでいて、アラフラは「自由人」を意味するポルトガル語の古語に由来そうでゲソ。 でも“珊瑚礁からなる浅瀬が多く、航行の障害となる箇所も多数ある”そうでゲソ…<a href="#fnref2" class="footnote-back">↩</a></p></li>
+<li id="fn3"><p><a href="https://gitorious.org/metasepi/netbsd-arafura/blobs/52c9e9c31425bdf983d0850b4e503c899a511edc/metasepi-arafura/sys/arch/i386/stand/boot/Boot2Ara.hs">元ソース</a><a href="#fnref3" class="footnote-back">↩</a></p></li>
+<li id="fn4"><p>最悪1MB以降のメモリをヒープのために使っても良いが、他への応用を考えるとコンベンショナルメモリだけで挑戦する価値はある<a href="#fnref4" class="footnote-back">↩</a></p></li>
 </ol>
-</div>
+</section>
 <p>
   <div id="disqus_thread"></div>
   <script type="text/javascript">
@@ -178,7 +166,7 @@ main <span class="fu">=</span> <span class="kw">do</span>
         <br>
         Metasepi project is supported by
         <a href="https://www.shinkawa.com/en/"><img alt="Shinkawa Ltd." style="border-width:0" src="../img/shinkawa_logo.png" /></a> ×
-        <a href="http://www.st.com/"><img alt="STMicroelectronics" style="border-width:0" src="../img/stlogo_x25.png" /></a> ×
+        <a href="http://www.kyushu-u.ac.jp/en/"><img alt="KYUSHU UNIVERSITY" style="border-width:0" src="../img/qlogo_x25.png" /></a> ×
         <a href="http://www.metasepi-design.com/"><img alt="METASEPI DESIGN" style="border-width:0" src="../img/metasepi_design_logo_82x25.png" /></a> ×
         <a href="../past-supporters.html">Past Supporters</a>
       </p>

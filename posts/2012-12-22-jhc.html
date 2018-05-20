@@ -72,10 +72,7 @@
 <hr>
 <p>この記事は <a href="http://atnd.org/events/34386">Debian/Ubuntu JP Advent Calendar 2012 : ATND</a> と <a href="http://partake.in/events/45a01d39-af5e-42f1-91c7-e8fcc91db244">Haskell Advent Calendar 2012</a> の12/22(土曜)分でゲソー。</p>
 <p>またもや <a href="http://www.paraiso-lang.org/ikmsm/books/c83.html">関数型プログラミングの本</a> が出るでゲソ。コミックマーケット83 <a href="http://twitcmap.jp/?id=0083-3-YYa-02-a">3日目 東地区 Y-02a</a> で頒布予定なので、みんな買ってほしいでゲソ!</p>
-<div class="figure">
-<img src="http://www.paraiso-lang.org/ikmsm/images/c83-cover-s.jpg" />
-
-</div>
+<p><img src="http://www.paraiso-lang.org/ikmsm/images/c83-cover-s.jpg" /></p>
 <ul>
 <li>第1章 インターフェース</li>
 <li>第2章 Lighter than Light # &lt;= コレ書いた</li>
@@ -133,12 +130,9 @@ Fib_jhc:
 <p>なんと! 同じソースコードをコンパイルしたのに、 jhcの吐き出す実行バイナリはGHCの1/40のサイズでゲソ。 しかも依存ライブラリはlibcのみ。 これはどんな魔法なんでゲソ？</p>
 <h3 id="jhcのしくみ">jhcのしくみ</h3>
 <p>イカの図はjhc本体のコンパイルとjhcによるHaskellコードのコンパイルの関係を表わしているでゲソ。</p>
-<div class="figure">
-<img src="../draw/2012-12-22-jhc_compile.png" />
-
-</div>
+<p><img src="../draw/2012-12-22-jhc_compile.png" /></p>
 <p>まずjhcはGHCによってコンパイルされるGHCの一アプリケーションでゲソ。 jhcがGHCによってコンパイルされるということはjhcはGHCのRTSで動くでゲソ。 このjhcがHaskellのソースコードをコンパイルする際はイカの段階をふむでゲソ。</p>
-<ol style="list-style-type: decimal">
+<ol type="1">
 <li>HaskellのソースコードをパースしてCoreに変換</li>
 <li>依存するhlファイルを読み込む</li>
 <li>1と2を混ぜて最適化</li>
@@ -147,9 +141,9 @@ Fib_jhc:
 <li>jhcのRTSをコンパイル</li>
 <li>5と6をリンクして実行バイナリ作成</li>
 </ol>
-<p>hlファイルというのは、GHCで言うところの静的リンクオブジェクト(hoge.a) とインターフェイスファイル(hoge.hi)を合わせたモノと機能としてはだいたい同じでゲソ。 その実体はCoreまで変換されたHaskellのソースコードの寄せ集めでゲソ。 GHCとは異なりjhcはhlファイルの中に完全な実コードを持たせてより強力な最適化を行えるようにしているんでゲソ。 <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
+<p>hlファイルというのは、GHCで言うところの静的リンクオブジェクト(hoge.a) とインターフェイスファイル(hoge.hi)を合わせたモノと機能としてはだいたい同じでゲソ。 その実体はCoreまで変換されたHaskellのソースコードの寄せ集めでゲソ。 GHCとは異なりjhcはhlファイルの中に完全な実コードを持たせてより強力な最適化を行えるようにしているんでゲソ。 <a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></p>
 <p>GHCと比較して、このコンパイル方式の特徴としてはイカが挙げれるでゲッソ。 特にcが効いているためにGHCと比較してバイナリサイズが小さくなるんじゃなイカ？</p>
-<ol style="list-style-type: lower-alpha">
+<ol type="a">
 <li>全ての要素はC言語を経由してバイナリになる</li>
 <li>jhcのRTSはC言語で記述され、3000行程度ととても小さい</li>
 <li>全ての要素を混ぜてから最適化をかけるため、実行バイナリから不要な部品は削除される</li>
@@ -168,10 +162,7 @@ $ nm Fib_jhc.o | grep &quot;U &quot;
                  U s_alloc
                  U saved_gc</code></pre>
 <p>上記のようにjhcのコンパイルパイプラインを-Cオプションを使って C言語ソースコードで生成直後で止めるでゲソ。 さらに生成されたC言語ソースコードをGCCを使ってオブジェクトファイルにすると たった6つのシンボルにしか依存していないことがわかるでゲソ。 この6つの未解決シンボルは通常jhcのRTSによって解決されるのでゲソが、 もちろん自作しても問題ないのでゲソ。 GHCと異なり、このシンボルはイカのように単純な機能しか持っていないので、 自作するのも現実的な貝なんでゲッソ! もちろん自作RTSから直接ハードをさわるのも面白いかもしれないでゲソ。 これでどんな場所へもHaskell潜水艦でスイスイーじゃなイカー。</p>
-<div class="figure">
-<img src="../draw/2012-12-22-jhc_custom_rts.png" />
-
-</div>
+<p><img src="../draw/2012-12-22-jhc_custom_rts.png" /></p>
 <p>なんだか上の図をぼーっと見ていると、自作RTSがkernelのように見えてきたでゲッソ。</p>
 <h2 id="debianパッケージ化">Debianパッケージ化</h2>
 <p>こんなにjhcが便利なら、ありとあらゆるマシンに手軽にインストールしたくなイカ？ 2012年12月22日(土)時点ではまだDebian本家には登録完了していないでゲソが、 <a href="http://anonscm.debian.org/gitweb/?p=collab-maint/jhc.git">anonscm.debian.org Git - collab-maint/jhc.git</a> からjhcのソースパッケージを取得できるようでゲソ。 ソースパッケージからバイナリパッケージをビルドしてみるでゲソ。</p>
@@ -221,12 +212,12 @@ $ cat /var/lib/dpkg/info/jhc-doc.list
 /usr/share/doc-base
 /usr/share/doc-base/jhc</code></pre>
 <p>んーパッケージ化してプログラムを管理するっていい気持ちでゲッソ!</p>
-<div class="footnotes">
+<section class="footnotes">
 <hr />
 <ol>
-<li id="fn1"><p>2012/12/23修正: <a href="https://twitter.com/shelarcy/status/282711258300567552">@shelarcyさんからの指摘</a>を受けて修正<a href="#fnref1">↩</a></p></li>
+<li id="fn1"><p>2012/12/23修正: <a href="https://twitter.com/shelarcy/status/282711258300567552">@shelarcyさんからの指摘</a>を受けて修正<a href="#fnref1" class="footnote-back">↩</a></p></li>
 </ol>
-</div>
+</section>
 <p>
   <div id="disqus_thread"></div>
   <script type="text/javascript">
@@ -258,7 +249,7 @@ $ cat /var/lib/dpkg/info/jhc-doc.list
         <br>
         Metasepi project is supported by
         <a href="https://www.shinkawa.com/en/"><img alt="Shinkawa Ltd." style="border-width:0" src="../img/shinkawa_logo.png" /></a> ×
-        <a href="http://www.st.com/"><img alt="STMicroelectronics" style="border-width:0" src="../img/stlogo_x25.png" /></a> ×
+        <a href="http://www.kyushu-u.ac.jp/en/"><img alt="KYUSHU UNIVERSITY" style="border-width:0" src="../img/qlogo_x25.png" /></a> ×
         <a href="http://www.metasepi-design.com/"><img alt="METASEPI DESIGN" style="border-width:0" src="../img/metasepi_design_logo_82x25.png" /></a> ×
         <a href="../past-supporters.html">Past Supporters</a>
       </p>

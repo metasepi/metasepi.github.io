@@ -68,83 +68,71 @@
 <hr>
 <p>Can’t get design, even repeating the research. It might be a good idea to make something at first step? Let’s decide a rough sketch before writing the code. This blog entry will be rewritten some times.</p>
 <h2 id="first-design">First design</h2>
-<p>We discuss “<a href="2012-08-18-haskell-or-ocaml-os.html">Are there OS designed with Haskell/OCaml?</a>” already. The person living in real world has no time to get clean design of Functional OS, that be eaten as dog food. <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> It may be better than it to rewrite a just monolithic kernel with functional language.</p>
+<p>We discuss “<a href="2012-08-18-haskell-or-ocaml-os.html">Are there OS designed with Haskell/OCaml?</a>” already. The person living in real world has no time to get clean design of Functional OS, that be eaten as dog food. <a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> It may be better than it to rewrite a just monolithic kernel with functional language.</p>
 <p>We selected the NetBSD as a monolithic kernel for rewriting. There is my hobby simply reasons, such as easy-to-read source code.</p>
 <p>The rewrite from scratch in typed language suddenly the NetBSD kernel written in the C language also is still severe. I want a little more comfortable? So but not all suddenly, and re-implement the same functionality in the typed language a little bit at a time while keeping a compilable / executable state. If you go with the type little by little, all the code I might be to work with typed language one day?</p>
-<div class="figure">
-<img src="../../draw/2012-12-27-arafura_design.png" />
-
-</div>
+<p><img src="../../draw/2012-12-27-arafura_design.png" /></p>
 <p>I think it tries to call the Arafura this design of “snatch little by little in the typed language NetBSD kernel”. That’s good to sail the name of the sea starting from “A”, the first! (Also, small squid to change the color is a type of cuttlefish, Metasepia pfefferi is lived, Arafura of the Portuguese, which means “free man” But. is the origin so the archaic word “shallow consisting of a coral reef in many cases, where a failure of navigation also have a large number” when you fail to sail in this sea if …) Yes, the sea that begins with “B” this time it’s okay if you choose (design). I’m “Never give up” the watchword!</p>
 <h2 id="just-do-it">Just do it!</h2>
 <p>We have known jhc may be useful to develop Metasepi kernel. If snatch NetBSD kernel, we should write interrupt handler with Haskell language. It’s so difficult for us, today. Then, let’s snatch bootloader that has more easy design than NetBSD kernel. Everything starts at training.</p>
-<div class="figure">
-<img src="../../draw/2012-12-27-loader.png" />
-
-</div>
-<p>Structure of the module of NetBSD bootloader is as shown in the above figure. Following code is the boot2.c command line loop rewrited with jhc and Haskell language. <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Control.Monad</span>
-<span class="kw">import </span><span class="dt">Data.Maybe</span>
-<span class="kw">import </span><span class="dt">Data.Map</span> (<span class="dt">Map</span>)
-<span class="kw">import qualified</span> <span class="dt">Data.Map</span> <span class="kw">as</span> <span class="dt">Map</span>
-<span class="kw">import </span><span class="dt">Foreign.C.Types</span>
-<span class="kw">import </span><span class="dt">Foreign.Ptr</span>
-
-foreign <span class="kw">import </span>ccall &quot;glue_netbsdstand.h command_boot&quot; c_command_boot :: <span class="dt">Ptr</span>
-a <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
-
-<span class="ot">commands ::</span> <span class="dt">Map</span> <span class="dt">String</span> (<span class="dt">IO</span> ())
-commands <span class="fu">=</span> Map.fromList [(<span class="st">&quot;help&quot;</span>, command_help),
-                         (<span class="st">&quot;?&quot;</span>, command_help),
-                         (<span class="st">&quot;boot&quot;</span>, c_command_boot nullPtr)]
-
-<span class="ot">command_help ::</span> <span class="dt">IO</span> ()
-command_help <span class="fu">=</span> putStr <span class="fu">$</span> <span class="st">&quot;\</span>
-<span class="st">\commands are:\n\</span>
-<span class="st">\boot [xdNx:][filename] [-12acdqsvxz]\n\</span>
-<span class="st">\     (ex. \&quot;hd0a:netbsd.old -s\&quot;\n\</span>
-<span class="st">--snip--</span>
-<span class="st">\help|?\n\</span>
-<span class="st">\quit\n&quot;</span>
-
-<span class="ot">main ::</span> <span class="dt">IO</span> ()
-main <span class="fu">=</span> <span class="kw">do</span>
-  putStrLn <span class="st">&quot;Haskell bootmenu&quot;</span>
-  forever <span class="fu">$</span> <span class="kw">do</span>
-    putStr <span class="st">&quot;&gt; &quot;</span>
-    s <span class="ot">&lt;-</span> getLine
-    fromMaybe (putStr s) <span class="fu">$</span> Map.lookup s commands</code></pre></div>
+<p><img src="../../draw/2012-12-27-loader.png" /></p>
+<p>Structure of the module of NetBSD bootloader is as shown in the above figure. Following code is the boot2.c command line loop rewrited with jhc and Haskell language. <a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw">import</span> <span class="dt">Control.Monad</span></a>
+<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw">import</span> <span class="dt">Data.Maybe</span></a>
+<a class="sourceLine" id="cb1-3" data-line-number="3"><span class="kw">import</span> <span class="dt">Data.Map</span> (<span class="dt">Map</span>)</a>
+<a class="sourceLine" id="cb1-4" data-line-number="4"><span class="kw">import</span> <span class="kw">qualified</span> <span class="dt">Data.Map</span> <span class="kw">as</span> <span class="dt">Map</span></a>
+<a class="sourceLine" id="cb1-5" data-line-number="5"><span class="kw">import</span> <span class="dt">Foreign.C.Types</span></a>
+<a class="sourceLine" id="cb1-6" data-line-number="6"><span class="kw">import</span> <span class="dt">Foreign.Ptr</span></a>
+<a class="sourceLine" id="cb1-7" data-line-number="7"></a>
+<a class="sourceLine" id="cb1-8" data-line-number="8">foreign <span class="kw">import</span> ccall &quot;glue_netbsdstand.h command_boot&quot; c_command_boot :: <span class="dt">Ptr</span></a>
+<a class="sourceLine" id="cb1-9" data-line-number="9">a <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</a>
+<a class="sourceLine" id="cb1-10" data-line-number="10"></a>
+<a class="sourceLine" id="cb1-11" data-line-number="11"><span class="ot">commands ::</span> <span class="dt">Map</span> <span class="dt">String</span> (<span class="dt">IO</span> ())</a>
+<a class="sourceLine" id="cb1-12" data-line-number="12">commands <span class="fu">=</span> Map.fromList [(<span class="st">&quot;help&quot;</span>, command_help),</a>
+<a class="sourceLine" id="cb1-13" data-line-number="13">                         (<span class="st">&quot;?&quot;</span>, command_help),</a>
+<a class="sourceLine" id="cb1-14" data-line-number="14">                         (<span class="st">&quot;boot&quot;</span>, c_command_boot nullPtr)]</a>
+<a class="sourceLine" id="cb1-15" data-line-number="15"></a>
+<a class="sourceLine" id="cb1-16" data-line-number="16"><span class="ot">command_help ::</span> <span class="dt">IO</span> ()</a>
+<a class="sourceLine" id="cb1-17" data-line-number="17">command_help <span class="fu">=</span> putStr <span class="fu">$</span> <span class="st">&quot;\</span></a>
+<a class="sourceLine" id="cb1-18" data-line-number="18"><span class="st">\commands are:\n\</span></a>
+<a class="sourceLine" id="cb1-19" data-line-number="19"><span class="st">\boot [xdNx:][filename] [-12acdqsvxz]\n\</span></a>
+<a class="sourceLine" id="cb1-20" data-line-number="20"><span class="st">\     (ex. \&quot;hd0a:netbsd.old -s\&quot;\n\</span></a>
+<a class="sourceLine" id="cb1-21" data-line-number="21"><span class="st">--snip--</span></a>
+<a class="sourceLine" id="cb1-22" data-line-number="22"><span class="st">\help|?\n\</span></a>
+<a class="sourceLine" id="cb1-23" data-line-number="23"><span class="st">\quit\n&quot;</span></a>
+<a class="sourceLine" id="cb1-24" data-line-number="24"></a>
+<a class="sourceLine" id="cb1-25" data-line-number="25"><span class="ot">main ::</span> <span class="dt">IO</span> ()</a>
+<a class="sourceLine" id="cb1-26" data-line-number="26">main <span class="fu">=</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb1-27" data-line-number="27">  putStrLn <span class="st">&quot;Haskell bootmenu&quot;</span></a>
+<a class="sourceLine" id="cb1-28" data-line-number="28">  forever <span class="fu">$</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb1-29" data-line-number="29">    putStr <span class="st">&quot;&gt; &quot;</span></a>
+<a class="sourceLine" id="cb1-30" data-line-number="30">    s <span class="ot">&lt;-</span> getLine</a>
+<a class="sourceLine" id="cb1-31" data-line-number="31">    fromMaybe (putStr s) <span class="fu">$</span> Map.lookup s commands</a></code></pre></div>
 <p>Display of help is as good Well, I’m throwing circle at FFI to existing code reads + boot kernel. Let’s compiled in such a way of utilizing these source code.</p>
-<div class="figure">
-<img src="../../draw/2012-12-27-compile.png" />
-
-</div>
+<p><img src="../../draw/2012-12-27-compile.png" /></p>
 <p>Let’s run Metasepi arafura version of bootloader on qemu (2:15 at following video)!</p>
 <iframe width="420" height="315" src="//www.youtube.com/embed/0DPA7GC0_-0" frameborder="0" allowfullscreen>
 </iframe>
 <p>Starting the kernel and display of help seems to be. First I do not want to misunderstand earnestly by the way!’s Successful experiment, 99% of the bootloader that I made this time but that it’s still made ​​by C language. It is as shown in the figure below and try to draw a sequence diagram the movement of this bootloader.</p>
-<div class="figure">
-<img src="../../draw/2013-01-09-sequence_diagram.png" />
-
-</div>
+<p><img src="../../draw/2013-01-09-sequence_diagram.png" /></p>
 <p>Part sorry! Bottom line remains the C language source code of existing what. But by repeating snatch little by little from now, be described in typed language like Haskell many parts of the sequence shown above and not something a dream?</p>
 <h2 id="known-problems">Known problems</h2>
 <p>Snatch of bootloader has just begun. Not yet snatch kernel, we can find many problems with snatching the small module such as bootloader.</p>
-<ol style="list-style-type: lower-alpha">
+<ol type="a">
 <li>Be able to handle command-line arguments.</li>
 <li>Should be able to debug custom RTS in user space. We have found problems at custom RTS side frequently.</li>
-<li>Use the fixed memory area for GC heap allocator. <a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></li>
+<li>Use the fixed memory area for GC heap allocator. <a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a></li>
 <li>Isolate malloc’s heap and Haskell’s heap. Haskell’s heap press malloc’s heap with the RTS implementation in this article.</li>
 </ol>
 <p>Next action item is surveying more detail of jhc internel. But, more snatching this bootloader may be also good idea to understand more problems.</p>
-<div class="footnotes">
+<section class="footnotes">
 <hr />
 <ol>
-<li id="fn1"><p><a href="http://en.wikipedia.org/wiki/Eating_your_own_dog_food">Eating your own dog food - Wikipedia</a><a href="#fnref1">↩</a></p></li>
-<li id="fn2"><p><a href="https://gitorious.org/metasepi/netbsd-arafura/blobs/52c9e9c31425bdf983d0850b4e503c899a511edc/metasepi-arafura/sys/arch/i386/stand/boot/Boot2Ara.hs">Source code</a><a href="#fnref2">↩</a></p></li>
-<li id="fn3"><p>We can use extended memory (more than 1 MB) on Intel arch. But it’s useful running in conventional memory (less than 1 MB) for the other use case<a href="#fnref3">↩</a></p></li>
+<li id="fn1"><p><a href="http://en.wikipedia.org/wiki/Eating_your_own_dog_food">Eating your own dog food - Wikipedia</a><a href="#fnref1" class="footnote-back">↩</a></p></li>
+<li id="fn2"><p><a href="https://gitorious.org/metasepi/netbsd-arafura/blobs/52c9e9c31425bdf983d0850b4e503c899a511edc/metasepi-arafura/sys/arch/i386/stand/boot/Boot2Ara.hs">Source code</a><a href="#fnref2" class="footnote-back">↩</a></p></li>
+<li id="fn3"><p>We can use extended memory (more than 1 MB) on Intel arch. But it’s useful running in conventional memory (less than 1 MB) for the other use case<a href="#fnref3" class="footnote-back">↩</a></p></li>
 </ol>
-</div>
+</section>
 <p>
   <div id="disqus_thread"></div>
   <script type="text/javascript">
@@ -176,7 +164,7 @@ main <span class="fu">=</span> <span class="kw">do</span>
         <br>
         Metasepi project is supported by
         <a href="https://www.shinkawa.com/en/"><img alt="Shinkawa Ltd." style="border-width:0" src="../../img/shinkawa_logo.png" /></a> ×
-        <a href="http://www.st.com/"><img alt="STMicroelectronics" style="border-width:0" src="../../img/stlogo_x25.png" /></a> ×
+        <a href="http://www.kyushu-u.ac.jp/en/"><img alt="KYUSHU UNIVERSITY" style="border-width:0" src="../../img/qlogo_x25.png" /></a> ×
         <a href="http://www.metasepi-design.com/"><img alt="METASEPI DESIGN" style="border-width:0" src="../../img/metasepi_design_logo_82x25.png" /></a> ×
         <a href="../../past-supporters.html">Past Supporters</a>
       </p>

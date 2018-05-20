@@ -85,41 +85,41 @@
 <p>いきなりAjhcの吐くコードを並列実行可能にすることはハードルが高すぎるでゲソ。 まず再入可能を実現しなイカ？</p>
 <h2 id="スナッチ対象を決めるでゲソ">スナッチ対象を決めるでゲソ</h2>
 <p>再入可能を実現するにあたって、何かアプリケーション例があった方が良いでゲソ。 <a href="https://github.com/ajhc/demo-cortex-m3">Cortex-M3向けデモ</a> の中にイカのようなコードがあるでゲソ。</p>
-<div class="sourceCode"><pre class="sourceCode gnuassembler"><code class="sourceCode gnuassembler"><span class="co">/* File: demo-cortex-m3/stm32f3-discovery/Device/startup_stm32f30x.s */</span>
- 	<span class="kw">.section</span>	.isr_vector,<span class="st">&quot;a&quot;</span>,%progbits
-	<span class="kw">.type</span>	g_pfnVectors, %object
-	<span class="kw">.size</span>	g_pfnVectors, .-g_pfnVectors
-
-<span class="kw">g_pfnVectors:</span>
-	<span class="kw">.word</span>	_estack
-	<span class="kw">.word</span>	Reset_Handler
-<span class="co">/* snip */</span>
-	<span class="kw">.word</span>	PendSV_Handler
-	<span class="kw">.word</span>	SysTick_Handler</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">// File: demo-cortex-m3/stm32f3-discovery/src/main.c</span>
-__IO <span class="dt">uint32_t</span> TimingDelay = <span class="dv">0</span>;
-
-<span class="dt">void</span> SysTick_Handler(<span class="dt">void</span>)
-{
-  TimingDelay_Decrement();
-}
-
-<span class="dt">void</span> TimingDelay_Decrement(<span class="dt">void</span>)
-{
-  <span class="cf">if</span> (TimingDelay != <span class="bn">0x00</span>)
-  { 
-    TimingDelay--;
-  }
-}
-
-<span class="dt">void</span> Delay(__IO <span class="dt">uint32_t</span> nTime)
-{
-  TimingDelay = nTime;
-
-  <span class="cf">while</span>(TimingDelay != <span class="dv">0</span>);
-}</code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode gnuassembler"><code class="sourceCode gnuassembler"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="co">/* File: demo-cortex-m3/stm32f3-discovery/Device/startup_stm32f30x.s */</span></a>
+<a class="sourceLine" id="cb1-2" data-line-number="2"> 	<span class="kw">.section</span>	.isr_vector,<span class="st">&quot;a&quot;</span>,%progbits</a>
+<a class="sourceLine" id="cb1-3" data-line-number="3">	<span class="kw">.type</span>	g_pfnVectors, %object</a>
+<a class="sourceLine" id="cb1-4" data-line-number="4">	<span class="kw">.size</span>	g_pfnVectors, .-g_pfnVectors</a>
+<a class="sourceLine" id="cb1-5" data-line-number="5"></a>
+<a class="sourceLine" id="cb1-6" data-line-number="6"><span class="kw">g_pfnVectors:</span></a>
+<a class="sourceLine" id="cb1-7" data-line-number="7">	<span class="kw">.word</span>	_estack</a>
+<a class="sourceLine" id="cb1-8" data-line-number="8">	<span class="kw">.word</span>	Reset_Handler</a>
+<a class="sourceLine" id="cb1-9" data-line-number="9"><span class="co">/* snip */</span></a>
+<a class="sourceLine" id="cb1-10" data-line-number="10">	<span class="kw">.word</span>	PendSV_Handler</a>
+<a class="sourceLine" id="cb1-11" data-line-number="11">	<span class="kw">.word</span>	SysTick_Handler</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="co">// File: demo-cortex-m3/stm32f3-discovery/src/main.c</span></a>
+<a class="sourceLine" id="cb2-2" data-line-number="2">__IO <span class="dt">uint32_t</span> TimingDelay = <span class="dv">0</span>;</a>
+<a class="sourceLine" id="cb2-3" data-line-number="3"></a>
+<a class="sourceLine" id="cb2-4" data-line-number="4"><span class="dt">void</span> SysTick_Handler(<span class="dt">void</span>)</a>
+<a class="sourceLine" id="cb2-5" data-line-number="5">{</a>
+<a class="sourceLine" id="cb2-6" data-line-number="6">  TimingDelay_Decrement();</a>
+<a class="sourceLine" id="cb2-7" data-line-number="7">}</a>
+<a class="sourceLine" id="cb2-8" data-line-number="8"></a>
+<a class="sourceLine" id="cb2-9" data-line-number="9"><span class="dt">void</span> TimingDelay_Decrement(<span class="dt">void</span>)</a>
+<a class="sourceLine" id="cb2-10" data-line-number="10">{</a>
+<a class="sourceLine" id="cb2-11" data-line-number="11">  <span class="cf">if</span> (TimingDelay != <span class="bn">0x00</span>)</a>
+<a class="sourceLine" id="cb2-12" data-line-number="12">  { </a>
+<a class="sourceLine" id="cb2-13" data-line-number="13">    TimingDelay--;</a>
+<a class="sourceLine" id="cb2-14" data-line-number="14">  }</a>
+<a class="sourceLine" id="cb2-15" data-line-number="15">}</a>
+<a class="sourceLine" id="cb2-16" data-line-number="16"></a>
+<a class="sourceLine" id="cb2-17" data-line-number="17"><span class="dt">void</span> Delay(__IO <span class="dt">uint32_t</span> nTime)</a>
+<a class="sourceLine" id="cb2-18" data-line-number="18">{</a>
+<a class="sourceLine" id="cb2-19" data-line-number="19">  TimingDelay = nTime;</a>
+<a class="sourceLine" id="cb2-20" data-line-number="20"></a>
+<a class="sourceLine" id="cb2-21" data-line-number="21">  <span class="cf">while</span>(TimingDelay != <span class="dv">0</span>);</a>
+<a class="sourceLine" id="cb2-22" data-line-number="22">}</a></code></pre></div>
 <p>このしくみはDelay関数による指定時間待ち合わせを実現するために、イカのような動作を期待しているでゲソ。</p>
-<ol style="list-style-type: decimal">
+<ol type="1">
 <li>Delay関数呼び出し</li>
 <li>Delay関数はグローバル変数TimingDelayに待ち時間を代入</li>
 <li>Delay関数はそのままTimingDelayが0になるのを待つ</li>
@@ -190,20 +190,20 @@ fFE@.CCall.fib w8 = do
       case h100018 of
         1 -&gt; do</code></pre>
 <p>と出力されたC言語コード <a href="https://github.com/ajhc/ajhc-dumpyard/blob/master/use_foreign_export/hs_main.c">hs_main.c</a></p>
-<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="dt">static</span> <span class="dt">uint32_t</span> A_STD
-fFE$__CCall_fib(gc_t gc,<span class="dt">uint32_t</span> v8)
-{
-        wptr_t v68;
-        <span class="dt">uint32_t</span> v35;
-        <span class="dt">uint16_t</span> v100016 = (((<span class="dt">int32_t</span>)<span class="dv">0</span>) &lt;= ((<span class="dt">int32_t</span>)v8));
-        <span class="cf">if</span> (<span class="dv">0</span> == v100016) {
-<span class="co">/* --snip-- */</span>
-<span class="dt">int</span> 
-fib(<span class="dt">int</span> x11)
-{
-        <span class="cf">return</span> (<span class="dt">int</span>)fFE$__CCall_fib(saved_gc,(<span class="dt">uint32_t</span>)x11);
-}</code></pre></div>
-<p>を見比べると、どうやら“fFE$__CCall_fib“という関数がforeign export ccallした関数のようでゲソ。 また <a href="https://github.com/ajhc/ajhc-dumpyard/blob/master/use_foreign_export/hs_main.c_final.datalog">hs_main.c_final.datalog</a> を読むとイカのように型の定義まであるじゃなイカ。</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb5-1" data-line-number="1"><span class="dt">static</span> <span class="dt">uint32_t</span> A_STD</a>
+<a class="sourceLine" id="cb5-2" data-line-number="2">fFE$__CCall_fib(gc_t gc,<span class="dt">uint32_t</span> v8)</a>
+<a class="sourceLine" id="cb5-3" data-line-number="3">{</a>
+<a class="sourceLine" id="cb5-4" data-line-number="4">        wptr_t v68;</a>
+<a class="sourceLine" id="cb5-5" data-line-number="5">        <span class="dt">uint32_t</span> v35;</a>
+<a class="sourceLine" id="cb5-6" data-line-number="6">        <span class="dt">uint16_t</span> v100016 = (((<span class="dt">int32_t</span>)<span class="dv">0</span>) &lt;= ((<span class="dt">int32_t</span>)v8));</a>
+<a class="sourceLine" id="cb5-7" data-line-number="7">        <span class="cf">if</span> (<span class="dv">0</span> == v100016) {</a>
+<a class="sourceLine" id="cb5-8" data-line-number="8"><span class="co">/* --snip-- */</span></a>
+<a class="sourceLine" id="cb5-9" data-line-number="9"><span class="dt">int</span> </a>
+<a class="sourceLine" id="cb5-10" data-line-number="10">fib(<span class="dt">int</span> x11)</a>
+<a class="sourceLine" id="cb5-11" data-line-number="11">{</a>
+<a class="sourceLine" id="cb5-12" data-line-number="12">        <span class="cf">return</span> (<span class="dt">int</span>)fFE$__CCall_fib(saved_gc,(<span class="dt">uint32_t</span>)x11);</a>
+<a class="sourceLine" id="cb5-13" data-line-number="13">}</a></code></pre></div>
+<p>を見比べると、どうやら&quot;fFE$__CCall_fib&quot;という関数がforeign export ccallした関数のようでゲソ。 また <a href="https://github.com/ajhc/ajhc-dumpyard/blob/master/use_foreign_export/hs_main.c_final.datalog">hs_main.c_final.datalog</a> を読むとイカのように型の定義まであるじゃなイカ。</p>
 <pre><code>% functions
 -- snip --
 func('fFE@.CCall.fib',1).
@@ -218,52 +218,52 @@ subfunc('fW@.fR@.fJhc.List.243_sub','fFE@.CCall.fib').
 -- snip --
 perform(assign,'fFE@.CCall.fib@ret@0','v35').</code></pre>
 <p>このforeign export ccallな関数はgrinの中ではそのまんまCCallという型で表現されているでゲソ。 ということはイカのconvertFunc関数を修正すれば、 GCスタックとHaskellヒープの割り当て/解放処理をforeign export ccallな関数に注入できそうじゃなイカ。</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- ajhc/src/C/FFI.hs</span>
-<span class="kw">data</span> <span class="dt">FfiExport</span> <span class="fu">=</span> <span class="dt">FfiExport</span> {
-<span class="ot">    ffiExportCName    ::</span> <span class="dt">CName</span>,
-<span class="ot">    ffiExportSafety   ::</span> <span class="dt">Safety</span>,
-<span class="ot">    ffiExportCallConv ::</span> <span class="dt">CallConv</span>,
-<span class="ot">    ffiExportArgTypes ::</span> [<span class="dt">ExtType</span>],
-<span class="ot">    ffiExportRetType  ::</span> <span class="dt">ExtType</span>
-    }
- <span class="kw">deriving</span>(<span class="dt">Eq</span>,<span class="dt">Ord</span>,<span class="dt">Show</span>,<span class="dt">Typeable</span>)
-<span class="co">-- ajhc/src/C/Prims.hs</span>
-<span class="kw">data</span> <span class="dt">CallConv</span> <span class="fu">=</span> <span class="dt">CCall</span> <span class="fu">|</span> <span class="dt">StdCall</span> <span class="fu">|</span> <span class="dt">CApi</span> <span class="fu">|</span> <span class="dt">Primitive</span> <span class="fu">|</span> <span class="dt">DotNet</span>
-    <span class="kw">deriving</span>(<span class="dt">Eq</span>,<span class="dt">Ord</span>,<span class="dt">Show</span>)
-<span class="co">-- ajhc/src/C/FromGrin2.hs</span>
-<span class="ot">convertFunc ::</span> <span class="dt">Maybe</span> <span class="dt">FfiExport</span> <span class="ot">-&gt;</span> (<span class="dt">Atom</span>,<span class="dt">Lam</span>) <span class="ot">-&gt;</span> <span class="dt">C</span> [<span class="dt">Function</span>]
-convertFunc ffie (n,as <span class="fu">:-&gt;</span> body) <span class="fu">=</span> <span class="kw">do</span>
-<span class="co">--snip--</span>
-        mstub <span class="ot">&lt;-</span> <span class="kw">case</span> ffie <span class="kw">of</span>
-                <span class="dt">Nothing</span> <span class="ot">-&gt;</span> return []
-                <span class="dt">Just</span> <span class="fu">~</span>(<span class="dt">FfiExport</span> cn <span class="dt">Safe</span> <span class="dt">CCall</span> argTys retTy) <span class="ot">-&gt;</span> <span class="kw">do</span>
-                    newVars <span class="ot">&lt;-</span> mapM (liftM (name <span class="fu">.</span> show) <span class="fu">.</span> newVar <span class="fu">.</span> basicType') argTys
-
-                    <span class="kw">let</span> fnname2 <span class="fu">=</span> name cn
-                        as2 <span class="fu">=</span> zip (newVars) (map basicType' argTys)
-                        fr2 <span class="fu">=</span> basicType' retTy
-
-                    return [function fnname2 fr2 as2 [<span class="dt">Public</span>]
-                                     (creturn <span class="fu">$</span> cast fr2 <span class="fu">$</span> functionCall fnname <span class="fu">$</span> (<span class="kw">if</span> fopts <span class="dt">FO.Jgc</span> <span class="kw">then</span> (variable (name <span class="st">&quot;saved_gc&quot;</span>)<span class="fu">:</span>) <span class="kw">else</span> id) <span class="fu">$</span>
-                                      zipWith cast (map snd as')
-                                                   (map variable newVars))]
-
-        return (function fnname fr (mgct as') ats s <span class="fu">:</span> mstub)</code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb7-1" data-line-number="1"><span class="co">-- ajhc/src/C/FFI.hs</span></a>
+<a class="sourceLine" id="cb7-2" data-line-number="2"><span class="kw">data</span> <span class="dt">FfiExport</span> <span class="fu">=</span> <span class="dt">FfiExport</span> {</a>
+<a class="sourceLine" id="cb7-3" data-line-number="3"><span class="ot">    ffiExportCName    ::</span> <span class="dt">CName</span>,</a>
+<a class="sourceLine" id="cb7-4" data-line-number="4"><span class="ot">    ffiExportSafety   ::</span> <span class="dt">Safety</span>,</a>
+<a class="sourceLine" id="cb7-5" data-line-number="5"><span class="ot">    ffiExportCallConv ::</span> <span class="dt">CallConv</span>,</a>
+<a class="sourceLine" id="cb7-6" data-line-number="6"><span class="ot">    ffiExportArgTypes ::</span> [<span class="dt">ExtType</span>],</a>
+<a class="sourceLine" id="cb7-7" data-line-number="7"><span class="ot">    ffiExportRetType  ::</span> <span class="dt">ExtType</span></a>
+<a class="sourceLine" id="cb7-8" data-line-number="8">    }</a>
+<a class="sourceLine" id="cb7-9" data-line-number="9"> <span class="kw">deriving</span>(<span class="dt">Eq</span>,<span class="dt">Ord</span>,<span class="dt">Show</span>,<span class="dt">Typeable</span>)</a>
+<a class="sourceLine" id="cb7-10" data-line-number="10"><span class="co">-- ajhc/src/C/Prims.hs</span></a>
+<a class="sourceLine" id="cb7-11" data-line-number="11"><span class="kw">data</span> <span class="dt">CallConv</span> <span class="fu">=</span> <span class="dt">CCall</span> <span class="fu">|</span> <span class="dt">StdCall</span> <span class="fu">|</span> <span class="dt">CApi</span> <span class="fu">|</span> <span class="dt">Primitive</span> <span class="fu">|</span> <span class="dt">DotNet</span></a>
+<a class="sourceLine" id="cb7-12" data-line-number="12">    <span class="kw">deriving</span>(<span class="dt">Eq</span>,<span class="dt">Ord</span>,<span class="dt">Show</span>)</a>
+<a class="sourceLine" id="cb7-13" data-line-number="13"><span class="co">-- ajhc/src/C/FromGrin2.hs</span></a>
+<a class="sourceLine" id="cb7-14" data-line-number="14"><span class="ot">convertFunc ::</span> <span class="dt">Maybe</span> <span class="dt">FfiExport</span> <span class="ot">-&gt;</span> (<span class="dt">Atom</span>,<span class="dt">Lam</span>) <span class="ot">-&gt;</span> <span class="dt">C</span> [<span class="dt">Function</span>]</a>
+<a class="sourceLine" id="cb7-15" data-line-number="15">convertFunc ffie (n,as <span class="fu">:-&gt;</span> body) <span class="fu">=</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb7-16" data-line-number="16"><span class="co">--snip--</span></a>
+<a class="sourceLine" id="cb7-17" data-line-number="17">        mstub <span class="ot">&lt;-</span> <span class="kw">case</span> ffie <span class="kw">of</span></a>
+<a class="sourceLine" id="cb7-18" data-line-number="18">                <span class="dt">Nothing</span> <span class="ot">-&gt;</span> return []</a>
+<a class="sourceLine" id="cb7-19" data-line-number="19">                <span class="dt">Just</span> <span class="fu">~</span>(<span class="dt">FfiExport</span> cn <span class="dt">Safe</span> <span class="dt">CCall</span> argTys retTy) <span class="ot">-&gt;</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb7-20" data-line-number="20">                    newVars <span class="ot">&lt;-</span> mapM (liftM (name <span class="fu">.</span> show) <span class="fu">.</span> newVar <span class="fu">.</span> basicType') argTys</a>
+<a class="sourceLine" id="cb7-21" data-line-number="21"></a>
+<a class="sourceLine" id="cb7-22" data-line-number="22">                    <span class="kw">let</span> fnname2 <span class="fu">=</span> name cn</a>
+<a class="sourceLine" id="cb7-23" data-line-number="23">                        as2 <span class="fu">=</span> zip (newVars) (map basicType' argTys)</a>
+<a class="sourceLine" id="cb7-24" data-line-number="24">                        fr2 <span class="fu">=</span> basicType' retTy</a>
+<a class="sourceLine" id="cb7-25" data-line-number="25"></a>
+<a class="sourceLine" id="cb7-26" data-line-number="26">                    return [function fnname2 fr2 as2 [<span class="dt">Public</span>]</a>
+<a class="sourceLine" id="cb7-27" data-line-number="27">                                     (creturn <span class="fu">$</span> cast fr2 <span class="fu">$</span> functionCall fnname <span class="fu">$</span> (<span class="kw">if</span> fopts <span class="dt">FO.Jgc</span> <span class="kw">then</span> (variable (name <span class="st">&quot;saved_gc&quot;</span>)<span class="fu">:</span>) <span class="kw">else</span> id) <span class="fu">$</span></a>
+<a class="sourceLine" id="cb7-28" data-line-number="28">                                      zipWith cast (map snd as')</a>
+<a class="sourceLine" id="cb7-29" data-line-number="29">                                                   (map variable newVars))]</a>
+<a class="sourceLine" id="cb7-30" data-line-number="30"></a>
+<a class="sourceLine" id="cb7-31" data-line-number="31">        return (function fnname fr (mgct as') ats s <span class="fu">:</span> mstub)</a></code></pre></div>
 <h3 id="使用済みgcスタックとhaskellヒープを次回確保用にプール">使用済みGCスタックとHaskellヒープを次回確保用にプール</h3>
 <p>今のAjhcは通常イカのようにGCスタックとHaskellヒープを管理しているでゲソ。</p>
 <ul>
 <li>GCスタック: mallocで確保。サイズは1&lt;&lt;18エントリ</li>
 <li>Haskellヒープ: 1MBずつmegablockが補給される</li>
 </ul>
-<p>“_JHC_JGC_FIXED_MEGABLOCK&quot; defineが有効な場合、 GCスタックとHaskellヒープはどちらも固定サイズで唯一一つだけ確保されるのだったでゲソ。 少し冗長になるでゲソが、Cortex-M4に対応するにはイカのコンパイルフラグが必要になりそうでゲソ。</p>
+<p>&quot;_JHC_JGC_FIXED_MEGABLOCK&quot; defineが有効な場合、 GCスタックとHaskellヒープはどちらも固定サイズで唯一一つだけ確保されるのだったでゲソ。 少し冗長になるでゲソが、Cortex-M4に対応するにはイカのコンパイルフラグが必要になりそうでゲソ。</p>
 <ul>
-<li>“_JHC_JGC_GCSTACK_SIZE“: GCスタックのサイズ指定</li>
-<li>“_JHC_JGC_FIXEDNUM_GCSTACK“: GCスタックの個数(個数限定)</li>
-<li>“_JHC_JGC_MEGABLOCK_SHIFT“: megablockのサイズ指定</li>
-<li>“_JHC_JGC_BLOCK_SHIFT“: blockのサイズ指定</li>
-<li>“_JHC_JGC_FIXEDNUM_MEGABLOCK“: megablockの個数(個数限定)</li>
+<li>&quot;_JHC_JGC_GCSTACK_SIZE&quot;: GCスタックのサイズ指定</li>
+<li>&quot;_JHC_JGC_FIXEDNUM_GCSTACK&quot;: GCスタックの個数(個数限定)</li>
+<li>&quot;_JHC_JGC_MEGABLOCK_SHIFT&quot;: megablockのサイズ指定</li>
+<li>&quot;_JHC_JGC_BLOCK_SHIFT&quot;: blockのサイズ指定</li>
+<li>&quot;_JHC_JGC_FIXEDNUM_MEGABLOCK&quot;: megablockの個数(個数限定)</li>
 </ul>
-<p>“_JHC_JGC_FIXED_MEGABLOCK“フラグは意味が変更になってしまうので撤廃するでゲソ。</p>
+<p>&quot;_JHC_JGC_FIXED_MEGABLOCK&quot;フラグは意味が変更になってしまうので撤廃するでゲソ。</p>
 <p>また、GCスタックとHaskellヒープを動的に確保する場合も固定で確保する場合も Ajhcランタイム内部のリストにプールしておき、 要求された時にmallocを呼ばずにミューテターに渡せるようにしたいでゲソ。 GCスタックもmegablockも一つのエントリは固定サイズなので、 見分けがつかないはずでゲソ。</p>
 <h3 id="ランタイムのapi修正">ランタイムのAPI修正</h3>
 <p>今回の変更でstruct s_arenaを文脈毎に分割して持つことになるでゲソ。 そこで、AjhcランタイムのAPIもそれに合わせて修正が必要になるでゲソ。</p>
@@ -282,29 +282,29 @@ convertFunc ffie (n,as <span class="fu">:-&gt;</span> body) <span class="fu">=</
 </ul></li>
 </ul>
 <p>gc_new_foreignptrとかは対応しなくていいんだろうかちょっと不安でゲソ</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- File: ajhc/lib/jhc/Jhc/ForeignPtr.hs</span>
-foreign <span class="kw">import </span>safe ccall gc_malloc_foreignptr
-<span class="ot">    ::</span> <span class="dt">Word</span>     <span class="co">-- alignment in words</span>
-    <span class="ot">-&gt;</span> <span class="dt">Word</span>     <span class="co">-- size in words</span>
-    <span class="ot">-&gt;</span> <span class="dt">Bool</span>     <span class="co">-- false for plain foreignptrs, true for ones with finalizers.</span>
-    <span class="ot">-&gt;</span> <span class="dt">UIO</span> (<span class="dt">Bang_</span> (<span class="dt">ForeignPtr</span> a))
-
-foreign <span class="kw">import </span>safe ccall gc_new_foreignptr ::
-    <span class="dt">Ptr</span> a <span class="ot">-&gt;</span> <span class="dt">UIO</span> (<span class="dt">Bang_</span> (<span class="dt">ForeignPtr</span> a))
-
-foreign <span class="kw">import </span>unsafe ccall gc_add_foreignptr_finalizer
-<span class="ot">    ::</span> <span class="dt">Bang_</span> (<span class="dt">ForeignPtr</span> a)
-    <span class="ot">-&gt;</span> <span class="dt">FinalizerPtr</span> a
-    <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="co">-- File: ajhc/lib/jhc/Jhc/ForeignPtr.hs</span></a>
+<a class="sourceLine" id="cb8-2" data-line-number="2">foreign <span class="kw">import</span> safe ccall gc_malloc_foreignptr</a>
+<a class="sourceLine" id="cb8-3" data-line-number="3"><span class="ot">    ::</span> <span class="dt">Word</span>     <span class="co">-- alignment in words</span></a>
+<a class="sourceLine" id="cb8-4" data-line-number="4">    <span class="ot">-&gt;</span> <span class="dt">Word</span>     <span class="co">-- size in words</span></a>
+<a class="sourceLine" id="cb8-5" data-line-number="5">    <span class="ot">-&gt;</span> <span class="dt">Bool</span>     <span class="co">-- false for plain foreignptrs, true for ones with finalizers.</span></a>
+<a class="sourceLine" id="cb8-6" data-line-number="6">    <span class="ot">-&gt;</span> <span class="dt">UIO</span> (<span class="dt">Bang_</span> (<span class="dt">ForeignPtr</span> a))</a>
+<a class="sourceLine" id="cb8-7" data-line-number="7"></a>
+<a class="sourceLine" id="cb8-8" data-line-number="8">foreign <span class="kw">import</span> safe ccall gc_new_foreignptr ::</a>
+<a class="sourceLine" id="cb8-9" data-line-number="9">    <span class="dt">Ptr</span> a <span class="ot">-&gt;</span> <span class="dt">UIO</span> (<span class="dt">Bang_</span> (<span class="dt">ForeignPtr</span> a))</a>
+<a class="sourceLine" id="cb8-10" data-line-number="10"></a>
+<a class="sourceLine" id="cb8-11" data-line-number="11">foreign <span class="kw">import</span> unsafe ccall gc_add_foreignptr_finalizer</a>
+<a class="sourceLine" id="cb8-12" data-line-number="12"><span class="ot">    ::</span> <span class="dt">Bang_</span> (<span class="dt">ForeignPtr</span> a)</a>
+<a class="sourceLine" id="cb8-13" data-line-number="13">    <span class="ot">-&gt;</span> <span class="dt">FinalizerPtr</span> a</a>
+<a class="sourceLine" id="cb8-14" data-line-number="14">    <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</a></code></pre></div>
 <p>と、GCスタックへのポインタを渡していないライブラリがあるでゲソ。 そしてランタイムのGC側ではグローバル変数saved_gcからGCスタックを取り出しているでゲソ。</p>
-<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* File: ajhc/rts/rts/gc_jgc.c */</span>
-heap_t A_STD
-gc_new_foreignptr(HsPtr ptr) {
-        HsPtr *res = gc_array_alloc_atomic(saved_gc, <span class="dv">2</span>, SLAB_FLAG_FINALIZER);
-        res[<span class="dv">0</span>] = ptr;
-        res[<span class="dv">1</span>] = NULL;
-        <span class="cf">return</span> TO_SPTR(P_WHNF, res);
-}</code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb9-1" data-line-number="1"><span class="co">/* File: ajhc/rts/rts/gc_jgc.c */</span></a>
+<a class="sourceLine" id="cb9-2" data-line-number="2">heap_t A_STD</a>
+<a class="sourceLine" id="cb9-3" data-line-number="3">gc_new_foreignptr(HsPtr ptr) {</a>
+<a class="sourceLine" id="cb9-4" data-line-number="4">        HsPtr *res = gc_array_alloc_atomic(saved_gc, <span class="dv">2</span>, SLAB_FLAG_FINALIZER);</a>
+<a class="sourceLine" id="cb9-5" data-line-number="5">        res[<span class="dv">0</span>] = ptr;</a>
+<a class="sourceLine" id="cb9-6" data-line-number="6">        res[<span class="dv">1</span>] = NULL;</a>
+<a class="sourceLine" id="cb9-7" data-line-number="7">        <span class="cf">return</span> TO_SPTR(P_WHNF, res);</a>
+<a class="sourceLine" id="cb9-8" data-line-number="8">}</a></code></pre></div>
 <p>このように一旦GCスタックへのポインタの受け渡しが途切れる箇所がいくつかあり、それは</p>
 <ul>
 <li>gc_malloc_foreignptr</li>
@@ -387,117 +387,117 @@ lib/jhc/System/Mem.hs:foreign import ccall safe &quot;hs_perform_gc&quot; perfor
 <p><a href="https://github.com/ajhc/ajhc/commit/889d2cf5d557b9d5b41a318efa8237d487de4142">foreign import jhc_context ccall</a> というAjhc専用のimport種別を作成して、この種別が有効な場合にはC言語の関数にgcとarenaを引数渡しするようになったでゲソ。</p>
 <p>ところで <a href="http://www.haskell.org/onlinereport/haskell2010/haskellch8.html">Haskell 2010: 8 Foreign Function Interface</a> によると、hs_perform_gc関数には引数を取れない決まりでゲソ。 するとRTSをロックして次回s_alloc時にGCを実行するようなフラグをarenaに立ててやる必要がありそうでゲソ。 とりあえず生存しているコンテキストに対応するarenaに対して <a href="https://github.com/ajhc/ajhc/commit/fe31a9dd047ed0a564955a51ff51582f05f08b1f#L1L715">次回s_alloc呼び出しの際に強制GC実行</a> するようにしてみたでゲソ。</p>
 <p>さらにs_cacheがグローバル管理されているのもなんとかしたいでゲソ。 s_cacheの定義を新規structにまとめて、arenaの下にそのstructを配置すればなんとかなりそうじゃなイカ。</p>
-<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* File: ajhc/rts/rts/gc_jgc_internal.h */</span>
-<span class="kw">struct</span> s_cache {
-        SLIST_ENTRY(s_cache) next;
-        SLIST_HEAD(,s_block) blocks;
-        SLIST_HEAD(,s_block) full_blocks;
-        <span class="dt">unsigned</span> <span class="dt">char</span> color;
-        <span class="dt">unsigned</span> <span class="dt">char</span> size;
-        <span class="dt">unsigned</span> <span class="dt">char</span> num_ptrs;
-        <span class="dt">unsigned</span> <span class="dt">char</span> flags;
-        <span class="dt">unsigned</span> <span class="dt">short</span> num_entries;
-        <span class="kw">struct</span> s_arena *arena;
-<span class="pp">#if _JHC_PROFILE</span>
-        <span class="dt">unsigned</span> allocations;
-<span class="pp">#endif</span>
-};
-
-<span class="co">/* File: hs_main.c */</span>
-<span class="pp">#include </span><span class="im">&quot;jhc_rts_header.h&quot;</span>
-<span class="dt">static</span> <span class="kw">struct</span> s_cache *cCJhc_Prim_Prim_$x3a;
-<span class="dt">static</span> <span class="kw">struct</span> s_cache *cCJhc_Type_Basic_Just;
-<span class="co">/* snip */</span>
-<span class="dt">void</span> 
-jhc_hs_init(<span class="dt">void</span>)
-{
-        find_cache(&amp;cCJhc_Prim_Prim_$x3a,saved_arena,TO_BLOCKS(<span class="kw">sizeof</span>(<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a)),<span class="dv">2</span>);
-        find_cache(&amp;cCJhc_Type_Basic_Just,saved_arena,TO_BLOCKS(<span class="kw">sizeof</span>(<span class="kw">struct</span> sCJhc_Type_Basic_Just)),<span class="dv">1</span>);
-<span class="co">/* snip */</span>
-                    sptr_t v69834446 = MKLAZY(x6);
-                    {   gc_frame0(gc,<span class="dv">1</span>,v69834446);
-                        wptr_t x7 = s_alloc(gc,arena,cCJhc_Prim_Prim_$x3a);
-                        ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x7)-&gt;a1 = v106;
-                        ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x7)-&gt;a2 = v69834446;
-                        <span class="cf">return</span> x7;</code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb11-1" data-line-number="1"><span class="co">/* File: ajhc/rts/rts/gc_jgc_internal.h */</span></a>
+<a class="sourceLine" id="cb11-2" data-line-number="2"><span class="kw">struct</span> s_cache {</a>
+<a class="sourceLine" id="cb11-3" data-line-number="3">        SLIST_ENTRY(s_cache) next;</a>
+<a class="sourceLine" id="cb11-4" data-line-number="4">        SLIST_HEAD(,s_block) blocks;</a>
+<a class="sourceLine" id="cb11-5" data-line-number="5">        SLIST_HEAD(,s_block) full_blocks;</a>
+<a class="sourceLine" id="cb11-6" data-line-number="6">        <span class="dt">unsigned</span> <span class="dt">char</span> color;</a>
+<a class="sourceLine" id="cb11-7" data-line-number="7">        <span class="dt">unsigned</span> <span class="dt">char</span> size;</a>
+<a class="sourceLine" id="cb11-8" data-line-number="8">        <span class="dt">unsigned</span> <span class="dt">char</span> num_ptrs;</a>
+<a class="sourceLine" id="cb11-9" data-line-number="9">        <span class="dt">unsigned</span> <span class="dt">char</span> flags;</a>
+<a class="sourceLine" id="cb11-10" data-line-number="10">        <span class="dt">unsigned</span> <span class="dt">short</span> num_entries;</a>
+<a class="sourceLine" id="cb11-11" data-line-number="11">        <span class="kw">struct</span> s_arena *arena;</a>
+<a class="sourceLine" id="cb11-12" data-line-number="12"><span class="pp">#if _JHC_PROFILE</span></a>
+<a class="sourceLine" id="cb11-13" data-line-number="13">        <span class="dt">unsigned</span> allocations;</a>
+<a class="sourceLine" id="cb11-14" data-line-number="14"><span class="pp">#endif</span></a>
+<a class="sourceLine" id="cb11-15" data-line-number="15">};</a>
+<a class="sourceLine" id="cb11-16" data-line-number="16"></a>
+<a class="sourceLine" id="cb11-17" data-line-number="17"><span class="co">/* File: hs_main.c */</span></a>
+<a class="sourceLine" id="cb11-18" data-line-number="18"><span class="pp">#include </span><span class="im">&quot;jhc_rts_header.h&quot;</span></a>
+<a class="sourceLine" id="cb11-19" data-line-number="19"><span class="dt">static</span> <span class="kw">struct</span> s_cache *cCJhc_Prim_Prim_$x3a;</a>
+<a class="sourceLine" id="cb11-20" data-line-number="20"><span class="dt">static</span> <span class="kw">struct</span> s_cache *cCJhc_Type_Basic_Just;</a>
+<a class="sourceLine" id="cb11-21" data-line-number="21"><span class="co">/* snip */</span></a>
+<a class="sourceLine" id="cb11-22" data-line-number="22"><span class="dt">void</span> </a>
+<a class="sourceLine" id="cb11-23" data-line-number="23">jhc_hs_init(<span class="dt">void</span>)</a>
+<a class="sourceLine" id="cb11-24" data-line-number="24">{</a>
+<a class="sourceLine" id="cb11-25" data-line-number="25">        find_cache(&amp;cCJhc_Prim_Prim_$x3a,saved_arena,TO_BLOCKS(<span class="kw">sizeof</span>(<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a)),<span class="dv">2</span>);</a>
+<a class="sourceLine" id="cb11-26" data-line-number="26">        find_cache(&amp;cCJhc_Type_Basic_Just,saved_arena,TO_BLOCKS(<span class="kw">sizeof</span>(<span class="kw">struct</span> sCJhc_Type_Basic_Just)),<span class="dv">1</span>);</a>
+<a class="sourceLine" id="cb11-27" data-line-number="27"><span class="co">/* snip */</span></a>
+<a class="sourceLine" id="cb11-28" data-line-number="28">                    sptr_t v69834446 = MKLAZY(x6);</a>
+<a class="sourceLine" id="cb11-29" data-line-number="29">                    {   gc_frame0(gc,<span class="dv">1</span>,v69834446);</a>
+<a class="sourceLine" id="cb11-30" data-line-number="30">                        wptr_t x7 = s_alloc(gc,arena,cCJhc_Prim_Prim_$x3a);</a>
+<a class="sourceLine" id="cb11-31" data-line-number="31">                        ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x7)-&gt;a1 = v106;</a>
+<a class="sourceLine" id="cb11-32" data-line-number="32">                        ((<span class="kw">struct</span> sCJhc_Prim_Prim_$x3a*)x7)-&gt;a2 = v69834446;</a>
+<a class="sourceLine" id="cb11-33" data-line-number="33">                        <span class="cf">return</span> x7;</a></code></pre></div>
 <p>同様にランタイムにあるグローバルs_cacheも <a href="https://github.com/ajhc/ajhc/commit/2c898ff294f93a6bbd6ad58c7dc26ab2aa87d8d4">arenaの下に移動</a> したでゲソ。</p>
-<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">/* File: ajhc/rts/rts/gc_jgc.c */</span>
-<span class="co">// 7 to share caches with the first 7 tuples</span>
-<span class="pp">#define GC_STATIC_ARRAY_NUM 7</span>
-<span class="pp">#define GC_MAX_BLOCK_ENTRIES 150</span>
-
-<span class="dt">static</span> <span class="kw">struct</span> s_cache *array_caches[GC_STATIC_ARRAY_NUM];
-<span class="dt">static</span> <span class="kw">struct</span> s_cache *array_caches_atomic[GC_STATIC_ARRAY_NUM];</code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb12-1" data-line-number="1"><span class="co">/* File: ajhc/rts/rts/gc_jgc.c */</span></a>
+<a class="sourceLine" id="cb12-2" data-line-number="2"><span class="co">// 7 to share caches with the first 7 tuples</span></a>
+<a class="sourceLine" id="cb12-3" data-line-number="3"><span class="pp">#define GC_STATIC_ARRAY_NUM 7</span></a>
+<a class="sourceLine" id="cb12-4" data-line-number="4"><span class="pp">#define GC_MAX_BLOCK_ENTRIES 150</span></a>
+<a class="sourceLine" id="cb12-5" data-line-number="5"></a>
+<a class="sourceLine" id="cb12-6" data-line-number="6"><span class="dt">static</span> <span class="kw">struct</span> s_cache *array_caches[GC_STATIC_ARRAY_NUM];</a>
+<a class="sourceLine" id="cb12-7" data-line-number="7"><span class="dt">static</span> <span class="kw">struct</span> s_cache *array_caches_atomic[GC_STATIC_ARRAY_NUM];</a></code></pre></div>
 <h2 id="実験-pthreadを使ってtimingdelayをエミュレートしてみる">実験: pthreadを使ってTimingDelayをエミュレートしてみる</h2>
 <p>ハードウェア割り込みのエミュレートなので、forkOSは使わないでゲソがとにかくやってみるでゲソ。 …んんーーー <a href="https://github.com/ajhc/ajhc-dumpyard/tree/master/emulateTimingDelay">完成でゲソー!</a></p>
 <p>このプログラムはTimingとDelayの2つのスレッドが動作して、 Delayスレッドの待ち合わせをTimingスレッドが解除するでゲソ。 実行してみると3秒毎に経過時間がコンソールに印字されるはずでゲソ。</p>
 <p>まずC言語側から説明するでゲソ。 main関数はHaskellコードを実行する前にrun_timingDelayDecrement関数を新しいスレッドとして実行するでゲソ。 run_timingDelayDecrement関数は100ミリ秒毎にHaskellのtimingDelayDecrement関数を呼び出すでゲソ。 つまりこのスレッドはタイマー割り込みをエミュレーションしていることになるでゲソ。</p>
-<div class="sourceCode"><pre class="sourceCode c"><code class="sourceCode c"><span class="co">// main.c</span>
-<span class="dt">static</span> <span class="dt">uint32_t</span> TimingDelay = <span class="dv">0</span>;
-
-<span class="dt">uint32_t</span> *
-getTimingDelay()
-{
-        <span class="cf">return</span> &amp;TimingDelay;
-}
-
-<span class="dt">void</span> *run_timingDelayDecrement(<span class="dt">void</span> *p)
-{
-	<span class="cf">for</span> (;;) {
-<span class="pp">#define MILLI_SEC(N)  ((N) * 1000)</span>
-		usleep(MILLI_SEC(<span class="dv">100</span>));
-		timingDelayDecrement();
-	}
-	<span class="co">/* NOTREACHED */</span>
-	<span class="cf">return</span> NULL;
-}
-
-<span class="dt">int</span>
-main(<span class="dt">int</span> argc, <span class="dt">char</span> *argv[])
-{
-	<span class="dt">int</span> err;
-
-        hs_init(&amp;argc,&amp;argv);
-        <span class="cf">if</span> (jhc_setjmp(&amp;jhc_uncaught)) {
-                jhc_error(<span class="st">&quot;Uncaught Exception&quot;</span>);
-        } <span class="cf">else</span> {
-		forkOS_createThread(&amp;run_timingDelayDecrement, NULL, &amp;err);
-                _amain();
-	}
-        hs_exit();
-        <span class="cf">return</span> <span class="dv">0</span>;
-}</code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb13-1" data-line-number="1"><span class="co">// main.c</span></a>
+<a class="sourceLine" id="cb13-2" data-line-number="2"><span class="dt">static</span> <span class="dt">uint32_t</span> TimingDelay = <span class="dv">0</span>;</a>
+<a class="sourceLine" id="cb13-3" data-line-number="3"></a>
+<a class="sourceLine" id="cb13-4" data-line-number="4"><span class="dt">uint32_t</span> *</a>
+<a class="sourceLine" id="cb13-5" data-line-number="5">getTimingDelay()</a>
+<a class="sourceLine" id="cb13-6" data-line-number="6">{</a>
+<a class="sourceLine" id="cb13-7" data-line-number="7">        <span class="cf">return</span> &amp;TimingDelay;</a>
+<a class="sourceLine" id="cb13-8" data-line-number="8">}</a>
+<a class="sourceLine" id="cb13-9" data-line-number="9"></a>
+<a class="sourceLine" id="cb13-10" data-line-number="10"><span class="dt">void</span> *run_timingDelayDecrement(<span class="dt">void</span> *p)</a>
+<a class="sourceLine" id="cb13-11" data-line-number="11">{</a>
+<a class="sourceLine" id="cb13-12" data-line-number="12">	<span class="cf">for</span> (;;) {</a>
+<a class="sourceLine" id="cb13-13" data-line-number="13"><span class="pp">#define MILLI_SEC(N)  ((N) * 1000)</span></a>
+<a class="sourceLine" id="cb13-14" data-line-number="14">		usleep(MILLI_SEC(<span class="dv">100</span>));</a>
+<a class="sourceLine" id="cb13-15" data-line-number="15">		timingDelayDecrement();</a>
+<a class="sourceLine" id="cb13-16" data-line-number="16">	}</a>
+<a class="sourceLine" id="cb13-17" data-line-number="17">	<span class="co">/* NOTREACHED */</span></a>
+<a class="sourceLine" id="cb13-18" data-line-number="18">	<span class="cf">return</span> NULL;</a>
+<a class="sourceLine" id="cb13-19" data-line-number="19">}</a>
+<a class="sourceLine" id="cb13-20" data-line-number="20"></a>
+<a class="sourceLine" id="cb13-21" data-line-number="21"><span class="dt">int</span></a>
+<a class="sourceLine" id="cb13-22" data-line-number="22">main(<span class="dt">int</span> argc, <span class="dt">char</span> *argv[])</a>
+<a class="sourceLine" id="cb13-23" data-line-number="23">{</a>
+<a class="sourceLine" id="cb13-24" data-line-number="24">	<span class="dt">int</span> err;</a>
+<a class="sourceLine" id="cb13-25" data-line-number="25"></a>
+<a class="sourceLine" id="cb13-26" data-line-number="26">        hs_init(&amp;argc,&amp;argv);</a>
+<a class="sourceLine" id="cb13-27" data-line-number="27">        <span class="cf">if</span> (jhc_setjmp(&amp;jhc_uncaught)) {</a>
+<a class="sourceLine" id="cb13-28" data-line-number="28">                jhc_error(<span class="st">&quot;Uncaught Exception&quot;</span>);</a>
+<a class="sourceLine" id="cb13-29" data-line-number="29">        } <span class="cf">else</span> {</a>
+<a class="sourceLine" id="cb13-30" data-line-number="30">		forkOS_createThread(&amp;run_timingDelayDecrement, NULL, &amp;err);</a>
+<a class="sourceLine" id="cb13-31" data-line-number="31">                _amain();</a>
+<a class="sourceLine" id="cb13-32" data-line-number="32">	}</a>
+<a class="sourceLine" id="cb13-33" data-line-number="33">        hs_exit();</a>
+<a class="sourceLine" id="cb13-34" data-line-number="34">        <span class="cf">return</span> <span class="dv">0</span>;</a>
+<a class="sourceLine" id="cb13-35" data-line-number="35">}</a></code></pre></div>
 <p>今度はHaskell側でゲソ。 先のrun_timingDelayDecrementスレッドから呼び出されるtimingDelayDecrement関数は単にポインタの先にある uint32_tの値を減算するだけでゲソ。 一方、Haskellのmain関数はmyDelay関数を繰り返し呼び出していて、 さっきのuint32_tに待ち合わせ時間を書き込んだ後、その値が0になるのをループで待ち合わせるでゲソ。</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE ForeignFunctionInterface #-}</span>
-<span class="kw">import </span><span class="dt">Data.Word</span>
-<span class="kw">import </span><span class="dt">Control.Monad</span>
-<span class="kw">import </span><span class="dt">Foreign.Ptr</span>
-<span class="kw">import </span><span class="dt">Foreign.Storable</span>
-
-<span class="co">-- Timing</span>
-foreign <span class="kw">import </span>ccall &quot;c_extern.h getTimingDelay&quot; c_gettimingDelay :: <span class="dt">IO</span> (<span class="dt">Ptr</span> <span class="dt">Word32</span>)
-
-<span class="ot">timingDelayDecrement ::</span> <span class="dt">IO</span> ()
-timingDelayDecrement <span class="fu">=</span> <span class="kw">do</span>
-  p <span class="ot">&lt;-</span> c_gettimingDelay
-  i <span class="ot">&lt;-</span> peek p
-  when (i <span class="fu">&gt;=</span> <span class="dv">0</span>) <span class="fu">$</span> poke p (i <span class="fu">-</span> <span class="dv">1</span>)
-
-foreign export ccall <span class="st">&quot;timingDelayDecrement&quot;</span><span class="ot"> timingDelayDecrement ::</span> <span class="dt">IO</span> ()
-
-<span class="co">-- Delay</span>
-<span class="ot">myDelay ::</span> <span class="dt">Word32</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
-myDelay nTime <span class="fu">=</span> <span class="kw">do</span>
-  p <span class="ot">&lt;-</span> c_gettimingDelay
-  poke p nTime
-  <span class="kw">let</span><span class="ot"> while ::</span> <span class="dt">IO</span> ()
-      while <span class="fu">=</span> <span class="kw">do</span>
-        p' <span class="ot">&lt;-</span> c_gettimingDelay
-        i <span class="ot">&lt;-</span> peek p'
-        <span class="kw">if</span> (i <span class="fu">&gt;</span> <span class="dv">0</span>) <span class="kw">then</span> while <span class="kw">else</span> return ()
-  while
-
-foreign <span class="kw">import </span>ccall &quot;c_extern.h getTime&quot; c_getTime :: <span class="dt">IO</span> <span class="dt">Word64</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb14-1" data-line-number="1"><span class="ot">{-# LANGUAGE ForeignFunctionInterface #-}</span></a>
+<a class="sourceLine" id="cb14-2" data-line-number="2"><span class="kw">import</span> <span class="dt">Data.Word</span></a>
+<a class="sourceLine" id="cb14-3" data-line-number="3"><span class="kw">import</span> <span class="dt">Control.Monad</span></a>
+<a class="sourceLine" id="cb14-4" data-line-number="4"><span class="kw">import</span> <span class="dt">Foreign.Ptr</span></a>
+<a class="sourceLine" id="cb14-5" data-line-number="5"><span class="kw">import</span> <span class="dt">Foreign.Storable</span></a>
+<a class="sourceLine" id="cb14-6" data-line-number="6"></a>
+<a class="sourceLine" id="cb14-7" data-line-number="7"><span class="co">-- Timing</span></a>
+<a class="sourceLine" id="cb14-8" data-line-number="8">foreign <span class="kw">import</span> ccall &quot;c_extern.h getTimingDelay&quot; c_gettimingDelay :: <span class="dt">IO</span> (<span class="dt">Ptr</span> <span class="dt">Word32</span>)</a>
+<a class="sourceLine" id="cb14-9" data-line-number="9"></a>
+<a class="sourceLine" id="cb14-10" data-line-number="10"><span class="ot">timingDelayDecrement ::</span> <span class="dt">IO</span> ()</a>
+<a class="sourceLine" id="cb14-11" data-line-number="11">timingDelayDecrement <span class="fu">=</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb14-12" data-line-number="12">  p <span class="ot">&lt;-</span> c_gettimingDelay</a>
+<a class="sourceLine" id="cb14-13" data-line-number="13">  i <span class="ot">&lt;-</span> peek p</a>
+<a class="sourceLine" id="cb14-14" data-line-number="14">  when (i <span class="fu">&gt;=</span> <span class="dv">0</span>) <span class="fu">$</span> poke p (i <span class="fu">-</span> <span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb14-15" data-line-number="15"></a>
+<a class="sourceLine" id="cb14-16" data-line-number="16">foreign export ccall <span class="st">&quot;timingDelayDecrement&quot;</span><span class="ot"> timingDelayDecrement ::</span> <span class="dt">IO</span> ()</a>
+<a class="sourceLine" id="cb14-17" data-line-number="17"></a>
+<a class="sourceLine" id="cb14-18" data-line-number="18"><span class="co">-- Delay</span></a>
+<a class="sourceLine" id="cb14-19" data-line-number="19"><span class="ot">myDelay ::</span> <span class="dt">Word32</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</a>
+<a class="sourceLine" id="cb14-20" data-line-number="20">myDelay nTime <span class="fu">=</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb14-21" data-line-number="21">  p <span class="ot">&lt;-</span> c_gettimingDelay</a>
+<a class="sourceLine" id="cb14-22" data-line-number="22">  poke p nTime</a>
+<a class="sourceLine" id="cb14-23" data-line-number="23">  <span class="kw">let</span><span class="ot"> while ::</span> <span class="dt">IO</span> ()</a>
+<a class="sourceLine" id="cb14-24" data-line-number="24">      while <span class="fu">=</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb14-25" data-line-number="25">        p' <span class="ot">&lt;-</span> c_gettimingDelay</a>
+<a class="sourceLine" id="cb14-26" data-line-number="26">        i <span class="ot">&lt;-</span> peek p'</a>
+<a class="sourceLine" id="cb14-27" data-line-number="27">        <span class="kw">if</span> (i <span class="fu">&gt;</span> <span class="dv">0</span>) <span class="kw">then</span> while <span class="kw">else</span> return ()</a>
+<a class="sourceLine" id="cb14-28" data-line-number="28">  while</a>
+<a class="sourceLine" id="cb14-29" data-line-number="29"></a>
+<a class="sourceLine" id="cb14-30" data-line-number="30">foreign <span class="kw">import</span> ccall &quot;c_extern.h getTime&quot; c_getTime :: <span class="dt">IO</span> <span class="dt">Word64</span></a></code></pre></div>
 <p>これでスレッドの波をすいーいすいーじゃなイカー。</p>
 <p>
   <div id="disqus_thread"></div>
@@ -530,7 +530,7 @@ foreign <span class="kw">import </span>ccall &quot;c_extern.h getTime&quot; c_ge
         <br>
         Metasepi project is supported by
         <a href="https://www.shinkawa.com/en/"><img alt="Shinkawa Ltd." style="border-width:0" src="../img/shinkawa_logo.png" /></a> ×
-        <a href="http://www.st.com/"><img alt="STMicroelectronics" style="border-width:0" src="../img/stlogo_x25.png" /></a> ×
+        <a href="http://www.kyushu-u.ac.jp/en/"><img alt="KYUSHU UNIVERSITY" style="border-width:0" src="../img/qlogo_x25.png" /></a> ×
         <a href="http://www.metasepi-design.com/"><img alt="METASEPI DESIGN" style="border-width:0" src="../img/metasepi_design_logo_82x25.png" /></a> ×
         <a href="../past-supporters.html">Past Supporters</a>
       </p>

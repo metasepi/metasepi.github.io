@@ -68,10 +68,7 @@
 </ul>
 <hr>
 <h2 id="発端">発端</h2>
-<div class="figure">
-<img src="../img/20130213-nomore_camlp4.png" />
-
-</div>
+<p><img src="../img/20130213-nomore_camlp4.png" /></p>
 <p><a href="http://togetter.com/li/450580">ocamloptを読むことになりました。 - Togetter</a></p>
 <p>Camlp4だけはこわいんでゲソ… 逃げるしかないでゲソ。</p>
 <p>考えてみると、確かにアラフラにはjhcを採用する予定でゲソが、 ひょっとしたらこのデザインに致命的な欠陥が見つかる可能性も高いでゲソ。 その場合、OCamlは代替案として大変有望でゲソ。 今のうちに調べておいて損はないんじゃなイカ？</p>
@@ -203,103 +200,103 @@ sigsetjmp(caml_termination_jmpbuf.buf, 0); /* 例外かな？ */
    2181       8      16    2205     89d weak.o (ex /usr/local/lib/ocaml/libasmrun.a)</code></pre>
 <h2 id="コンパイルパイプラインについて">コンパイルパイプラインについて</h2>
 <p>まずはコールグラフを書いてみたでゲソ。</p>
-<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml">main
-<span class="dt">Arg</span>.parse (Arch.command_line_options @ Options.<span class="dt">list</span>) anonymous usage;
-=&gt; process_file <span class="dt">Format</span>.err_formatter
-   =&gt; process_implementation_file ppf name
-      =&gt; Optcompile.implementation ppf name opref <span class="co">(* &lt;= コンパイルパイプライン本体 *)</span>
-         <span class="kw">let</span> (++) x f = f x <span class="kw">in</span>
-         <span class="kw">let</span> (+++) (x, y) f = (x, f y) <span class="kw">in</span>
-         <span class="kw">let</span> inputfile = Pparse.preprocess sourcefile <span class="kw">in</span>
-         Pparse.file ppf inputfile Parse.implementation ast_impl_magic_number
-             <span class="co">(* :: Parsetree.structure *)</span>
-         ++ print_if ppf Clflags.dump_parsetree Printast.implementation
-             <span class="co">(* :: Parsetree.structure -&gt; Parsetree.structure *)</span>
-         ++ Typemod.type_implementation sourcefile outputprefix modulename env
-             <span class="co">(* :: Parsetree.structure -&gt; Typedtree.structure * Typedtree.module_coercion *)</span>
-         ++ Translmod.transl_store_implementation modulename
-             <span class="co">(* :: Typedtree.structure * Typedtree.module_coercion -&gt; int * Lambda.lambda *)</span>
-         +++ print_if ppf Clflags.dump_rawlambda Printlambda.lambda
-             <span class="co">(* :: Lambda.lambda -&gt; Lambda.lambda *)</span>
-         +++ Simplif.simplify_lambda
-             <span class="co">(* :: Lambda.lambda -&gt; Lambda.lambda *)</span>
-         +++ print_if ppf Clflags.dump_lambda Printlambda.lambda
-             <span class="co">(* :: Lambda.lambda -&gt; Lambda.lambda *)</span>
-         ++ Asmgen.compile_implementation outputprefix ppf;
-             <span class="co">(* :: int * Lambda.lambda -&gt; unit *)</span>
-         Compilenv.save_unit_info cmxfile; <span class="co">(* &lt;= コンパイル済みcurrent_unitをファイル書き込み *)</span>
-=&gt; Asmlink.link ppf (<span class="dt">List</span>.rev !objfiles) target;
-   make_startup_file ppf startup units_tolink; <span class="co">(* &lt;= helloworld.startup.sファイル生成 *)</span>
-   =&gt; Proc.assemble_file startup startup_obj
-      Ccomp.command (Config.asm ^ <span class="st">&quot; -o &quot;</span> ^
-        <span class="dt">Filename</span>.quote outfile ^ <span class="st">&quot; &quot;</span> ^ <span class="dt">Filename</span>.quote infile)
-      <span class="co">(* gasでオブジェクトファイルに *)</span>
-   call_linker (<span class="dt">List</span>.map object_file_name objfiles) startup_obj output_name;
-   =&gt; Ccomp.call_linker mode output_name files c_lib;</code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><a class="sourceLine" id="cb5-1" data-line-number="1">main</a>
+<a class="sourceLine" id="cb5-2" data-line-number="2"><span class="dt">Arg</span>.parse (Arch.command_line_options @ Options.<span class="dt">list</span>) anonymous usage;</a>
+<a class="sourceLine" id="cb5-3" data-line-number="3">=&gt; process_file <span class="dt">Format</span>.err_formatter</a>
+<a class="sourceLine" id="cb5-4" data-line-number="4">   =&gt; process_implementation_file ppf name</a>
+<a class="sourceLine" id="cb5-5" data-line-number="5">      =&gt; Optcompile.implementation ppf name opref <span class="co">(* &lt;= コンパイルパイプライン本体 *)</span></a>
+<a class="sourceLine" id="cb5-6" data-line-number="6">         <span class="kw">let</span> (++) x f = f x <span class="kw">in</span></a>
+<a class="sourceLine" id="cb5-7" data-line-number="7">         <span class="kw">let</span> (+++) (x, y) f = (x, f y) <span class="kw">in</span></a>
+<a class="sourceLine" id="cb5-8" data-line-number="8">         <span class="kw">let</span> inputfile = Pparse.preprocess sourcefile <span class="kw">in</span></a>
+<a class="sourceLine" id="cb5-9" data-line-number="9">         Pparse.file ppf inputfile Parse.implementation ast_impl_magic_number</a>
+<a class="sourceLine" id="cb5-10" data-line-number="10">             <span class="co">(* :: Parsetree.structure *)</span></a>
+<a class="sourceLine" id="cb5-11" data-line-number="11">         ++ print_if ppf Clflags.dump_parsetree Printast.implementation</a>
+<a class="sourceLine" id="cb5-12" data-line-number="12">             <span class="co">(* :: Parsetree.structure -&gt; Parsetree.structure *)</span></a>
+<a class="sourceLine" id="cb5-13" data-line-number="13">         ++ Typemod.type_implementation sourcefile outputprefix modulename env</a>
+<a class="sourceLine" id="cb5-14" data-line-number="14">             <span class="co">(* :: Parsetree.structure -&gt; Typedtree.structure * Typedtree.module_coercion *)</span></a>
+<a class="sourceLine" id="cb5-15" data-line-number="15">         ++ Translmod.transl_store_implementation modulename</a>
+<a class="sourceLine" id="cb5-16" data-line-number="16">             <span class="co">(* :: Typedtree.structure * Typedtree.module_coercion -&gt; int * Lambda.lambda *)</span></a>
+<a class="sourceLine" id="cb5-17" data-line-number="17">         +++ print_if ppf Clflags.dump_rawlambda Printlambda.lambda</a>
+<a class="sourceLine" id="cb5-18" data-line-number="18">             <span class="co">(* :: Lambda.lambda -&gt; Lambda.lambda *)</span></a>
+<a class="sourceLine" id="cb5-19" data-line-number="19">         +++ Simplif.simplify_lambda</a>
+<a class="sourceLine" id="cb5-20" data-line-number="20">             <span class="co">(* :: Lambda.lambda -&gt; Lambda.lambda *)</span></a>
+<a class="sourceLine" id="cb5-21" data-line-number="21">         +++ print_if ppf Clflags.dump_lambda Printlambda.lambda</a>
+<a class="sourceLine" id="cb5-22" data-line-number="22">             <span class="co">(* :: Lambda.lambda -&gt; Lambda.lambda *)</span></a>
+<a class="sourceLine" id="cb5-23" data-line-number="23">         ++ Asmgen.compile_implementation outputprefix ppf;</a>
+<a class="sourceLine" id="cb5-24" data-line-number="24">             <span class="co">(* :: int * Lambda.lambda -&gt; unit *)</span></a>
+<a class="sourceLine" id="cb5-25" data-line-number="25">         Compilenv.save_unit_info cmxfile; <span class="co">(* &lt;= コンパイル済みcurrent_unitをファイル書き込み *)</span></a>
+<a class="sourceLine" id="cb5-26" data-line-number="26">=&gt; Asmlink.link ppf (<span class="dt">List</span>.rev !objfiles) target;</a>
+<a class="sourceLine" id="cb5-27" data-line-number="27">   make_startup_file ppf startup units_tolink; <span class="co">(* &lt;= helloworld.startup.sファイル生成 *)</span></a>
+<a class="sourceLine" id="cb5-28" data-line-number="28">   =&gt; Proc.assemble_file startup startup_obj</a>
+<a class="sourceLine" id="cb5-29" data-line-number="29">      Ccomp.command (Config.asm ^ <span class="st">&quot; -o &quot;</span> ^</a>
+<a class="sourceLine" id="cb5-30" data-line-number="30">        <span class="dt">Filename</span>.quote outfile ^ <span class="st">&quot; &quot;</span> ^ <span class="dt">Filename</span>.quote infile)</a>
+<a class="sourceLine" id="cb5-31" data-line-number="31">      <span class="co">(* gasでオブジェクトファイルに *)</span></a>
+<a class="sourceLine" id="cb5-32" data-line-number="32">   call_linker (<span class="dt">List</span>.map object_file_name objfiles) startup_obj output_name;</a>
+<a class="sourceLine" id="cb5-33" data-line-number="33">   =&gt; Ccomp.call_linker mode output_name files c_lib;</a></code></pre></div>
 <p>少し混乱しやすいでゲソが、 Argモジュールは単にコマンド引数を解析するだけでなく、 <a href="http://ocaml.jp/Arg">標準ライブラリArgモジュール</a> にある通り、anonymous関数を引数を適用するんでゲソ。</p>
 <p>Optcompile.implementation関数がコンパイルパイプラインの本体で、 Haskellのdoと比較すると、 ++ が &gt;&gt; で、 +++ が &gt;&gt;= みたいな感じでゲソ。 あくまで感じであってモナドとかそんな高尚なもんじゃないでゲソ。 つまり内側から外側に向かって処理が進むようでゲソ。 最初ギョっとするでゲソが、慣れれば読みやすいでゲソ。 print_ifは無視できるので、コンパイルパイプラインを抜き出すと…</p>
-<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">let</span> inputfile = Pparse.preprocess sourcefile <span class="kw">in</span>
-Pparse.file ppf inputfile Parse.implementation ast_impl_magic_number
-    <span class="co">(* :: Parsetree.structure *)</span>
-++ Typemod.type_implementation sourcefile outputprefix modulename env
-    <span class="co">(* :: Parsetree.structure -&gt; Typedtree.structure * Typedtree.module_coercion *)</span>
-++ Translmod.transl_store_implementation modulename
-    <span class="co">(* :: Typedtree.structure * Typedtree.module_coercion -&gt; int * Lambda.lambda *)</span>
-+++ Simplif.simplify_lambda
-    <span class="co">(* :: Lambda.lambda -&gt; Lambda.lambda *)</span>
-++ Asmgen.compile_implementation outputprefix ppf;
-    <span class="co">(* :: int * Lambda.lambda -&gt; unit *)</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><a class="sourceLine" id="cb6-1" data-line-number="1"><span class="kw">let</span> inputfile = Pparse.preprocess sourcefile <span class="kw">in</span></a>
+<a class="sourceLine" id="cb6-2" data-line-number="2">Pparse.file ppf inputfile Parse.implementation ast_impl_magic_number</a>
+<a class="sourceLine" id="cb6-3" data-line-number="3">    <span class="co">(* :: Parsetree.structure *)</span></a>
+<a class="sourceLine" id="cb6-4" data-line-number="4">++ Typemod.type_implementation sourcefile outputprefix modulename env</a>
+<a class="sourceLine" id="cb6-5" data-line-number="5">    <span class="co">(* :: Parsetree.structure -&gt; Typedtree.structure * Typedtree.module_coercion *)</span></a>
+<a class="sourceLine" id="cb6-6" data-line-number="6">++ Translmod.transl_store_implementation modulename</a>
+<a class="sourceLine" id="cb6-7" data-line-number="7">    <span class="co">(* :: Typedtree.structure * Typedtree.module_coercion -&gt; int * Lambda.lambda *)</span></a>
+<a class="sourceLine" id="cb6-8" data-line-number="8">+++ Simplif.simplify_lambda</a>
+<a class="sourceLine" id="cb6-9" data-line-number="9">    <span class="co">(* :: Lambda.lambda -&gt; Lambda.lambda *)</span></a>
+<a class="sourceLine" id="cb6-10" data-line-number="10">++ Asmgen.compile_implementation outputprefix ppf;</a>
+<a class="sourceLine" id="cb6-11" data-line-number="11">    <span class="co">(* :: int * Lambda.lambda -&gt; unit *)</span></a></code></pre></div>
 <p>それでは、このコンパイルパイプラインに注目して再度コールグラフを書いてみようじゃなイカ。</p>
-<div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml">Optcompile.implementation ppf name opref
-=&gt; <span class="kw">let</span> inputfile = Pparse.preprocess sourcefile <span class="kw">in</span>
-   <span class="kw">let</span> comm = <span class="dt">Printf</span>.sprintf <span class="st">&quot;%s %s &gt; %s&quot;</span> pp (<span class="dt">Filename</span>.quote sourcefile) tmpfile <span class="kw">in</span>
-   Ccomp.command comm <span class="co">(* 指定されたプリプロセッサコマンドにかける *)</span>
-=&gt; Pparse.file ppf inputfile Parse.implementation ast_impl_magic_number
-   Location.input_name := inputfile;
-   <span class="kw">let</span> lexbuf = <span class="dt">Lexing</span>.from_channel ic <span class="kw">in</span>
-   Location.init lexbuf inputfile;
-   =&gt; Parse.implementation lexbuf
-      =&gt; wrap Parser.implementation <span class="co">(* パーサ本体 *)</span>
-=&gt; ++ Typemod.type_implementation sourcefile outputprefix modulename env
-   <span class="kw">let</span> (str, sg, finalenv) = type_structure initial_env ast Location.none <span class="kw">in</span>
-   <span class="kw">let</span> simple_sg = simplify_signature sg <span class="kw">in</span>
-   check_nongen_schemes finalenv str.str_items;
-   normalize_signature finalenv simple_sg;
-   <span class="kw">let</span> coercion = Includemod.compunit sourcefile sg <span class="st">&quot;(inferred signature)&quot;</span> simple_sg <span class="kw">in</span>
-   Typecore.force_delayed_checks (); <span class="co">(* 型推論の本体 *)</span>
-   (str, coercion) <span class="co">(* :: Typedtree.structure * Typedtree.module_coercion *)</span>
-=&gt; ++ Translmod.transl_store_implementation modulename
-   =&gt; transl_store_gen module_name (str, restr) <span class="kw">false</span>
-      <span class="kw">let</span> (map, prims, size) = build_ident_map restr (defined_idents str) <span class="kw">in</span>
-      <span class="kw">let</span> f = <span class="kw">function</span>
-        | [ { str_desc = Tstr_eval expr } ] <span class="kw">when</span> topl -&gt;
-            <span class="kw">assert</span> (size = <span class="dv">0</span>);
-            subst_lambda !transl_store_subst (transl_exp expr)
-        | str -&gt; transl_store_structure module_id map prims str <span class="kw">in</span>
-      transl_store_label_init module_id size f str
-      <span class="co">(* λ項に変換してるらしい、返値のintはサイズみたい *)</span>
-=&gt; +++ Simplif.simplify_lambda
-   =&gt; <span class="kw">let</span> lam = simplify_exits lam <span class="co">(* なんだろう？ *)</span>
-   =&gt; simplify_lets lam
-      <span class="co">(* 最適化。だいたい以下？</span>
-<span class="co">         * コンパイル時β簡約</span>
-<span class="co">         * 未使用のletを削除。またlet参照を値にする *)</span>
-=&gt; ++ Asmgen.compile_implementation outputprefix ppf;
-   <span class="co">(* λ項からアセンブリコードへ *)</span>
-   Emit.begin_assembly(); <span class="co">(* アセンブラファイルのヘッダを書き込む *)</span>
-   =&gt; Closure.intro size lam <span class="co">(* :: Clambda.ulambda *)</span>
-      <span class="kw">let</span> (ulam, approx) = close Tbl.empty Tbl.empty lam <span class="kw">in</span> ulam
-      <span class="co">(* アンカリー化、直接呼び出し *)</span>
-   ++ Cmmgen.compunit size <span class="co">(* :: Clambda.ulambda -&gt; Cmm.phrase list *)</span>
-   <span class="co">(* λ項からC--へ *)</span>
-   ++ <span class="dt">List</span>.iter (compile_phrase ppf) <span class="co">(* :: Cmm.phrase list -&gt; unit *)</span>
-   compile_phrase ppf
-     (Cmmgen.reference_symbols
-        (<span class="dt">List</span>.filter (<span class="kw">fun</span> s -&gt; s &lt;&gt; <span class="st">&quot;&quot;</span> &amp;&amp; s.[<span class="dv">0</span>] &lt;&gt; <span class="ch">'%'</span>)
-           (<span class="dt">List</span>.map Primitive.native_name !Translmod.primitive_declarations))
-     ); <span class="co">(* 関数とデータをアセンブラファイルに書き込む *)</span>
-   Emit.end_assembly(); <span class="co">(* アセンブラファイルのフッタを書き込む *)</span>
-   Proc.assemble_file asmfile (prefixname ^ ext_obj) <span class="co">(* gasでオブジェクトファイルに *)</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><a class="sourceLine" id="cb7-1" data-line-number="1">Optcompile.implementation ppf name opref</a>
+<a class="sourceLine" id="cb7-2" data-line-number="2">=&gt; <span class="kw">let</span> inputfile = Pparse.preprocess sourcefile <span class="kw">in</span></a>
+<a class="sourceLine" id="cb7-3" data-line-number="3">   <span class="kw">let</span> comm = <span class="dt">Printf</span>.sprintf <span class="st">&quot;%s %s &gt; %s&quot;</span> pp (<span class="dt">Filename</span>.quote sourcefile) tmpfile <span class="kw">in</span></a>
+<a class="sourceLine" id="cb7-4" data-line-number="4">   Ccomp.command comm <span class="co">(* 指定されたプリプロセッサコマンドにかける *)</span></a>
+<a class="sourceLine" id="cb7-5" data-line-number="5">=&gt; Pparse.file ppf inputfile Parse.implementation ast_impl_magic_number</a>
+<a class="sourceLine" id="cb7-6" data-line-number="6">   Location.input_name := inputfile;</a>
+<a class="sourceLine" id="cb7-7" data-line-number="7">   <span class="kw">let</span> lexbuf = <span class="dt">Lexing</span>.from_channel ic <span class="kw">in</span></a>
+<a class="sourceLine" id="cb7-8" data-line-number="8">   Location.init lexbuf inputfile;</a>
+<a class="sourceLine" id="cb7-9" data-line-number="9">   =&gt; Parse.implementation lexbuf</a>
+<a class="sourceLine" id="cb7-10" data-line-number="10">      =&gt; wrap Parser.implementation <span class="co">(* パーサ本体 *)</span></a>
+<a class="sourceLine" id="cb7-11" data-line-number="11">=&gt; ++ Typemod.type_implementation sourcefile outputprefix modulename env</a>
+<a class="sourceLine" id="cb7-12" data-line-number="12">   <span class="kw">let</span> (str, sg, finalenv) = type_structure initial_env ast Location.none <span class="kw">in</span></a>
+<a class="sourceLine" id="cb7-13" data-line-number="13">   <span class="kw">let</span> simple_sg = simplify_signature sg <span class="kw">in</span></a>
+<a class="sourceLine" id="cb7-14" data-line-number="14">   check_nongen_schemes finalenv str.str_items;</a>
+<a class="sourceLine" id="cb7-15" data-line-number="15">   normalize_signature finalenv simple_sg;</a>
+<a class="sourceLine" id="cb7-16" data-line-number="16">   <span class="kw">let</span> coercion = Includemod.compunit sourcefile sg <span class="st">&quot;(inferred signature)&quot;</span> simple_sg <span class="kw">in</span></a>
+<a class="sourceLine" id="cb7-17" data-line-number="17">   Typecore.force_delayed_checks (); <span class="co">(* 型推論の本体 *)</span></a>
+<a class="sourceLine" id="cb7-18" data-line-number="18">   (str, coercion) <span class="co">(* :: Typedtree.structure * Typedtree.module_coercion *)</span></a>
+<a class="sourceLine" id="cb7-19" data-line-number="19">=&gt; ++ Translmod.transl_store_implementation modulename</a>
+<a class="sourceLine" id="cb7-20" data-line-number="20">   =&gt; transl_store_gen module_name (str, restr) <span class="kw">false</span></a>
+<a class="sourceLine" id="cb7-21" data-line-number="21">      <span class="kw">let</span> (map, prims, size) = build_ident_map restr (defined_idents str) <span class="kw">in</span></a>
+<a class="sourceLine" id="cb7-22" data-line-number="22">      <span class="kw">let</span> f = <span class="kw">function</span></a>
+<a class="sourceLine" id="cb7-23" data-line-number="23">        | [ { str_desc = Tstr_eval expr } ] <span class="kw">when</span> topl -&gt;</a>
+<a class="sourceLine" id="cb7-24" data-line-number="24">            <span class="kw">assert</span> (size = <span class="dv">0</span>);</a>
+<a class="sourceLine" id="cb7-25" data-line-number="25">            subst_lambda !transl_store_subst (transl_exp expr)</a>
+<a class="sourceLine" id="cb7-26" data-line-number="26">        | str -&gt; transl_store_structure module_id map prims str <span class="kw">in</span></a>
+<a class="sourceLine" id="cb7-27" data-line-number="27">      transl_store_label_init module_id size f str</a>
+<a class="sourceLine" id="cb7-28" data-line-number="28">      <span class="co">(* λ項に変換してるらしい、返値のintはサイズみたい *)</span></a>
+<a class="sourceLine" id="cb7-29" data-line-number="29">=&gt; +++ Simplif.simplify_lambda</a>
+<a class="sourceLine" id="cb7-30" data-line-number="30">   =&gt; <span class="kw">let</span> lam = simplify_exits lam <span class="co">(* なんだろう？ *)</span></a>
+<a class="sourceLine" id="cb7-31" data-line-number="31">   =&gt; simplify_lets lam</a>
+<a class="sourceLine" id="cb7-32" data-line-number="32">      <span class="co">(* 最適化。だいたい以下？</span></a>
+<a class="sourceLine" id="cb7-33" data-line-number="33"><span class="co">         * コンパイル時β簡約</span></a>
+<a class="sourceLine" id="cb7-34" data-line-number="34"><span class="co">         * 未使用のletを削除。またlet参照を値にする *)</span></a>
+<a class="sourceLine" id="cb7-35" data-line-number="35">=&gt; ++ Asmgen.compile_implementation outputprefix ppf;</a>
+<a class="sourceLine" id="cb7-36" data-line-number="36">   <span class="co">(* λ項からアセンブリコードへ *)</span></a>
+<a class="sourceLine" id="cb7-37" data-line-number="37">   Emit.begin_assembly(); <span class="co">(* アセンブラファイルのヘッダを書き込む *)</span></a>
+<a class="sourceLine" id="cb7-38" data-line-number="38">   =&gt; Closure.intro size lam <span class="co">(* :: Clambda.ulambda *)</span></a>
+<a class="sourceLine" id="cb7-39" data-line-number="39">      <span class="kw">let</span> (ulam, approx) = close Tbl.empty Tbl.empty lam <span class="kw">in</span> ulam</a>
+<a class="sourceLine" id="cb7-40" data-line-number="40">      <span class="co">(* アンカリー化、直接呼び出し *)</span></a>
+<a class="sourceLine" id="cb7-41" data-line-number="41">   ++ Cmmgen.compunit size <span class="co">(* :: Clambda.ulambda -&gt; Cmm.phrase list *)</span></a>
+<a class="sourceLine" id="cb7-42" data-line-number="42">   <span class="co">(* λ項からC--へ *)</span></a>
+<a class="sourceLine" id="cb7-43" data-line-number="43">   ++ <span class="dt">List</span>.iter (compile_phrase ppf) <span class="co">(* :: Cmm.phrase list -&gt; unit *)</span></a>
+<a class="sourceLine" id="cb7-44" data-line-number="44">   compile_phrase ppf</a>
+<a class="sourceLine" id="cb7-45" data-line-number="45">     (Cmmgen.reference_symbols</a>
+<a class="sourceLine" id="cb7-46" data-line-number="46">        (<span class="dt">List</span>.filter (<span class="kw">fun</span> s -&gt; s &lt;&gt; <span class="st">&quot;&quot;</span> &amp;&amp; s.[<span class="dv">0</span>] &lt;&gt; <span class="ch">'%'</span>)</a>
+<a class="sourceLine" id="cb7-47" data-line-number="47">           (<span class="dt">List</span>.map Primitive.native_name !Translmod.primitive_declarations))</a>
+<a class="sourceLine" id="cb7-48" data-line-number="48">     ); <span class="co">(* 関数とデータをアセンブラファイルに書き込む *)</span></a>
+<a class="sourceLine" id="cb7-49" data-line-number="49">   Emit.end_assembly(); <span class="co">(* アセンブラファイルのフッタを書き込む *)</span></a>
+<a class="sourceLine" id="cb7-50" data-line-number="50">   Proc.assemble_file asmfile (prefixname ^ ext_obj) <span class="co">(* gasでオブジェクトファイルに *)</span></a></code></pre></div>
 <p>このコンパイルパイプラインが実際には一瞬で完了するのだから、すごいでゲソ。</p>
 <p>
   <div id="disqus_thread"></div>
@@ -332,7 +329,7 @@ Pparse.file ppf inputfile Parse.implementation ast_impl_magic_number
         <br>
         Metasepi project is supported by
         <a href="https://www.shinkawa.com/en/"><img alt="Shinkawa Ltd." style="border-width:0" src="../img/shinkawa_logo.png" /></a> ×
-        <a href="http://www.st.com/"><img alt="STMicroelectronics" style="border-width:0" src="../img/stlogo_x25.png" /></a> ×
+        <a href="http://www.kyushu-u.ac.jp/en/"><img alt="KYUSHU UNIVERSITY" style="border-width:0" src="../img/qlogo_x25.png" /></a> ×
         <a href="http://www.metasepi-design.com/"><img alt="METASEPI DESIGN" style="border-width:0" src="../img/metasepi_design_logo_82x25.png" /></a> ×
         <a href="../past-supporters.html">Past Supporters</a>
       </p>

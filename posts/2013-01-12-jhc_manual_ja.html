@@ -127,7 +127,7 @@
 </ul>
 <hr>
 <p>アラフラで採用する予定のjhc、おおざっぱな使い方はわかっているのでゲソが細かいところは知らんでゲソ。 気になるのはGHCとの違いでゲソが、内部解析のための足掛かりになるかもしれないので、使い方はしっかりマスターしておきたいでゲッソ!</p>
-<p>しかし前々回の記事で紹介した <a href="http://repetae.net/computer/jhc/manual.html">Jhc User’s Manual</a> は当然のごとく英語…自然言語さえ苦手なワシには読めんでゲソ。 そこで根性で日本語訳してみたでゲッソ! <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> ざんねんながらワシには専門知識が圧倒的に欠如しているので、用語のミスや根本的な間違いなどを見つけたら是非教えて欲しいでゲソ。 この記事は翻訳の修正をするたびに随時更新するつもりでゲソ。</p>
+<p>しかし前々回の記事で紹介した <a href="http://repetae.net/computer/jhc/manual.html">Jhc User’s Manual</a> は当然のごとく英語…自然言語さえ苦手なワシには読めんでゲソ。 そこで根性で日本語訳してみたでゲッソ! <a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> ざんねんながらワシには専門知識が圧倒的に欠如しているので、用語のミスや根本的な間違いなどを見つけたら是非教えて欲しいでゲソ。 この記事は翻訳の修正をするたびに随時更新するつもりでゲソ。</p>
 <p>この翻訳には <a href="http://po4a.alioth.debian.org/">po4a</a> を使っていて、gettextの翻訳データは <a href="https://gitorious.org/metasepi/jhc-arafura/blobs/feature/po4a/po/ja.po">po/ja.po - jhc-arafura in Metasepi - Gitorious</a> にあるので、po4aとgitを使える人はpull requestを送ってくれるのも歓迎でゲッソ!</p>
 <p><em>2013/03/16追記:</em> Metasepi向けのjhcの開発は <a href="http://ajhc.metasepi.org/">Ajhc</a> で行なうことになったでゲソ。 Ajhcで追加された機能は <a href="http://ajhc.metasepi.org/manual.html">Ajhc User’s Manual</a> (<a href="http://ajhc.metasepi.org/manual_ja.html">日本語訳</a>) を参照のこと、でゲッソ!</p>
 <hr />
@@ -290,17 +290,17 @@
 <table>
 <thead>
 <tr class="header">
-<th align="left">型検査</th>
+<th style="text-align: left;">型検査</th>
 <th></th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left"><em>defaulting</em></td>
+<td style="text-align: left;"><em>defaulting</em></td>
 <td>型のデフォルト化を行なう</td>
 </tr>
 <tr class="even">
-<td align="left"><em>monomorphism-restriction</em></td>
+<td style="text-align: left;"><em>monomorphism-restriction</em></td>
 <td>単相性制限を強制する</td>
 </tr>
 </tbody>
@@ -308,13 +308,13 @@
 <table>
 <thead>
 <tr class="header">
-<th align="left">デバッグ</th>
+<th style="text-align: left;">デバッグ</th>
 <th></th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left"><em>lint</em></td>
+<td style="text-align: left;"><em>lint</em></td>
 <td>より多くの型検査を行なう</td>
 </tr>
 </tbody>
@@ -348,41 +348,41 @@
 <table>
 <thead>
 <tr class="header">
-<th align="left">コード生成</th>
+<th style="text-align: left;">コード生成</th>
 <th></th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left"><em>boehm</em></td>
+<td style="text-align: left;"><em>boehm</em></td>
 <td>Boehm GCを使う</td>
 </tr>
 <tr class="even">
-<td align="left"><em>debug</em></td>
+<td style="text-align: left;"><em>debug</em></td>
 <td>実行バイナリ中のデバッグコードを有効に</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>full-int</em></td>
+<td style="text-align: left;"><em>full-int</em></td>
 <td>32bitマシンでIntとWordを32bitに拡張する</td>
 </tr>
 <tr class="even">
-<td align="left"><em>jgc</em></td>
+<td style="text-align: left;"><em>jgc</em></td>
 <td>jgcガーベッジコレクタを使う</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>profile</em></td>
+<td style="text-align: left;"><em>profile</em></td>
 <td>実行バイナリ中のプロファイルコードを有効に</td>
 </tr>
 <tr class="even">
-<td align="left"><em>raw</em></td>
+<td style="text-align: left;"><em>raw</em></td>
 <td>main関数をWHNFとして評価する</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>standalone</em></td>
+<td style="text-align: left;"><em>standalone</em></td>
 <td>単独実行可能にコンパイル</td>
 </tr>
 <tr class="even">
-<td align="left"><em>wrapper</em></td>
+<td style="text-align: left;"><em>wrapper</em></td>
 <td>main関数を例外ハンドラで包む</td>
 </tr>
 </tbody>
@@ -390,17 +390,17 @@
 <table>
 <thead>
 <tr class="header">
-<th align="left">設定既定値</th>
+<th style="text-align: left;">設定既定値</th>
 <th></th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left"><em>default</em></td>
+<td style="text-align: left;"><em>default</em></td>
 <td>inline-pragmas rules wrapper defaulting type-analysis monomorphism-restriction global-optimize full-int prelude</td>
 </tr>
 <tr class="even">
-<td align="left"><em>glasgow-exts</em></td>
+<td style="text-align: left;"><em>glasgow-exts</em></td>
 <td>forall ffi unboxed-tuples</td>
 </tr>
 </tbody>
@@ -456,69 +456,69 @@
 <table>
 <thead>
 <tr class="header">
-<th align="left">型検査</th>
+<th style="text-align: left;">型検査</th>
 <th></th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left"><em>all-types</em></td>
+<td style="text-align: left;"><em>all-types</em></td>
 <td>型検査完了後に型テーブルを表示</td>
 </tr>
 <tr class="even">
-<td align="left"><em>aspats</em></td>
+<td style="text-align: left;"><em>aspats</em></td>
 <td>アズパターンを表示</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>bindgroups</em></td>
+<td style="text-align: left;"><em>bindgroups</em></td>
 <td>束縛グループを表示</td>
 </tr>
 <tr class="even">
-<td align="left"><em>boxy-steps</em></td>
+<td style="text-align: left;"><em>boxy-steps</em></td>
 <td>型推論の挙動をステップバイステップで表示</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>class</em></td>
+<td style="text-align: left;"><em>class</em></td>
 <td>個々の型クラスの詳細情報を表示</td>
 </tr>
 <tr class="even">
-<td align="left"><em>class-summary</em></td>
+<td style="text-align: left;"><em>class-summary</em></td>
 <td>型クラス群の概要を表示</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>dcons</em></td>
+<td style="text-align: left;"><em>dcons</em></td>
 <td>データコンストラクタを表示</td>
 </tr>
 <tr class="even">
-<td align="left"><em>decls</em></td>
+<td style="text-align: left;"><em>decls</em></td>
 <td>処理済みの宣言を表示</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>instance</em></td>
+<td style="text-align: left;"><em>instance</em></td>
 <td>インスタンスを表示</td>
 </tr>
 <tr class="even">
-<td align="left"><em>kind</em></td>
+<td style="text-align: left;"><em>kind</em></td>
 <td>モジュールへの種推論の結果を表示</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>kind-steps</em></td>
+<td style="text-align: left;"><em>kind-steps</em></td>
 <td>種推論のステップを表示</td>
 </tr>
 <tr class="even">
-<td align="left"><em>program</em></td>
+<td style="text-align: left;"><em>program</em></td>
 <td>プログラム全体の構造</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>sigenv</em></td>
+<td style="text-align: left;"><em>sigenv</em></td>
 <td>型シグニチャ初期状態の表示</td>
 </tr>
 <tr class="even">
-<td align="left"><em>srcsigs</em></td>
+<td style="text-align: left;"><em>srcsigs</em></td>
 <td>renaming後の型シグニチャを表示</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>types</em></td>
+<td style="text-align: left;"><em>types</em></td>
 <td>定義された全ての名前を含んでいる型テーブルを表示</td>
 </tr>
 </tbody>
@@ -526,77 +526,77 @@
 <table>
 <thead>
 <tr class="header">
-<th align="left">中間コード</th>
+<th style="text-align: left;">中間コード</th>
 <th></th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left"><em>core</em></td>
+<td style="text-align: left;"><em>core</em></td>
 <td>core言語コードを表示</td>
 </tr>
 <tr class="even">
-<td align="left"><em>core-afterlift</em></td>
+<td style="text-align: left;"><em>core-afterlift</em></td>
 <td>hoファイルに書き込む直前のcoreコードを表示</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>core-beforelift</em></td>
+<td style="text-align: left;"><em>core-beforelift</em></td>
 <td>lambda lifting直前のcoreコードを表示</td>
 </tr>
 <tr class="even">
-<td align="left"><em>core-initial</em></td>
+<td style="text-align: left;"><em>core-initial</em></td>
 <td>E.FromHs転換直前のcoreコードを表示</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>core-mangled</em></td>
+<td style="text-align: left;"><em>core-mangled</em></td>
 <td>grinにかける前の型なしcoreコードを表示</td>
 </tr>
 <tr class="even">
-<td align="left"><em>core-mini</em></td>
+<td style="text-align: left;"><em>core-mini</em></td>
 <td>個々の関数の最適化の詳細を表示</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>core-pass</em></td>
+<td style="text-align: left;"><em>core-pass</em></td>
 <td>コード変形の経過を表示</td>
 </tr>
 <tr class="even">
-<td align="left"><em>core-steps</em></td>
+<td style="text-align: left;"><em>core-steps</em></td>
 <td>コンパイルパスそれぞれのステップについて表示</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>datatable</em></td>
+<td style="text-align: left;"><em>datatable</em></td>
 <td>コンストラクタのデータテーブルを表示</td>
 </tr>
 <tr class="even">
-<td align="left"><em>datatable-builtin</em></td>
+<td style="text-align: left;"><em>datatable-builtin</em></td>
 <td>ビルドイン型のデータテーブルを表示</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>e-alias</em></td>
+<td style="text-align: left;"><em>e-alias</em></td>
 <td>展開済みエイリアスを表示</td>
 </tr>
 <tr class="even">
-<td align="left"><em>e-info</em></td>
+<td style="text-align: left;"><em>e-info</em></td>
 <td>束縛された値のタグ情報を表示</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>e-size</em></td>
+<td style="text-align: left;"><em>e-size</em></td>
 <td>コンパイルパスそれぞれでのEのサイズを表示</td>
 </tr>
 <tr class="even">
-<td align="left"><em>e-verbose</em></td>
+<td style="text-align: left;"><em>e-verbose</em></td>
 <td>Eコードに冗長なメッセージを表示させる</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>optimization-stats</em></td>
+<td style="text-align: left;"><em>optimization-stats</em></td>
 <td>最適化パスのスタティクスを表示</td>
 </tr>
 <tr class="even">
-<td align="left"><em>rules</em></td>
+<td style="text-align: left;"><em>rules</em></td>
 <td>ユーザ定義の書き換え規則を表示する</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>rules-spec</em></td>
+<td style="text-align: left;"><em>rules-spec</em></td>
 <td>特殊化書き換え規則を表示する</td>
 </tr>
 </tbody>
@@ -668,13 +668,13 @@
 <table>
 <thead>
 <tr class="header">
-<th align="left">内部</th>
+<th style="text-align: left;">内部</th>
 <th></th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left"><em>atom</em></td>
+<td style="text-align: left;"><em>atom</em></td>
 <td>終了時にatomテーブルをダンプする</td>
 </tr>
 </tbody>
@@ -682,25 +682,25 @@
 <table>
 <thead>
 <tr class="header">
-<th align="left">一般</th>
+<th style="text-align: left;">一般</th>
 <th></th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left"><em>progress</em></td>
+<td style="text-align: left;"><em>progress</em></td>
 <td>通常のプログレス表示を行なう</td>
 </tr>
 <tr class="even">
-<td align="left"><em>stats</em></td>
+<td style="text-align: left;"><em>stats</em></td>
 <td>その他の情報を表示する</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>verbose</em></td>
+<td style="text-align: left;"><em>verbose</em></td>
 <td>冗長なプログレス表示</td>
 </tr>
 <tr class="even">
-<td align="left"><em>veryverbose</em></td>
+<td style="text-align: left;"><em>veryverbose</em></td>
 <td>スタティクスを含む冗長なプログレス表示</td>
 </tr>
 </tbody>
@@ -712,25 +712,25 @@
 <table>
 <thead>
 <tr class="header">
-<th align="left">プラグマ</th>
+<th style="text-align: left;">プラグマ</th>
 <th></th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left"><em>NOINLINE</em></td>
+<td style="text-align: left;"><em>NOINLINE</em></td>
 <td>core変形中のインライン化を抑制する。当該関数はgrin変形中にインライン化される <em>かもしれない</em> 。</td>
 </tr>
 <tr class="even">
-<td align="left"><em>INLINE</em></td>
+<td style="text-align: left;"><em>INLINE</em></td>
 <td>可能であれば関数をインライン化する</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>SUPERINLINE</em></td>
+<td style="text-align: left;"><em>SUPERINLINE</em></td>
 <td>関数本体を単に複製することになったとしても、とにかくインライン化を行なう</td>
 </tr>
 <tr class="even">
-<td align="left"><em>VCONSTRUCTOR</em></td>
+<td style="text-align: left;"><em>VCONSTRUCTOR</em></td>
 <td>関数を仮想コンストラクタとして扱う。CPR解析とworker/wrapper変換は関数をコンストラクタとして扱うことがある。これは’NOINLINE’で実装される。</td>
 </tr>
 </tbody>
@@ -739,13 +739,13 @@
 <table>
 <thead>
 <tr class="header">
-<th align="left">プラグマ</th>
+<th style="text-align: left;">プラグマ</th>
 <th></th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left"><em>NOETA</em></td>
+<td style="text-align: left;"><em>NOETA</em></td>
 <td>デフォルトではjhcは最適化のために全てのクラスメソッドをイータ変換する。このプラグマはこの挙動を無効化する</td>
 </tr>
 </tbody>
@@ -754,25 +754,25 @@
 <table>
 <thead>
 <tr class="header">
-<th align="left">プラグマ</th>
+<th style="text-align: left;">プラグマ</th>
 <th></th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left"><em>RULES</em></td>
+<td style="text-align: left;"><em>RULES</em></td>
 <td>書き換え規則。GHCの書き換え規則と同様の構文で同様の振舞いをする。ただし、’phase’を使うことはできない。</td>
 </tr>
 <tr class="even">
-<td align="left"><em>CATALYST</em></td>
+<td style="text-align: left;"><em>CATALYST</em></td>
 <td>特殊な書き換え規則で、他のRULESの使用中でのみ発火する。そのためCATALYSTは最良でない中間ステージを要求する最適化を許す。</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>SPECIALIZE</em></td>
+<td style="text-align: left;"><em>SPECIALIZE</em></td>
 <td>指定された型で特殊化された関数を生成する</td>
 </tr>
 <tr class="even">
-<td align="left"><em>SUPERSPECIALIZE</em></td>
+<td style="text-align: left;"><em>SUPERSPECIALIZE</em></td>
 <td>SPECIALIZEと同じ効力がある。しかし一般化された関数にて特殊化された呼び出しかどうかランタイムでの検査を行なう。</td>
 </tr>
 </tbody>
@@ -781,34 +781,34 @@
 <table>
 <thead>
 <tr class="header">
-<th align="left">プラグマ</th>
+<th style="text-align: left;">プラグマ</th>
 <th></th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left"><em>CTYPE</em></td>
+<td style="text-align: left;"><em>CTYPE</em></td>
 <td>FFIでdataもしくはnewtypeを使うたえに、外部の型を指定する。</td>
 </tr>
 <tr class="even">
-<td align="left"></td>
+<td style="text-align: left;"></td>
 <td>この型はnewtypeかforeign宣言された型の単項コンストラクタでなければならない。</td>
 </tr>
 <tr class="odd">
-<td align="left"></td>
+<td style="text-align: left;"></td>
 <td>例えば</td>
 </tr>
 <tr class="even">
-<td align="left"></td>
-<td><sub>~</sub></td>
+<td style="text-align: left;"></td>
+<td>~~~</td>
 </tr>
 <tr class="odd">
-<td align="left"></td>
+<td style="text-align: left;"></td>
 <td>data {-# CTYPE “unsigned short” #-} CUShort = CUShort Word16</td>
 </tr>
 <tr class="even">
-<td align="left"></td>
-<td><sub>~</sub></td>
+<td style="text-align: left;"></td>
+<td>~~~</td>
 </tr>
 </tbody>
 </table>
@@ -959,62 +959,62 @@ merge=i686</code></pre>
 <table>
 <thead>
 <tr class="header">
-<th align="left">オプション</th>
-<th align="left">意味</th>
+<th style="text-align: left;">オプション</th>
+<th style="text-align: left;">意味</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left"><em>cc</em></td>
-<td align="left">Cコンパイラを指定。一般に手元でのコンパイルにはgccを指定し、クロスコンパイルには<span class="math inline"><em>A</em><em>R</em><em>C</em><em>H</em>−</span>HOST-gccを指定する。</td>
+<td style="text-align: left;"><em>cc</em></td>
+<td style="text-align: left;">Cコンパイラを指定。一般に手元でのコンパイルにはgccを指定し、クロスコンパイルには<span class="math inline"><em>A</em><em>R</em><em>C</em><em>H</em>−</span>HOST-gccを指定する。</td>
 </tr>
 <tr class="even">
-<td align="left"><em>byteorder</em></td>
-<td align="left">リトル/ビッグエンディアンのために <em>le</em> もしくは <em>be</em> を指定する</td>
+<td style="text-align: left;"><em>byteorder</em></td>
+<td style="text-align: left;">リトル/ビッグエンディアンのために <em>le</em> もしくは <em>be</em> を指定する</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>gc</em></td>
-<td align="left">GCを使う。<em>static</em> もしくは <em>boehm</em> を指定する。</td>
+<td style="text-align: left;"><em>gc</em></td>
+<td style="text-align: left;">GCを使う。<em>static</em> もしくは <em>boehm</em> を指定する。</td>
 </tr>
 <tr class="even">
-<td align="left"><em>cflags</em></td>
-<td align="left">Cコンパイラに渡すオプション</td>
+<td style="text-align: left;"><em>cflags</em></td>
+<td style="text-align: left;">Cコンパイラに渡すオプション</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>cflags_debug</em></td>
-<td align="left">デバッグが有効な場合のにみCコンパイラに渡すオプション</td>
+<td style="text-align: left;"><em>cflags_debug</em></td>
+<td style="text-align: left;">デバッグが有効な場合のにみCコンパイラに渡すオプション</td>
 </tr>
 <tr class="even">
-<td align="left"><em>cflags_nodebug</em></td>
-<td align="left">デバッグが無効な場合のにみCコンパイラに渡すオプション</td>
+<td style="text-align: left;"><em>cflags_nodebug</em></td>
+<td style="text-align: left;">デバッグが無効な場合のにみCコンパイラに渡すオプション</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>profile</em></td>
-<td align="left">プロファイルコードを実行バイナリに出力する</td>
+<td style="text-align: left;"><em>profile</em></td>
+<td style="text-align: left;">プロファイルコードを実行バイナリに出力する</td>
 </tr>
 <tr class="even">
-<td align="left"><em>autoload</em></td>
-<td align="left">自動読み込みされるHaskellライブラリを指定。コンマで区切る。</td>
+<td style="text-align: left;"><em>autoload</em></td>
+<td style="text-align: left;">自動読み込みされるHaskellライブラリを指定。コンマで区切る。</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>executable_extension</em></td>
-<td align="left">実行バイナリファイルの拡張子を指定する (すなわちWindowsでは.EXEとなる)</td>
+<td style="text-align: left;"><em>executable_extension</em></td>
+<td style="text-align: left;">実行バイナリファイルの拡張子を指定する (すなわちWindowsでは.EXEとなる)</td>
 </tr>
 <tr class="even">
-<td align="left"><em>merge</em></td>
-<td align="left">他の設定ターゲットの内容を現ターゲットにマージする特別なオプション</td>
+<td style="text-align: left;"><em>merge</em></td>
+<td style="text-align: left;">他の設定ターゲットの内容を現ターゲットにマージする特別なオプション</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>bits</em></td>
-<td align="left">このアーキティクチャでポインタが保有するビット数</td>
+<td style="text-align: left;"><em>bits</em></td>
+<td style="text-align: left;">このアーキティクチャでポインタが保有するビット数</td>
 </tr>
 <tr class="even">
-<td align="left"><em>bits_max</em></td>
-<td align="left">整数型の最大値が保有するビット数。これは’intmax_t’のC言語型と同じビット数でなければならない。</td>
+<td style="text-align: left;"><em>bits_max</em></td>
+<td style="text-align: left;">整数型の最大値が保有するビット数。これは’intmax_t’のC言語型と同じビット数でなければならない。</td>
 </tr>
 <tr class="odd">
-<td align="left"><em>arch</em></td>
-<td align="left">gccに渡すアーキティクチャ名</td>
+<td style="text-align: left;"><em>arch</em></td>
+<td style="text-align: left;">gccに渡すアーキティクチャ名</td>
 </tr>
 </tbody>
 </table>
@@ -1125,12 +1125,12 @@ Int,Bits32_,Char - 種類type(型)
       **   ##     (##)   - 種類superkind
       /\     \    |
      *  !     #   (#)    - 種類kind(種)</code></pre>
-<div class="footnotes">
+<section class="footnotes">
 <hr />
 <ol>
-<li id="fn1"><p>後半の“jhcコア型システム”の章の翻訳は <a href="https://twitter.com/dif_engine">differential_engine (dif_engine)</a> さんに手伝ってもらったでゲッソ。感謝でゲソー<a href="#fnref1">↩</a></p></li>
+<li id="fn1"><p>後半の“jhcコア型システム”の章の翻訳は <a href="https://twitter.com/dif_engine">differential_engine (dif_engine)</a> さんに手伝ってもらったでゲッソ。感謝でゲソー<a href="#fnref1" class="footnote-back">↩</a></p></li>
 </ol>
-</div>
+</section>
 <p>
   <div id="disqus_thread"></div>
   <script type="text/javascript">
@@ -1162,7 +1162,7 @@ Int,Bits32_,Char - 種類type(型)
         <br>
         Metasepi project is supported by
         <a href="https://www.shinkawa.com/en/"><img alt="Shinkawa Ltd." style="border-width:0" src="../img/shinkawa_logo.png" /></a> ×
-        <a href="http://www.st.com/"><img alt="STMicroelectronics" style="border-width:0" src="../img/stlogo_x25.png" /></a> ×
+        <a href="http://www.kyushu-u.ac.jp/en/"><img alt="KYUSHU UNIVERSITY" style="border-width:0" src="../img/qlogo_x25.png" /></a> ×
         <a href="http://www.metasepi-design.com/"><img alt="METASEPI DESIGN" style="border-width:0" src="../img/metasepi_design_logo_82x25.png" /></a> ×
         <a href="../past-supporters.html">Past Supporters</a>
       </p>
