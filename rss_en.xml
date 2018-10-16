@@ -8,8 +8,16 @@
         <name>Kiwamu Okabe</name>
         <email>kiwamu@debian.or.jp</email>
     </author>
-    <updated>2017-02-05T00:00:00Z</updated>
+    <updated>2018-10-15T00:00:00Z</updated>
     <entry>
+    <title>You must buy SyncStitch with only 64,800 JPY!</title>
+    <link href="http://metasepi.org//en/posts/2018-10-15-must-buy-syncstitch.html" />
+    <id>http://metasepi.org//en/posts/2018-10-15-must-buy-syncstitch.html</id>
+    <published>2018-10-15T00:00:00Z</published>
+    <updated>2018-10-15T00:00:00Z</updated>
+    <summary type="html"><![CDATA[Dive into CSP (Communicating Sequential Processes) modeling.]]></summary>
+</entry>
+<entry>
     <title>Hands-on VeriFast with STM32 microcontroller</title>
     <link href="http://metasepi.org//en/posts/2017-02-05-verifast-hans-on.html" />
     <id>http://metasepi.org//en/posts/2017-02-05-verifast-hans-on.html</id>
@@ -80,14 +88,6 @@
     <published>2014-08-24T00:00:00Z</published>
     <updated>2014-08-24T00:00:00Z</updated>
     <summary type="html"><![CDATA[Propaganda of ATS lanugage for Japanese researchers.]]></summary>
-</entry>
-<entry>
-    <title>Metasepi team meeting</title>
-    <link href="http://metasepi.org//en/posts/2014-08-02-osc2014-kyoto.html" />
-    <id>http://metasepi.org//en/posts/2014-08-02-osc2014-kyoto.html</id>
-    <published>2014-08-02T00:00:00Z</published>
-    <updated>2014-08-02T00:00:00Z</updated>
-    <summary type="html"><![CDATA[Why ATS language is safe?]]></summary>
 </entry>
 
 </feed>
