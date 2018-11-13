@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>So long VeriFast, and see again ATS - Metasepi</title>
+
+  <meta name="description" content="metasepi.org">
+  <meta name="author" content="Kiwamu Okabe">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="http://metasepi.org/rss_en.xml" rel="alternate" title="Blog" type="application/rss+xml">
+
+  <!-- CSS concatenated and minified via ant build script-->
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="../../css/syntax.css">
+  <link rel="stylesheet" href="../../css/calendar.css">
+  <!-- end CSS-->
+
+  <link rel="stylesheet" href="../../css/default.css">
+
+  <script src="../../js/libs/modernizr-2.0.6.min.js"></script>
+</head>
+
+<body onload="prettyPrint()">
+  <div id="fb-root"></div>
+  <script>
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = '//connect.facebook.net/ja_JP/all.js#xfbml=1';
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
+
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <a href="../../">Metasepi</a>
+      </div>
+
+      <div class="nav">
+        <li><a href="../../">Home</a></li>
+        <li><a href="../../en/posts.html">Blog</a>(<a href="../../posts.html">ja</a>)</li>
+        <li><a href="../../papers.html">Papers</a></li>
+        <li><a href="../../map.html">Map</a></li>
+        <li><a href="../../memories.html">Memories</a></li>
+        <li><a href="../../about.html">About</a></li>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="content clearfix">
+      <h1>So long VeriFast, and see again ATS</h1>
+<div class="info">Posted on November 13, 2018 / Tags: <a href="../../en/tags/verifast.html">verifast</a>, <a href="../../en/tags/c.html">c</a>, <a href="../../en/tags/ats.html">ats</a></div>
+<h2>Table of contents</h2>
+<ul>
+<li><a href="#tldr">TL;DR</a></li>
+<li><a href="#trying-to-apply-annotation-to-freertos-using-verifast">Trying to apply annotation to FreeRTOS using VeriFast</a></li>
+<li><a href="#kpt">KPT</a><ul>
+<li><a href="#keep">Keep</a></li>
+<li><a href="#problem">Problem</a></li>
+<li><a href="#try">Try</a></li>
+</ul></li>
+<li><a href="#come-back-to-bohai-iteration-for-ats-language">Come back to Bohai iteration for ATS language</a></li>
+</ul>
+<hr>
+<h2 id="tldr">TL;DR</h2>
+<p>Switch <a href="https://github.com/verifast/verifast">VeriFast verifier</a> to <a href="http://www.ats-lang.org/">ATS language</a> to create real product on Metasepi project.</p>
+<h2 id="trying-to-apply-annotation-to-freertos-using-verifast">Trying to apply annotation to FreeRTOS using VeriFast</h2>
+<p>We have tried to apply annotation to FreeRTOS using VeriFast until today, and would like to share the result.</p>
+<p>First step, we tried to parse <code>lib/FreeRTOS/list.c</code> with VeriFast such like following:</p>
+<pre><code>$ vfide -D ESP_PLATFORM -D HAVE_CONFIG_H -D __XTENSA__ -D __IEEE_LITTLE_ENDIAN -I /home/kiwamu/src/amazon-freertos/demos/espressif/esp32_devkitc_esp_wrover_kit/common/application_code/espressif_code/freertos/include -I /home/kiwamu/src/amazon-freertos/demos/espressif/esp32_devkitc_esp_wrover_kit/common/config_files -I /home/kiwamu/src/amazon-freertos/lib/include -I /home/kiwamu/src/amazon-freertos/lib/include/private -I /home/kiwamu/src/amazon-freertos/lib/FreeRTOS/portable/ThirdParty/GCC/Xtensa_ESP32/include -I /home/kiwamu/src/amazon-freertos/lib/FreeRTOS-Plus-TCP/include -I /home/kiwamu/src/amazon-freertos/lib/FreeRTOS-Plus-TCP/source/portable/Compiler/GCC -I /home/kiwamu/src/amazon-freertos/lib/third_party/jsmn -I /home/kiwamu/src/amazon-freertos/demos/common/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/app_trace/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/app_update/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/bootloader_support/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/console -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/cxx/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/driver/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/esp32/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/esp_adc_cal/include -I /home/kiwamu/src/amazon-freertos/demos/espressif/esp32_devkitc_esp_wrover_kit/common/application_code/espressif_code/ethernet/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/expat/port/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/expat/include/expat -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/fatfs/src -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/heap/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/log/include -I /home/kiwamu/src/amazon-freertos/demos/espressif/esp32_devkitc_esp_wrover_kit/common/application_code/espressif_code/mbedtls/port/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mbedtls/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/micro-ecc/micro-ecc -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/newlib/platform_include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/newlib/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/nghttp/port/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/nghttp/nghttp2/lib/includes -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/nvs_flash/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/openssl/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/pthread/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/sdmmc/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/soc/esp32/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/soc/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/spi_flash/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/spiffs/include -I /home/kiwamu/src/amazon-freertos/demos/espressif/esp32_devkitc_esp_wrover_kit/common/application_code/espressif_code/tcpip_adapter/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/ulp/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/vfs/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/wear_levelling/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/wpa_supplicant/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/wpa_supplicant/port/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/esp32/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/xtensa-debug-module/include -I /home/kiwamu/src/amazon-freertos/demos/espressif/esp32_devkitc_esp_wrover_kit/make/build/include -I lib/FreeRTOS lib/FreeRTOS/list.c</code></pre>
+<p>Above means there are no pseud C headers for VeriFast. Many people use such pseud headers to focus verifying C language as target. Why? Because VeriFast parser is not compatible with GCC or C99:</p>
+<p><img src="../../draw/2018-11-13-pseud-header.png" /></p>
+<p>Indeed, above <code>vfide</code> can’t parse the <code>list.c</code> file. Finally, we gave up to verify target code without such pseud C headers. But we believe there should be no such pseud C headers to rewrite (or snatch) NetBSD kernel for real product, because verifing total of the kernel is hard. Such pseud headers divide target code into verified code and pseud interface. Nobody guarantee pseud interface matches real implementation.</p>
+<p>Second step, we tried to parse <code>lib/FreeRTOS/tasks.c</code> with VeriFast such like following:</p>
+<pre><code>$ vfide -disable_overflow_check -I verifast_inc lib/FreeRTOS/tasks.c</code></pre>
+<p>Fortunately, this trying got successful with <a href="https://github.com/metasepi/amazon-freertos">a few changed target code</a> and <a href="https://github.com/master-q/verifast">modified VeriFast parser</a>. But unfortunately, it’s hard to make C99 compatible parser of original VeriFast own parser. We believe making C99 parser from scratch using LLVM/GCC is better to modify VeriFast parser.</p>
+<p>Third step, we tried to inject VeriFast annotation comment into <a href="https://github.com/metasepi/amazon-freertos/blob/chiers/lib/FreeRTOS/tasks.c#L764">xTaskCreate function</a> on <code>lib/FreeRTOS/tasks.c</code>. But we gave up at following error to be fixed:</p>
+<pre><code>$ cat lib/FreeRTOS/tasks.c
+--snip--
+	BaseType_t xTaskCreate(	TaskFunction_t pxTaskCode,
+							const char * const pcName,
+							const configSTACK_DEPTH_TYPE usStackDepth,
+							void * const pvParameters,
+							UBaseType_t uxPriority,
+							TaskHandle_t * const pxCreatedTask )
+	    //@ requires chars(pcName, configMAX_TASK_NAME_LEN, _) &amp;*&amp; pointer(pxCreatedTask, _) &amp;*&amp;  uxCurrentNumberOfTasks |-&gt; _ &amp;*&amp; pxCurrentTCB |-&gt; _ &amp;*&amp; uxTaskNumber |-&gt; _ &amp;*&amp; uxTopReadyPriority |-&gt; _ &amp;*&amp; xSchedulerRunning |-&gt; _ &amp;*&amp; xLISTs(pxReadyTasksLists, configMAX_PRIORITIES);
+	    //@ ensures chars(pcName, configMAX_TASK_NAME_LEN, _) &amp;*&amp; pointer(pxCreatedTask, _) &amp;*&amp;  uxCurrentNumberOfTasks |-&gt; _ &amp;*&amp; pxCurrentTCB |-&gt; _ &amp;*&amp; uxTaskNumber |-&gt; _ &amp;*&amp; uxTopReadyPriority |-&gt; _ &amp;*&amp; xSchedulerRunning |-&gt; _ &amp;*&amp; xLISTs(pxReadyTasksLists, configMAX_PRIORITIES);
+--snip--
+$ verifast -disable_overflow_check -c -I verifast_inc lib/FreeRTOS/tasks.c
+lib/FreeRTOS/tasks.c
+lib/FreeRTOS/tasks.c(238,18-19): Taking the address of this expression is not supported.
+$ vfide -disable_overflow_check -I verifast_inc lib/FreeRTOS/tasks.c</code></pre>
+<p><img src="../../img/2018-11-13-vfide-error1.png" /></p>
+<p>Fixing above error is very hard on both modifing VeriFast and <code>tasks.c</code> for us…</p>
+<p>More detail of this trying is found at <a href="https://gist.github.com/master-q/e707b36b0b4310ef5be9466ac5eafd86">this gist in Japanese</a>.</p>
+<h2 id="kpt">KPT</h2>
+<p>Let’s do KPT, before closing this <a href="../../map.html#chiers">Chiers iteration</a>.</p>
+<h3 id="keep">Keep</h3>
+<ul>
+<li>VeriFast’s IDE is a good part to track simbolic execution. On the one hand, ATS’s proof is not interactive.</li>
+<li>Separation logic is the right theory to maintain pointer.</li>
+<li>C language is the right choice to write low level code.</li>
+<li>Division of labor between implementer and prover, using C language.</li>
+</ul>
+<h3 id="problem">Problem</h3>
+<ul>
+<li>VeriFast parser is not compatible with C99 or GCC.</li>
+<li>There are some hurdles for C99 compatible on computer science such like <a href="https://github.com/verifast/verifast/issues/29">allocating array</a>, which means VeriFast can’t maintain all style of calling <code>malloc</code> in C language today. Please imagine 3D array allocation.</li>
+<li>VeriFast can’t maintain <code>const</code> and <code>volatile</code>.</li>
+</ul>
+<h3 id="try">Try</h3>
+<ul>
+<li>Find some interactive method such like Coq’s tactic or VeriFast’s simbolic execution on ATS’s proof.</li>
+<li>Understand difference between separation logic / ATS’s at-view / Rust’s ownership.</li>
+<li>More implement <a href="https://github.com/metasepi/c2ats">c2ats</a> for division of labor between implementer and prover.</li>
+<li>Support DWARF on ATS for debugging by implementer.</li>
+<li>Create concrete memory model such like <code>const</code> and <code>volatile</code> on ATS’s at-view.</li>
+</ul>
+<h2 id="come-back-to-bohai-iteration-for-ats-language">Come back to Bohai iteration for ATS language</h2>
+<p>Totally, we should leave Chiers iteration, which means giving up VeriFast for real product. VeriFast is a good part to learn verification on C language for education or academic. Sometimes, it’s useful to verify <a href="https://www.willemp.be/cw/usbkbd/">real product such like Linux kernel</a>. However such real verification also depends on <a href="https://github.com/verifast/verifast/tree/master/examples/usbkbd/src">many pseud C headers</a>, because VeriFast is not compatible with C99 and GCC.</p>
+<p>Please imagine you feel free to inject VeriFast annotate comment into NetBSD kernel. Undoubtedly, it’s paradise on both implementer and prover. But, there are also the <a href="http://www.haaretz.com/life/arts-leisure/always-on-the-side-of-the-egg-1.270371">high-solid wall</a>. It’s creating full compatible VeriFast C language parser, which needs huge human resources. Everyone, include us, can’t pay the resources until today…</p>
+<p>What’s next? Before this iteration, we choose ATS language on <a href="../../map.html#bohai">Bohai iteration</a>. Why did we switch to VeriFast? Because VeriFast doesn’t need rewriting current implementation. If we rewrite (or snatch) NetBSD kernel using ATS, we should rewrite all of the C language implementation in ATS language such like:</p>
+<ol type="1">
+<li>Start on pure C language implementation</li>
+<li>Rewrite some C language function using ATS language little by little</li>
+<li>Finally get pure ATS language implementation</li>
+<li>Introduce more dependent types into ATS implementation to be verified</li>
+</ol>
+<p>Above 2nd stage needs much human resources. While such trying, we found VeriFast and started new Chiers iteration. We imagine we introduce annotation to verify C language code without modify the implementation such lile:</p>
+<ol type="1">
+<li>Start on pure C language implementation</li>
+<li>Get parsable C language implementation</li>
+<li>Introduce annotation onto C language implementation to be verified</li>
+</ol>
+<p>But VeriFast doesn’t have C99 compatible parser. Then today, VeriFast verification process is such like:</p>
+<ol type="1">
+<li>Start on pure C language implementation</li>
+<li>Get parsable C language implementation</li>
+<li>Introduce annotation onto C language implementation</li>
+<li>Introduce pseud C headers</li>
+<li>Rewrite some C language function using C language subset on VeriFast parser</li>
+<li>Go to 3 until we complete to verify all of C language implementation</li>
+</ol>
+<p>We think above process is as hard as ATS way, because it also needs rewriting (or snatching). If so, why not choose ATS from the first?</p>
+<p>Fortunately, <a href="https://github.com/githwxi/ATS-Xanadu">ATS3</a> is launched at the beginning of this year. We will try to write small but real product using ATS2, and know useful requirement for ATS3.</p>
+<p>However, it’s not just retreating. <a href="https://www.youtube.com/watch?v=uSBzZyIxdak">After Chiers iteration closes today</a>, <a href="https://en.wikipedia.org/wiki/Auld_Lang_Syne">reboot Bohai iteration with our experience of VeriFast tomorrow</a>.</p>
+<p>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_shortname = 'metasepi';
+    var disqus_identifier = '/en/posts/2018-11-13-see-you-verifast.html';
+    var disqus_url = 'http://metasepi.org' + '/en/posts/2018-11-13-see-you-verifast.html';
+    var disqus_title = 'So long VeriFast, and see again ATS';
+    var disqus_developer = 1;
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>
+    Please enable JavaScript to view the 
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  <a href="http://disqus.com" class="dsq-brlink">
+    blog comments powered by <span.logo-disqus>Disqus</span>
+  </a>
+</p>
+
+    </div>
+
+    <footer>
+      <p>
+        This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
+        <br>
+        Metasepi project is supported by
+        <a href="https://www.shinkawa.com/en/"><img alt="Shinkawa Ltd." style="border-width:0" src="../../img/shinkawa_logo.png" /></a> ×
+        <a href="http://www.kyushu-u.ac.jp/en/"><img alt="KYUSHU UNIVERSITY" style="border-width:0" src="../../img/qlogo_x25.png" /></a> ×
+        <a href="https://twitter.com/keigoi"><img alt="Keigo Imai" style="border-width:0" src="../../img/keigoi.png" /></a> ×
+        <a href="http://www.metasepi-design.com/"><img alt="METASEPI DESIGN" style="border-width:0" src="../../img/metasepi_design_logo_82x25.png" /></a> ×
+        <a href="../../past-supporters.html">Past Supporters</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="/js/libs/jquery-1.6.2.min.js"><\/script>')</script>
+
+  <!-- scripts concatenated and minified via ant build script-->
+  <script defer src="../../js/plugins.js"></script>
+  <script defer src="../../js/script.js"></script>
+  <!-- end scripts-->
+
+  <script>
+    window._gaq = [['_setAccount','UA-158383-8'],['_trackPageview'],['_trackPageLoadTime']];
+    Modernizr.load({
+      load: ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js'
+    });
+  </script>
+
+  <!--[if lt IE 7 ]>
+    <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js">
+    <script>
+      window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})
+  <![endif]-->
+</body>

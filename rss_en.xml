@@ -8,8 +8,16 @@
         <name>Kiwamu Okabe</name>
         <email>kiwamu@debian.or.jp</email>
     </author>
-    <updated>2018-10-15T00:00:00Z</updated>
+    <updated>2018-11-13T00:00:00Z</updated>
     <entry>
+    <title>So long VeriFast, and see again ATS</title>
+    <link href="http://metasepi.org//en/posts/2018-11-13-see-you-verifast.html" />
+    <id>http://metasepi.org//en/posts/2018-11-13-see-you-verifast.html</id>
+    <published>2018-11-13T00:00:00Z</published>
+    <updated>2018-11-13T00:00:00Z</updated>
+    <summary type="html"><![CDATA[Shutdown Chiers iteration, and Come back to Bohai.]]></summary>
+</entry>
+<entry>
     <title>You must buy SyncStitch with only 64,800 JPY!</title>
     <link href="http://metasepi.org//en/posts/2018-10-15-must-buy-syncstitch.html" />
     <id>http://metasepi.org//en/posts/2018-10-15-must-buy-syncstitch.html</id>
@@ -80,14 +88,6 @@
     <published>2014-09-04T00:00:00Z</published>
     <updated>2014-09-04T00:00:00Z</updated>
     <summary type="html"><![CDATA[It's showtime at Haskell Symposium 2014!]]></summary>
-</entry>
-<entry>
-    <title>Metasepi team meeting</title>
-    <link href="http://metasepi.org//en/posts/2014-08-24-sprosym2014.html" />
-    <id>http://metasepi.org//en/posts/2014-08-24-sprosym2014.html</id>
-    <published>2014-08-24T00:00:00Z</published>
-    <updated>2014-08-24T00:00:00Z</updated>
-    <summary type="html"><![CDATA[Propaganda of ATS lanugage for Japanese researchers.]]></summary>
 </entry>
 
 </feed>
