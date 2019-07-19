@@ -8,8 +8,16 @@
         <name>Kiwamu Okabe</name>
         <email>kiwamu@debian.or.jp</email>
     </author>
-    <updated>2018-11-13T00:00:00Z</updated>
+    <updated>2019-07-19T00:00:00Z</updated>
     <entry>
+    <title>A toy translator C to ATS</title>
+    <link href="http://metasepi.org//en/posts/2019-07-19-toy-translator-c-to-ats.html" />
+    <id>http://metasepi.org//en/posts/2019-07-19-toy-translator-c-to-ats.html</id>
+    <published>2019-07-19T00:00:00Z</published>
+    <updated>2019-07-19T00:00:00Z</updated>
+    <summary type="html"><![CDATA[Try to translate IDIOMATIC C code into human readable ATS code.]]></summary>
+</entry>
+<entry>
     <title>So long VeriFast, and see again ATS</title>
     <link href="http://metasepi.org//en/posts/2018-11-13-see-you-verifast.html" />
     <id>http://metasepi.org//en/posts/2018-11-13-see-you-verifast.html</id>
@@ -80,14 +88,6 @@
     <published>2014-09-14T00:00:00Z</published>
     <updated>2014-09-14T00:00:00Z</updated>
     <summary type="html"><![CDATA[First trying to read source code of ATS2 compiler.]]></summary>
-</entry>
-<entry>
-    <title>Metasepi team meeting</title>
-    <link href="http://metasepi.org//en/posts/2014-09-04-haskell-symposium.html" />
-    <id>http://metasepi.org//en/posts/2014-09-04-haskell-symposium.html</id>
-    <published>2014-09-04T00:00:00Z</published>
-    <updated>2014-09-04T00:00:00Z</updated>
-    <summary type="html"><![CDATA[It's showtime at Haskell Symposium 2014!]]></summary>
 </entry>
 
 </feed>

@@ -76,52 +76,52 @@
 <p>作る前にまずは作戦をねるでゲソー。</p>
 <h3 id="ghc-baseパッケージの設計をまねる">(1) GHC baseパッケージの設計をまねる</h3>
 <p><a href="http://hackage.haskell.org/packages/archive/base/latest/doc/html/src/Control-Concurrent.html#forkOS">GHCでのforkOSの実装</a> を見ると、StablePtrにIO関数を包んで、C言語のforkOS_createThread関数に渡しているでゲソ。 pthread_createは</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="co">-- File: ghc/libraries/base/Control/Concurrent.hs</span></a>
-<a class="sourceLine" id="cb1-2" data-line-number="2">foreign export ccall forkOS_entry</a>
-<a class="sourceLine" id="cb1-3" data-line-number="3"><span class="ot">    ::</span> <span class="dt">StablePtr</span> (<span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</a>
-<a class="sourceLine" id="cb1-4" data-line-number="4"></a>
-<a class="sourceLine" id="cb1-5" data-line-number="5">foreign <span class="kw">import</span> ccall &quot;forkOS_entry&quot; forkOS_entry_reimported</a>
-<a class="sourceLine" id="cb1-6" data-line-number="6"><span class="ot">    ::</span> <span class="dt">StablePtr</span> (<span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</a>
-<a class="sourceLine" id="cb1-7" data-line-number="7"></a>
-<a class="sourceLine" id="cb1-8" data-line-number="8"><span class="ot">forkOS_entry ::</span> <span class="dt">StablePtr</span> (<span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</a>
-<a class="sourceLine" id="cb1-9" data-line-number="9">forkOS_entry stableAction <span class="fu">=</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb1-10" data-line-number="10">        action <span class="ot">&lt;-</span> deRefStablePtr stableAction</a>
-<a class="sourceLine" id="cb1-11" data-line-number="11">        action</a>
-<a class="sourceLine" id="cb1-12" data-line-number="12"></a>
-<a class="sourceLine" id="cb1-13" data-line-number="13">foreign <span class="kw">import</span> ccall forkOS_createThread</a>
-<a class="sourceLine" id="cb1-14" data-line-number="14"><span class="ot">    ::</span> <span class="dt">StablePtr</span> (<span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">CInt</span></a>
-<a class="sourceLine" id="cb1-15" data-line-number="15"></a>
-<a class="sourceLine" id="cb1-16" data-line-number="16"><span class="ot">forkOS ::</span> <span class="dt">IO</span> () <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">ThreadId</span></a>
-<a class="sourceLine" id="cb1-17" data-line-number="17">forkOS action0</a>
-<a class="sourceLine" id="cb1-18" data-line-number="18">    <span class="fu">|</span> rtsSupportsBoundThreads <span class="fu">=</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb1-19" data-line-number="19"><span class="co">-- snip --</span></a>
-<a class="sourceLine" id="cb1-20" data-line-number="20">        entry <span class="ot">&lt;-</span> newStablePtr (myThreadId <span class="fu">&gt;&gt;=</span> putMVar mv <span class="fu">&gt;&gt;</span> action_plus)</a>
-<a class="sourceLine" id="cb1-21" data-line-number="21">        err <span class="ot">&lt;-</span> forkOS_createThread entry</a>
-<a class="sourceLine" id="cb1-22" data-line-number="22">        when (err <span class="fu">/=</span> <span class="dv">0</span>) <span class="fu">$</span> fail <span class="st">&quot;Cannot create OS thread.&quot;</span></a>
-<a class="sourceLine" id="cb1-23" data-line-number="23">        tid <span class="ot">&lt;-</span> takeMVar mv</a>
-<a class="sourceLine" id="cb1-24" data-line-number="24">        freeStablePtr entry</a>
-<a class="sourceLine" id="cb1-25" data-line-number="25">        return tid</a></code></pre></div>
-<div class="sourceCode" id="cb2"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="co">/* File: ghc/rts/posix/OSThreads.c */</span></a>
-<a class="sourceLine" id="cb2-2" data-line-number="2"><span class="dt">static</span> <span class="dt">void</span> *</a>
-<a class="sourceLine" id="cb2-3" data-line-number="3">forkOS_createThreadWrapper ( <span class="dt">void</span> * entry )</a>
-<a class="sourceLine" id="cb2-4" data-line-number="4">{</a>
-<a class="sourceLine" id="cb2-5" data-line-number="5">    Capability *cap;</a>
-<a class="sourceLine" id="cb2-6" data-line-number="6">    cap = rts_lock();</a>
-<a class="sourceLine" id="cb2-7" data-line-number="7">    rts_evalStableIO(&amp;cap, (HsStablePtr) entry, NULL);</a>
-<a class="sourceLine" id="cb2-8" data-line-number="8">    rts_unlock(cap);</a>
-<a class="sourceLine" id="cb2-9" data-line-number="9">    <span class="cf">return</span> NULL;</a>
-<a class="sourceLine" id="cb2-10" data-line-number="10">}</a>
-<a class="sourceLine" id="cb2-11" data-line-number="11"></a>
-<a class="sourceLine" id="cb2-12" data-line-number="12"><span class="dt">int</span></a>
-<a class="sourceLine" id="cb2-13" data-line-number="13">forkOS_createThread ( HsStablePtr entry )</a>
-<a class="sourceLine" id="cb2-14" data-line-number="14">{</a>
-<a class="sourceLine" id="cb2-15" data-line-number="15">    pthread_t tid;</a>
-<a class="sourceLine" id="cb2-16" data-line-number="16">    <span class="dt">int</span> result = pthread_create(&amp;tid, NULL,</a>
-<a class="sourceLine" id="cb2-17" data-line-number="17">				forkOS_createThreadWrapper, (<span class="dt">void</span>*)entry);</a>
-<a class="sourceLine" id="cb2-18" data-line-number="18">    <span class="cf">if</span>(!result)</a>
-<a class="sourceLine" id="cb2-19" data-line-number="19">        pthread_detach(tid);</a>
-<a class="sourceLine" id="cb2-20" data-line-number="20">    <span class="cf">return</span> result;</a>
-<a class="sourceLine" id="cb2-21" data-line-number="21">}</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb1-1" title="1"><span class="co">-- File: ghc/libraries/base/Control/Concurrent.hs</span></a>
+<a class="sourceLine" id="cb1-2" title="2">foreign export ccall forkOS_entry</a>
+<a class="sourceLine" id="cb1-3" title="3"><span class="ot">    ::</span> <span class="dt">StablePtr</span> (<span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</a>
+<a class="sourceLine" id="cb1-4" title="4"></a>
+<a class="sourceLine" id="cb1-5" title="5">foreign <span class="kw">import</span> ccall &quot;forkOS_entry&quot; forkOS_entry_reimported</a>
+<a class="sourceLine" id="cb1-6" title="6"><span class="ot">    ::</span> <span class="dt">StablePtr</span> (<span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</a>
+<a class="sourceLine" id="cb1-7" title="7"></a>
+<a class="sourceLine" id="cb1-8" title="8"><span class="ot">forkOS_entry ::</span> <span class="dt">StablePtr</span> (<span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</a>
+<a class="sourceLine" id="cb1-9" title="9">forkOS_entry stableAction <span class="fu">=</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb1-10" title="10">        action <span class="ot">&lt;-</span> deRefStablePtr stableAction</a>
+<a class="sourceLine" id="cb1-11" title="11">        action</a>
+<a class="sourceLine" id="cb1-12" title="12"></a>
+<a class="sourceLine" id="cb1-13" title="13">foreign <span class="kw">import</span> ccall forkOS_createThread</a>
+<a class="sourceLine" id="cb1-14" title="14"><span class="ot">    ::</span> <span class="dt">StablePtr</span> (<span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">CInt</span></a>
+<a class="sourceLine" id="cb1-15" title="15"></a>
+<a class="sourceLine" id="cb1-16" title="16"><span class="ot">forkOS ::</span> <span class="dt">IO</span> () <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">ThreadId</span></a>
+<a class="sourceLine" id="cb1-17" title="17">forkOS action0</a>
+<a class="sourceLine" id="cb1-18" title="18">    <span class="fu">|</span> rtsSupportsBoundThreads <span class="fu">=</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb1-19" title="19"><span class="co">-- snip --</span></a>
+<a class="sourceLine" id="cb1-20" title="20">        entry <span class="ot">&lt;-</span> newStablePtr (myThreadId <span class="fu">&gt;&gt;=</span> putMVar mv <span class="fu">&gt;&gt;</span> action_plus)</a>
+<a class="sourceLine" id="cb1-21" title="21">        err <span class="ot">&lt;-</span> forkOS_createThread entry</a>
+<a class="sourceLine" id="cb1-22" title="22">        when (err <span class="fu">/=</span> <span class="dv">0</span>) <span class="fu">$</span> <span class="fu">fail</span> <span class="st">&quot;Cannot create OS thread.&quot;</span></a>
+<a class="sourceLine" id="cb1-23" title="23">        tid <span class="ot">&lt;-</span> takeMVar mv</a>
+<a class="sourceLine" id="cb1-24" title="24">        freeStablePtr entry</a>
+<a class="sourceLine" id="cb1-25" title="25">        <span class="fu">return</span> tid</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb2-1" title="1"><span class="co">/* File: ghc/rts/posix/OSThreads.c */</span></a>
+<a class="sourceLine" id="cb2-2" title="2"><span class="dt">static</span> <span class="dt">void</span> *</a>
+<a class="sourceLine" id="cb2-3" title="3">forkOS_createThreadWrapper ( <span class="dt">void</span> * entry )</a>
+<a class="sourceLine" id="cb2-4" title="4">{</a>
+<a class="sourceLine" id="cb2-5" title="5">    Capability *cap;</a>
+<a class="sourceLine" id="cb2-6" title="6">    cap = rts_lock();</a>
+<a class="sourceLine" id="cb2-7" title="7">    rts_evalStableIO(&amp;cap, (HsStablePtr) entry, NULL);</a>
+<a class="sourceLine" id="cb2-8" title="8">    rts_unlock(cap);</a>
+<a class="sourceLine" id="cb2-9" title="9">    <span class="cf">return</span> NULL;</a>
+<a class="sourceLine" id="cb2-10" title="10">}</a>
+<a class="sourceLine" id="cb2-11" title="11"></a>
+<a class="sourceLine" id="cb2-12" title="12"><span class="dt">int</span></a>
+<a class="sourceLine" id="cb2-13" title="13">forkOS_createThread ( HsStablePtr entry )</a>
+<a class="sourceLine" id="cb2-14" title="14">{</a>
+<a class="sourceLine" id="cb2-15" title="15">    pthread_t tid;</a>
+<a class="sourceLine" id="cb2-16" title="16">    <span class="dt">int</span> result = pthread_create(&amp;tid, NULL,</a>
+<a class="sourceLine" id="cb2-17" title="17">				forkOS_createThreadWrapper, (<span class="dt">void</span>*)entry);</a>
+<a class="sourceLine" id="cb2-18" title="18">    <span class="cf">if</span>(!result)</a>
+<a class="sourceLine" id="cb2-19" title="19">        pthread_detach(tid);</a>
+<a class="sourceLine" id="cb2-20" title="20">    <span class="cf">return</span> result;</a>
+<a class="sourceLine" id="cb2-21" title="21">}</a></code></pre></div>
 <p>どうやらGHCではStablePtrはFFIを越えることができて、その型はHsStablePtrのようでゲソ。 このようなコードをAjhcでも実現できなイカ？ ところが <a href="https://github.com/ajhc/ajhc-dumpyard/tree/master/try_pthread1">それぽいコード</a> を書いてみたところエラーになるじゃなイカ。 これはStablePtrは単なるスマートポインタになるはずでゲソが、 どうもこのスマートポインタを直接C言語コードに渡すのが禁止されているようでゲソ。</p>
 <pre><code>$ make
 --snip--
@@ -130,57 +130,57 @@ Compiling...
 jhc-conc-pthread/Jhc/Conc.hs:28  - Error: caught error processing decl: user error (createFunc: attempt to pass a void argument)
 jhc-conc-pthread/Jhc/Conc.hs:28  - Error: Type 'Foreign.StablePtr.StablePtr (IO ())' cannot be used in a foreign declaration</code></pre>
 <p>このスマートポインタを直接C言語コードに見せる行為をはたして許して良いものか考えどころでゲソ。。。 イカはforeignで使って良い要素を判定している箇所の抜き出しでゲソ。</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="co">-- File: ajhc/src/E/FromHs.hs</span></a>
-<a class="sourceLine" id="cb4-2" data-line-number="2"><span class="kw">instance</span> <span class="dt">DataTableMonad</span> <span class="dt">C</span> <span class="kw">where</span></a>
-<a class="sourceLine" id="cb4-3" data-line-number="3">    getDataTable <span class="fu">=</span> asks ceDataTable</a>
-<a class="sourceLine" id="cb4-4" data-line-number="4"></a>
-<a class="sourceLine" id="cb4-5" data-line-number="5">ffiTypeInfo bad t cont <span class="fu">=</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb4-6" data-line-number="6">    dataTable <span class="ot">&lt;-</span> getDataTable</a>
-<a class="sourceLine" id="cb4-7" data-line-number="7">    <span class="kw">case</span> lookupExtTypeInfo dataTable t <span class="kw">of</span></a>
-<a class="sourceLine" id="cb4-8" data-line-number="8">        <span class="dt">Just</span> r <span class="ot">-&gt;</span> cont r</a>
-<a class="sourceLine" id="cb4-9" data-line-number="9">        <span class="dt">Nothing</span> <span class="ot">-&gt;</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb4-10" data-line-number="10">            sl <span class="ot">&lt;-</span> getSrcLoc</a>
-<a class="sourceLine" id="cb4-11" data-line-number="11">            liftIO <span class="fu">$</span> warn sl <span class="dt">InvalidFFIType</span> <span class="fu">$</span> printf <span class="st">&quot;Type '%s' cannot be used in a foreign declaration&quot;</span> (pprint<span class="ot"> t ::</span> <span class="dt">String</span>)</a>
-<a class="sourceLine" id="cb4-12" data-line-number="12">            return bad</a>
-<a class="sourceLine" id="cb4-13" data-line-number="13"></a>
-<a class="sourceLine" id="cb4-14" data-line-number="14">convertDecls tiData props classHierarchy assumps dataTable hsDecls <span class="fu">=</span> res <span class="kw">where</span></a>
-<a class="sourceLine" id="cb4-15" data-line-number="15">    res <span class="fu">=</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb4-16" data-line-number="16">        (a,ws) <span class="ot">&lt;-</span> evalRWST ans ceEnv <span class="dv">2</span></a>
-<a class="sourceLine" id="cb4-17" data-line-number="17">        mapM_ addWarning ws</a>
-<a class="sourceLine" id="cb4-18" data-line-number="18">        return a</a>
-<a class="sourceLine" id="cb4-19" data-line-number="19">    ceEnv <span class="fu">=</span> <span class="dt">CeEnv</span> {</a>
-<a class="sourceLine" id="cb4-20" data-line-number="20">        ceCoerce <span class="fu">=</span> tiCoerce tiData,</a>
-<a class="sourceLine" id="cb4-21" data-line-number="21">        ceAssumps <span class="fu">=</span> assumps,</a>
-<a class="sourceLine" id="cb4-22" data-line-number="22">        ceFuncs <span class="fu">=</span> funcs,</a>
-<a class="sourceLine" id="cb4-23" data-line-number="23">        ceProps <span class="fu">=</span> props,</a>
-<a class="sourceLine" id="cb4-24" data-line-number="24">        ceSrcLoc <span class="fu">=</span> bogusASrcLoc,</a>
-<a class="sourceLine" id="cb4-25" data-line-number="25">        ceDataTable <span class="fu">=</span> dataTable</a>
-<a class="sourceLine" id="cb4-26" data-line-number="26">        }</a>
-<a class="sourceLine" id="cb4-27" data-line-number="27"></a>
-<a class="sourceLine" id="cb4-28" data-line-number="28"><span class="co">-- File: ajhc/src/E/Main.hs</span></a>
-<a class="sourceLine" id="cb4-29" data-line-number="29"><span class="ot">processDecls ::</span></a>
-<a class="sourceLine" id="cb4-30" data-line-number="30">    <span class="dt">CollectedHo</span>             <span class="co">-- ^ Collected ho</span></a>
-<a class="sourceLine" id="cb4-31" data-line-number="31">    <span class="ot">-&gt;</span> <span class="dt">Ho</span>                   <span class="co">-- ^ preliminary haskell object  data</span></a>
-<a class="sourceLine" id="cb4-32" data-line-number="32">    <span class="ot">-&gt;</span> <span class="dt">TiData</span>               <span class="co">-- ^ front end output</span></a>
-<a class="sourceLine" id="cb4-33" data-line-number="33">    <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">CollectedHo</span>,<span class="dt">Ho</span>)  <span class="co">-- ^ (new accumulated ho, final ho for this modules)</span></a>
-<a class="sourceLine" id="cb4-34" data-line-number="34">processDecls cho ho' tiData <span class="fu">=</span> withStackStatus <span class="st">&quot;processDecls&quot;</span> <span class="fu">$</span>  <span class="kw">do</span></a>
-<a class="sourceLine" id="cb4-35" data-line-number="35"><span class="co">--snip--</span></a>
-<a class="sourceLine" id="cb4-36" data-line-number="36">    <span class="kw">let</span> derives <span class="fu">=</span> (collectDeriving originalDecls)</a>
-<a class="sourceLine" id="cb4-37" data-line-number="37">    <span class="kw">let</span> dataTable <span class="fu">=</span> toDataTable (getConstructorKinds (hoKinds <span class="fu">$</span> hoTcInfo ho'))</a>
-<a class="sourceLine" id="cb4-38" data-line-number="38">            (tiAllAssumptions tiData) originalDecls (hoDataTable <span class="fu">$</span> hoBuild ho)</a>
-<a class="sourceLine" id="cb4-39" data-line-number="39">        classInstances <span class="fu">=</span> deriveClasses (choCombinators cho) fullDataTable derives</a>
-<a class="sourceLine" id="cb4-40" data-line-number="40">        fullDataTable <span class="fu">=</span> dataTable <span class="ot">`mappend`</span> hoDataTable (hoBuild ho)</a>
-<a class="sourceLine" id="cb4-41" data-line-number="41"><span class="co">--snip--</span></a>
-<a class="sourceLine" id="cb4-42" data-line-number="42">    ds' <span class="ot">&lt;-</span> convertDecls tiData theProps</a>
-<a class="sourceLine" id="cb4-43" data-line-number="43">        (hoClassHierarchy <span class="fu">$</span> hoTcInfo ho') allAssumps  fullDataTable decls</a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb4-1" title="1"><span class="co">-- File: ajhc/src/E/FromHs.hs</span></a>
+<a class="sourceLine" id="cb4-2" title="2"><span class="kw">instance</span> <span class="dt">DataTableMonad</span> <span class="dt">C</span> <span class="kw">where</span></a>
+<a class="sourceLine" id="cb4-3" title="3">    getDataTable <span class="fu">=</span> asks ceDataTable</a>
+<a class="sourceLine" id="cb4-4" title="4"></a>
+<a class="sourceLine" id="cb4-5" title="5">ffiTypeInfo bad t cont <span class="fu">=</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb4-6" title="6">    dataTable <span class="ot">&lt;-</span> getDataTable</a>
+<a class="sourceLine" id="cb4-7" title="7">    <span class="kw">case</span> lookupExtTypeInfo dataTable t <span class="kw">of</span></a>
+<a class="sourceLine" id="cb4-8" title="8">        <span class="dt">Just</span> r <span class="ot">-&gt;</span> cont r</a>
+<a class="sourceLine" id="cb4-9" title="9">        <span class="dt">Nothing</span> <span class="ot">-&gt;</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb4-10" title="10">            sl <span class="ot">&lt;-</span> getSrcLoc</a>
+<a class="sourceLine" id="cb4-11" title="11">            liftIO <span class="fu">$</span> warn sl <span class="dt">InvalidFFIType</span> <span class="fu">$</span> printf <span class="st">&quot;Type '%s' cannot be used in a foreign declaration&quot;</span> (pprint<span class="ot"> t ::</span> <span class="dt">String</span>)</a>
+<a class="sourceLine" id="cb4-12" title="12">            <span class="fu">return</span> bad</a>
+<a class="sourceLine" id="cb4-13" title="13"></a>
+<a class="sourceLine" id="cb4-14" title="14">convertDecls tiData props classHierarchy assumps dataTable hsDecls <span class="fu">=</span> res <span class="kw">where</span></a>
+<a class="sourceLine" id="cb4-15" title="15">    res <span class="fu">=</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb4-16" title="16">        (a,ws) <span class="ot">&lt;-</span> evalRWST ans ceEnv <span class="dv">2</span></a>
+<a class="sourceLine" id="cb4-17" title="17">        <span class="fu">mapM_</span> addWarning ws</a>
+<a class="sourceLine" id="cb4-18" title="18">        <span class="fu">return</span> a</a>
+<a class="sourceLine" id="cb4-19" title="19">    ceEnv <span class="fu">=</span> <span class="dt">CeEnv</span> {</a>
+<a class="sourceLine" id="cb4-20" title="20">        ceCoerce <span class="fu">=</span> tiCoerce tiData,</a>
+<a class="sourceLine" id="cb4-21" title="21">        ceAssumps <span class="fu">=</span> assumps,</a>
+<a class="sourceLine" id="cb4-22" title="22">        ceFuncs <span class="fu">=</span> funcs,</a>
+<a class="sourceLine" id="cb4-23" title="23">        ceProps <span class="fu">=</span> props,</a>
+<a class="sourceLine" id="cb4-24" title="24">        ceSrcLoc <span class="fu">=</span> bogusASrcLoc,</a>
+<a class="sourceLine" id="cb4-25" title="25">        ceDataTable <span class="fu">=</span> dataTable</a>
+<a class="sourceLine" id="cb4-26" title="26">        }</a>
+<a class="sourceLine" id="cb4-27" title="27"></a>
+<a class="sourceLine" id="cb4-28" title="28"><span class="co">-- File: ajhc/src/E/Main.hs</span></a>
+<a class="sourceLine" id="cb4-29" title="29"><span class="ot">processDecls ::</span></a>
+<a class="sourceLine" id="cb4-30" title="30">    <span class="dt">CollectedHo</span>             <span class="co">-- ^ Collected ho</span></a>
+<a class="sourceLine" id="cb4-31" title="31">    <span class="ot">-&gt;</span> <span class="dt">Ho</span>                   <span class="co">-- ^ preliminary haskell object  data</span></a>
+<a class="sourceLine" id="cb4-32" title="32">    <span class="ot">-&gt;</span> <span class="dt">TiData</span>               <span class="co">-- ^ front end output</span></a>
+<a class="sourceLine" id="cb4-33" title="33">    <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">CollectedHo</span>,<span class="dt">Ho</span>)  <span class="co">-- ^ (new accumulated ho, final ho for this modules)</span></a>
+<a class="sourceLine" id="cb4-34" title="34">processDecls cho ho' tiData <span class="fu">=</span> withStackStatus <span class="st">&quot;processDecls&quot;</span> <span class="fu">$</span>  <span class="kw">do</span></a>
+<a class="sourceLine" id="cb4-35" title="35"><span class="co">--snip--</span></a>
+<a class="sourceLine" id="cb4-36" title="36">    <span class="kw">let</span> derives <span class="fu">=</span> (collectDeriving originalDecls)</a>
+<a class="sourceLine" id="cb4-37" title="37">    <span class="kw">let</span> dataTable <span class="fu">=</span> toDataTable (getConstructorKinds (hoKinds <span class="fu">$</span> hoTcInfo ho'))</a>
+<a class="sourceLine" id="cb4-38" title="38">            (tiAllAssumptions tiData) originalDecls (hoDataTable <span class="fu">$</span> hoBuild ho)</a>
+<a class="sourceLine" id="cb4-39" title="39">        classInstances <span class="fu">=</span> deriveClasses (choCombinators cho) fullDataTable derives</a>
+<a class="sourceLine" id="cb4-40" title="40">        fullDataTable <span class="fu">=</span> dataTable <span class="ot">`mappend`</span> hoDataTable (hoBuild ho)</a>
+<a class="sourceLine" id="cb4-41" title="41"><span class="co">--snip--</span></a>
+<a class="sourceLine" id="cb4-42" title="42">    ds' <span class="ot">&lt;-</span> convertDecls tiData theProps</a>
+<a class="sourceLine" id="cb4-43" title="43">        (hoClassHierarchy <span class="fu">$</span> hoTcInfo ho') allAssumps  fullDataTable decls</a></code></pre></div>
 <p>もう一つ気になるのはdeRefStablePtrを使ってIOを元に戻しても実行不能という点でゲソ。</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb5-1" data-line-number="1"><span class="kw">import</span> <span class="dt">Foreign.StablePtr</span></a>
-<a class="sourceLine" id="cb5-2" data-line-number="2"></a>
-<a class="sourceLine" id="cb5-3" data-line-number="3"><span class="ot">main ::</span> <span class="dt">IO</span> ()</a>
-<a class="sourceLine" id="cb5-4" data-line-number="4">main <span class="fu">=</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb5-5" data-line-number="5">  p <span class="ot">&lt;-</span> newStablePtr <span class="fu">$</span> print <span class="st">&quot;hoge&quot;</span></a>
-<a class="sourceLine" id="cb5-6" data-line-number="6">  d <span class="ot">&lt;-</span> deRefStablePtr p</a>
-<a class="sourceLine" id="cb5-7" data-line-number="7">  d</a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb5-1" title="1"><span class="kw">import</span> <span class="dt">Foreign.StablePtr</span></a>
+<a class="sourceLine" id="cb5-2" title="2"></a>
+<a class="sourceLine" id="cb5-3" title="3"><span class="ot">main ::</span> <span class="dt">IO</span> ()</a>
+<a class="sourceLine" id="cb5-4" title="4">main <span class="fu">=</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb5-5" title="5">  p <span class="ot">&lt;-</span> newStablePtr <span class="fu">$</span> <span class="fu">print</span> <span class="st">&quot;hoge&quot;</span></a>
+<a class="sourceLine" id="cb5-6" title="6">  d <span class="ot">&lt;-</span> deRefStablePtr p</a>
+<a class="sourceLine" id="cb5-7" title="7">  d</a></code></pre></div>
 <p>上のコードをコンパイルすると、イカのようなエラーになるでゲソ。</p>
 <pre><code>$ ajhc --tdir=tmp -o Main Main.hs
 --snip--
@@ -210,30 +210,30 @@ tmp/main_code.c:1146:68: note: each undeclared identifier is reported only once 
 Exiting abnormally. Work directory is 'tmp'
 ajhc: user error (C code did not compile.)</code></pre>
 <p>これはイカのようなC言語コードをAjhcが吐き出すためでゲソ。 もうちょっと小細工すれば関数ポインタが使えるようになりそうじゃなイカ？</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="dt">static</span> <span class="dt">void</span> A_STD</a>
-<a class="sourceLine" id="cb8-2" data-line-number="2">ftheMain(gc_t gc)</a>
-<a class="sourceLine" id="cb8-3" data-line-number="3">{</a>
-<a class="sourceLine" id="cb8-4" data-line-number="4">        saved_gc = gc;</a>
-<a class="sourceLine" id="cb8-5" data-line-number="5">        (<span class="dt">uint32_t</span>)pthread_create((pthread_t*)<span class="dv">0</span>,(pthread_attr_t*)<span class="dv">0</span>,(FunPtr)((<span class="dt">uintptr_t</span>)&amp;testThread),(HsPtr)<span class="dv">0</span>);</a>
-<a class="sourceLine" id="cb8-6" data-line-number="6">        <span class="cf">return</span>;</a>
-<a class="sourceLine" id="cb8-7" data-line-number="7">}</a>
-<a class="sourceLine" id="cb8-8" data-line-number="8"></a>
-<a class="sourceLine" id="cb8-9" data-line-number="9">HsPtr</a>
-<a class="sourceLine" id="cb8-10" data-line-number="10">testThread(HsPtr x30)</a>
-<a class="sourceLine" id="cb8-11" data-line-number="11">{</a>
-<a class="sourceLine" id="cb8-12" data-line-number="12">        <span class="cf">return</span> (HsPtr)fFE$__CCall_testThread(saved_gc,(<span class="dt">uintptr_t</span>)x30);</a>
-<a class="sourceLine" id="cb8-13" data-line-number="13">}</a></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb8-1" title="1"><span class="dt">static</span> <span class="dt">void</span> A_STD</a>
+<a class="sourceLine" id="cb8-2" title="2">ftheMain(gc_t gc)</a>
+<a class="sourceLine" id="cb8-3" title="3">{</a>
+<a class="sourceLine" id="cb8-4" title="4">        saved_gc = gc;</a>
+<a class="sourceLine" id="cb8-5" title="5">        (<span class="dt">uint32_t</span>)pthread_create((pthread_t*)<span class="dv">0</span>,(pthread_attr_t*)<span class="dv">0</span>,(FunPtr)((<span class="dt">uintptr_t</span>)&amp;testThread),(HsPtr)<span class="dv">0</span>);</a>
+<a class="sourceLine" id="cb8-6" title="6">        <span class="cf">return</span>;</a>
+<a class="sourceLine" id="cb8-7" title="7">}</a>
+<a class="sourceLine" id="cb8-8" title="8"></a>
+<a class="sourceLine" id="cb8-9" title="9">HsPtr</a>
+<a class="sourceLine" id="cb8-10" title="10">testThread(HsPtr x30)</a>
+<a class="sourceLine" id="cb8-11" title="11">{</a>
+<a class="sourceLine" id="cb8-12" title="12">        <span class="cf">return</span> (HsPtr)fFE$__CCall_testThread(saved_gc,(<span class="dt">uintptr_t</span>)x30);</a>
+<a class="sourceLine" id="cb8-13" title="13">}</a></code></pre></div>
 <p>どうも上の不具合はイカのpatchで簡単に修正できるようでゲソ。たぶんこれはイージーミスだと思うでゲソ。</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode diff"><code class="sourceCode diff"><a class="sourceLine" id="cb9-1" data-line-number="1"><span class="kw">--- a/lib/jhc/Jhc/Type/Ptr.hs</span></a>
-<a class="sourceLine" id="cb9-2" data-line-number="2"><span class="dt">+++ b/lib/jhc/Jhc/Type/Ptr.hs</span></a>
-<a class="sourceLine" id="cb9-3" data-line-number="3"><span class="dt">@@ -3,4 +3,4 @@ module Jhc.Type.Ptr where</span></a>
-<a class="sourceLine" id="cb9-4" data-line-number="4"> import Jhc.Prim.Bits</a>
-<a class="sourceLine" id="cb9-5" data-line-number="5"></a>
-<a class="sourceLine" id="cb9-6" data-line-number="6"> data {-# CTYPE &quot;HsPtr&quot; #-} Ptr a = Ptr Addr_</a>
-<a class="sourceLine" id="cb9-7" data-line-number="7"><span class="st">-data {-# CTYPE &quot;FunPtr&quot; #-} FunPtr a = FunPtr FunAddr_</span></a>
-<a class="sourceLine" id="cb9-8" data-line-number="8"><span class="va">+data {-# CTYPE &quot;HsFunPtr&quot; #-} FunPtr a = FunPtr FunAddr_</span></a></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode diff"><code class="sourceCode diff"><a class="sourceLine" id="cb9-1" title="1"><span class="kw">--- a/lib/jhc/Jhc/Type/Ptr.hs</span></a>
+<a class="sourceLine" id="cb9-2" title="2"><span class="dt">+++ b/lib/jhc/Jhc/Type/Ptr.hs</span></a>
+<a class="sourceLine" id="cb9-3" title="3"><span class="dt">@@ -3,4 +3,4 @@ module Jhc.Type.Ptr where</span></a>
+<a class="sourceLine" id="cb9-4" title="4"> import Jhc.Prim.Bits</a>
+<a class="sourceLine" id="cb9-5" title="5"></a>
+<a class="sourceLine" id="cb9-6" title="6"> data {-# CTYPE &quot;HsPtr&quot; #-} Ptr a = Ptr Addr_</a>
+<a class="sourceLine" id="cb9-7" title="7"><span class="st">-data {-# CTYPE &quot;FunPtr&quot; #-} FunPtr a = FunPtr FunAddr_</span></a>
+<a class="sourceLine" id="cb9-8" title="8"><span class="va">+data {-# CTYPE &quot;HsFunPtr&quot; #-} FunPtr a = FunPtr FunAddr_</span></a></code></pre></div>
 <p>しかしこれでFunPtrを使った関数ポインタを実現できたんでゲソが、 任意のIOを関数ポインタ化できることにはならないでゲソ。 具体的にはイカのような型になってしまっているforkOSの引数をIO ()にしたいでゲソ。</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb10-1" data-line-number="1"><span class="ot">forkOS ::</span> <span class="dt">FunPtr</span> (<span class="dt">Ptr</span> () <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Ptr</span> ())) <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">Int</span></a></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb10-1" title="1"><span class="ot">forkOS ::</span> <span class="dt">FunPtr</span> (<span class="dt">Ptr</span> () <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Ptr</span> ())) <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">Int</span></a></code></pre></div>
 <p>GHCはどんな魔法を使っているのでゲソ？ <a href="https://github.com/ajhc/ajhc-dumpyard/tree/master/ghc_foreign_wrapper">GHCでforeign import ccall “wrapper”を使う例</a> を解析すれば何かわかるかもしれないでゲソ。 freeHaskellFunPtrの行方を探ったところ、 どうもghc/rts/Adjustor.cでwrapperが作ったコード片のラッパーを作るようでゲソ。 createAdjustorというのが主犯のようじゃなイカ。</p>
 <p>とりあえず任意のIOをFunPtrに変換するのはキツいにしても、 定数的なIOはラベルをふるだけなのだから比較的簡単にFunPtr化できるんじゃなイカ？</p>
 <p><a href="http://hackage.haskell.org/trac/ghc/wiki/Commentary/Rts/FFI">Commentary/Rts/FFI – GHC</a> を読んでみたでゲソが、具体的な実現方法については言及がないでゲソ。</p>
@@ -245,41 +245,41 @@ ajhc: user error (C code did not compile.)</code></pre>
 <pre><code>ajhc: Grin.FromE.compile'.ce in function: theMain
 can't grok expression: &lt;fromBang_ x128471745∷IO ()&gt; x62470114</code></pre>
 <p>このメッセージはcompile’関数が以下の型を意図せず受け取ったことをしめしているでゲソ。</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb12-1" data-line-number="1">(<span class="dt">EAp</span> (<span class="dt">EPrim</span> (<span class="dt">PrimPrim</span> <span class="st">&quot;fromBang_&quot;</span>) [x] e1) e2)</a></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb12-1" title="1">(<span class="dt">EAp</span> (<span class="dt">EPrim</span> (<span class="dt">PrimPrim</span> <span class="st">&quot;fromBang_&quot;</span>) [x] e1) e2)</a></code></pre></div>
 <p>ということはこのEApという型はどこかで変換されるべきで、そのしくみから漏れてきたと考えられるじゃなイカ。 しかし仮にイカのようなpatchをあてても…</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode diff"><code class="sourceCode diff"><a class="sourceLine" id="cb13-1" data-line-number="1"><span class="kw">--- a/lib/haskell-extras/Foreign/StablePtr.hs</span></a>
-<a class="sourceLine" id="cb13-2" data-line-number="2"><span class="dt">+++ b/lib/haskell-extras/Foreign/StablePtr.hs</span></a>
-<a class="sourceLine" id="cb13-3" data-line-number="3"><span class="dt">@@ -5,7 +5,9 @@ module Foreign.StablePtr(</span></a>
-<a class="sourceLine" id="cb13-4" data-line-number="4">     castPtrToStablePtr,</a>
-<a class="sourceLine" id="cb13-5" data-line-number="5">     newStablePtr,</a>
-<a class="sourceLine" id="cb13-6" data-line-number="6">     deRefStablePtr,</a>
-<a class="sourceLine" id="cb13-7" data-line-number="7"><span class="st">-    freeStablePtr</span></a>
-<a class="sourceLine" id="cb13-8" data-line-number="8"><span class="va">+    freeStablePtr,</span></a>
-<a class="sourceLine" id="cb13-9" data-line-number="9"><span class="va">+    newStablePtrIO,</span></a>
-<a class="sourceLine" id="cb13-10" data-line-number="10"><span class="va">+    deRefStablePtrIO,</span></a>
-<a class="sourceLine" id="cb13-11" data-line-number="11">     ) where</a>
-<a class="sourceLine" id="cb13-12" data-line-number="12"> </a>
-<a class="sourceLine" id="cb13-13" data-line-number="13"> import Jhc.Prim.Rts</a>
-<a class="sourceLine" id="cb13-14" data-line-number="14"><span class="dt">@@ -37,6 +39,19 @@ deRefStablePtr x = do</span></a>
-<a class="sourceLine" id="cb13-15" data-line-number="15">     fromUIO $ \w -&gt; case c_derefStablePtr (toBang_ x) w of</a>
-<a class="sourceLine" id="cb13-16" data-line-number="16">         (# w', s #) -&gt; (# w', fromBang_ s #)</a>
-<a class="sourceLine" id="cb13-17" data-line-number="17"> </a>
-<a class="sourceLine" id="cb13-18" data-line-number="18"><span class="va">+newStablePtrIO :: IO a -&gt; IO (StablePtr (IO a))</span></a>
-<a class="sourceLine" id="cb13-19" data-line-number="19"><span class="va">+newStablePtrIO x = do</span></a>
-<a class="sourceLine" id="cb13-20" data-line-number="20"><span class="va">+    fromUIO $ \w -&gt; case c_newStablePtrIO x w of</span></a>
-<a class="sourceLine" id="cb13-21" data-line-number="21"><span class="va">+        (# w', s #) -&gt; (# w', s #)</span></a>
-<a class="sourceLine" id="cb13-22" data-line-number="22"><span class="va">+</span></a>
-<a class="sourceLine" id="cb13-23" data-line-number="23"><span class="va">+deRefStablePtrIO :: StablePtr (IO a) -&gt; IO (IO a)</span></a>
-<a class="sourceLine" id="cb13-24" data-line-number="24"><span class="va">+deRefStablePtrIO x = do</span></a>
-<a class="sourceLine" id="cb13-25" data-line-number="25"><span class="va">+    fromUIO $ \w -&gt; case c_derefStablePtrIO x w of</span></a>
-<a class="sourceLine" id="cb13-26" data-line-number="26"><span class="va">+        (# w', s #) -&gt; (# w', s #)</span></a>
-<a class="sourceLine" id="cb13-27" data-line-number="27"><span class="va">+</span></a>
-<a class="sourceLine" id="cb13-28" data-line-number="28"> foreign import ccall unsafe &quot;rts/stableptr.c c_freeStablePtr&quot;  c_freeStablePtr   :: Bang_ (StablePtr a) -&gt; IO ()</a>
-<a class="sourceLine" id="cb13-29" data-line-number="29"> foreign import ccall unsafe &quot;rts/stableptr.c c_newStablePtr&quot;   c_newStablePtr    :: Bang_ a -&gt; UIO (Bang_ (StablePtr a))</a>
-<a class="sourceLine" id="cb13-30" data-line-number="30"> foreign import ccall unsafe &quot;rts/stableptr.c c_derefStablePtr&quot; c_derefStablePtr :: Bang_ (StablePtr a) -&gt; UIO (Bang_ a)</a>
-<a class="sourceLine" id="cb13-31" data-line-number="31"><span class="va">+</span></a>
-<a class="sourceLine" id="cb13-32" data-line-number="32"><span class="va">+foreign import ccall unsafe &quot;rts/stableptr.c c_newStablePtr&quot;   c_newStablePtrIO   :: IO a -&gt; UIO (StablePtr (IO a))</span></a>
-<a class="sourceLine" id="cb13-33" data-line-number="33"><span class="va">+foreign import ccall unsafe &quot;rts/stableptr.c c_derefStablePtr&quot; c_derefStablePtrIO :: StablePtr (IO a) -&gt; UIO (IO a)</span></a></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode diff"><code class="sourceCode diff"><a class="sourceLine" id="cb13-1" title="1"><span class="kw">--- a/lib/haskell-extras/Foreign/StablePtr.hs</span></a>
+<a class="sourceLine" id="cb13-2" title="2"><span class="dt">+++ b/lib/haskell-extras/Foreign/StablePtr.hs</span></a>
+<a class="sourceLine" id="cb13-3" title="3"><span class="dt">@@ -5,7 +5,9 @@ module Foreign.StablePtr(</span></a>
+<a class="sourceLine" id="cb13-4" title="4">     castPtrToStablePtr,</a>
+<a class="sourceLine" id="cb13-5" title="5">     newStablePtr,</a>
+<a class="sourceLine" id="cb13-6" title="6">     deRefStablePtr,</a>
+<a class="sourceLine" id="cb13-7" title="7"><span class="st">-    freeStablePtr</span></a>
+<a class="sourceLine" id="cb13-8" title="8"><span class="va">+    freeStablePtr,</span></a>
+<a class="sourceLine" id="cb13-9" title="9"><span class="va">+    newStablePtrIO,</span></a>
+<a class="sourceLine" id="cb13-10" title="10"><span class="va">+    deRefStablePtrIO,</span></a>
+<a class="sourceLine" id="cb13-11" title="11">     ) where</a>
+<a class="sourceLine" id="cb13-12" title="12"> </a>
+<a class="sourceLine" id="cb13-13" title="13"> import Jhc.Prim.Rts</a>
+<a class="sourceLine" id="cb13-14" title="14"><span class="dt">@@ -37,6 +39,19 @@ deRefStablePtr x = do</span></a>
+<a class="sourceLine" id="cb13-15" title="15">     fromUIO $ \w -&gt; case c_derefStablePtr (toBang_ x) w of</a>
+<a class="sourceLine" id="cb13-16" title="16">         (# w', s #) -&gt; (# w', fromBang_ s #)</a>
+<a class="sourceLine" id="cb13-17" title="17"> </a>
+<a class="sourceLine" id="cb13-18" title="18"><span class="va">+newStablePtrIO :: IO a -&gt; IO (StablePtr (IO a))</span></a>
+<a class="sourceLine" id="cb13-19" title="19"><span class="va">+newStablePtrIO x = do</span></a>
+<a class="sourceLine" id="cb13-20" title="20"><span class="va">+    fromUIO $ \w -&gt; case c_newStablePtrIO x w of</span></a>
+<a class="sourceLine" id="cb13-21" title="21"><span class="va">+        (# w', s #) -&gt; (# w', s #)</span></a>
+<a class="sourceLine" id="cb13-22" title="22"><span class="va">+</span></a>
+<a class="sourceLine" id="cb13-23" title="23"><span class="va">+deRefStablePtrIO :: StablePtr (IO a) -&gt; IO (IO a)</span></a>
+<a class="sourceLine" id="cb13-24" title="24"><span class="va">+deRefStablePtrIO x = do</span></a>
+<a class="sourceLine" id="cb13-25" title="25"><span class="va">+    fromUIO $ \w -&gt; case c_derefStablePtrIO x w of</span></a>
+<a class="sourceLine" id="cb13-26" title="26"><span class="va">+        (# w', s #) -&gt; (# w', s #)</span></a>
+<a class="sourceLine" id="cb13-27" title="27"><span class="va">+</span></a>
+<a class="sourceLine" id="cb13-28" title="28"> foreign import ccall unsafe &quot;rts/stableptr.c c_freeStablePtr&quot;  c_freeStablePtr   :: Bang_ (StablePtr a) -&gt; IO ()</a>
+<a class="sourceLine" id="cb13-29" title="29"> foreign import ccall unsafe &quot;rts/stableptr.c c_newStablePtr&quot;   c_newStablePtr    :: Bang_ a -&gt; UIO (Bang_ (StablePtr a))</a>
+<a class="sourceLine" id="cb13-30" title="30"> foreign import ccall unsafe &quot;rts/stableptr.c c_derefStablePtr&quot; c_derefStablePtr :: Bang_ (StablePtr a) -&gt; UIO (Bang_ a)</a>
+<a class="sourceLine" id="cb13-31" title="31"><span class="va">+</span></a>
+<a class="sourceLine" id="cb13-32" title="32"><span class="va">+foreign import ccall unsafe &quot;rts/stableptr.c c_newStablePtr&quot;   c_newStablePtrIO   :: IO a -&gt; UIO (StablePtr (IO a))</span></a>
+<a class="sourceLine" id="cb13-33" title="33"><span class="va">+foreign import ccall unsafe &quot;rts/stableptr.c c_derefStablePtr&quot; c_derefStablePtrIO :: StablePtr (IO a) -&gt; UIO (IO a)</span></a></code></pre></div>
 <p>ajhcのコンパイルでイカのようにエラーになってしまうでゲソ。 どうやらforeign importに渡せる型は限定されているようでゲソ。</p>
 <pre><code>Compiling...
 [1 of 4] Foreign.StablePtr
@@ -287,126 +287,126 @@ lib/haskell-extras/Foreign/StablePtr.hs:56  - Error: Type 'Foreign.StablePtr.Sta
 lib/haskell-extras/Foreign/StablePtr.hs:57  - Error: Type 'IO Foreign.StablePtr.39_a' cannot be used in a foreign declaration
 make[2]: *** [haskell-extras-0.8.1.hl] エラー 1</code></pre>
 <p>じゃあUIOを経由してStablePtrを作るのはどーなんでゲソ？</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb15-1" data-line-number="1"><span class="ot">newStablePtrIO ::</span> <span class="dt">IO</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">StablePtr</span> (<span class="dt">UIO</span> a))</a>
-<a class="sourceLine" id="cb15-2" data-line-number="2">newStablePtrIO x <span class="fu">=</span> newStablePtr (unIO x)</a>
-<a class="sourceLine" id="cb15-3" data-line-number="3"></a>
-<a class="sourceLine" id="cb15-4" data-line-number="4"><span class="ot">deRefStablePtrIO ::</span> <span class="dt">StablePtr</span> (<span class="dt">UIO</span> a) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">IO</span> a)</a>
-<a class="sourceLine" id="cb15-5" data-line-number="5">deRefStablePtrIO x <span class="fu">=</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb15-6" data-line-number="6">  u <span class="ot">&lt;-</span> deRefStablePtr x</a>
-<a class="sourceLine" id="cb15-7" data-line-number="7">  return <span class="fu">$</span> fromUIO u</a></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb15-1" title="1"><span class="ot">newStablePtrIO ::</span> <span class="dt">IO</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">StablePtr</span> (<span class="dt">UIO</span> a))</a>
+<a class="sourceLine" id="cb15-2" title="2">newStablePtrIO x <span class="fu">=</span> newStablePtr (unIO x)</a>
+<a class="sourceLine" id="cb15-3" title="3"></a>
+<a class="sourceLine" id="cb15-4" title="4"><span class="ot">deRefStablePtrIO ::</span> <span class="dt">StablePtr</span> (<span class="dt">UIO</span> a) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">IO</span> a)</a>
+<a class="sourceLine" id="cb15-5" title="5">deRefStablePtrIO x <span class="fu">=</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb15-6" title="6">  u <span class="ot">&lt;-</span> deRefStablePtr x</a>
+<a class="sourceLine" id="cb15-7" title="7">  <span class="fu">return</span> <span class="fu">$</span> fromUIO u</a></code></pre></div>
 <p>エラーは変化せず、そりゃそうカー。</p>
 <p>ちょっと立ち返って、StablePtrを経由したIO ()の授受というのは本来どのようなコードになるべきなんでゲソ？ イカのようなコード、つまりIO ()をStablePtrとBang_で二重に包んだような型を作り、 この型をpthread_create()で生成されるスレッドに渡して復元してほしいでゲソ。</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb16-1" data-line-number="1"><span class="kw">import</span> <span class="dt">Foreign.StablePtr</span></a>
-<a class="sourceLine" id="cb16-2" data-line-number="2"><span class="kw">import</span> <span class="dt">Jhc.Prim.Rts</span></a>
-<a class="sourceLine" id="cb16-3" data-line-number="3"></a>
-<a class="sourceLine" id="cb16-4" data-line-number="4"><span class="ot">iToB ::</span> <span class="dt">IO</span> () <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Bang_</span> (<span class="dt">StablePtr</span> (<span class="dt">IO</span> ())))</a>
-<a class="sourceLine" id="cb16-5" data-line-number="5">iToB io <span class="fu">=</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb16-6" data-line-number="6">  s <span class="ot">&lt;-</span> newStablePtr io</a>
-<a class="sourceLine" id="cb16-7" data-line-number="7">  return <span class="fu">$</span> toBang_ s</a>
-<a class="sourceLine" id="cb16-8" data-line-number="8"></a>
-<a class="sourceLine" id="cb16-9" data-line-number="9"><span class="ot">runB ::</span> <span class="dt">Bang_</span> (<span class="dt">StablePtr</span> (<span class="dt">IO</span> ())) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</a>
-<a class="sourceLine" id="cb16-10" data-line-number="10">runB b <span class="fu">=</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb16-11" data-line-number="11">  io <span class="ot">&lt;-</span> deRefStablePtr <span class="fu">$</span> fromBang_ b</a>
-<a class="sourceLine" id="cb16-12" data-line-number="12">  io</a>
-<a class="sourceLine" id="cb16-13" data-line-number="13"></a>
-<a class="sourceLine" id="cb16-14" data-line-number="14"><span class="ot">main ::</span> <span class="dt">IO</span> ()</a>
-<a class="sourceLine" id="cb16-15" data-line-number="15">main <span class="fu">=</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb16-16" data-line-number="16">  l <span class="ot">&lt;-</span> getLine</a>
-<a class="sourceLine" id="cb16-17" data-line-number="17">  b <span class="ot">&lt;-</span> iToB <span class="fu">$</span> print l</a>
-<a class="sourceLine" id="cb16-18" data-line-number="18">  runB b</a></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb16-1" title="1"><span class="kw">import</span> <span class="dt">Foreign.StablePtr</span></a>
+<a class="sourceLine" id="cb16-2" title="2"><span class="kw">import</span> <span class="dt">Jhc.Prim.Rts</span></a>
+<a class="sourceLine" id="cb16-3" title="3"></a>
+<a class="sourceLine" id="cb16-4" title="4"><span class="ot">iToB ::</span> <span class="dt">IO</span> () <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Bang_</span> (<span class="dt">StablePtr</span> (<span class="dt">IO</span> ())))</a>
+<a class="sourceLine" id="cb16-5" title="5">iToB io <span class="fu">=</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb16-6" title="6">  s <span class="ot">&lt;-</span> newStablePtr io</a>
+<a class="sourceLine" id="cb16-7" title="7">  <span class="fu">return</span> <span class="fu">$</span> toBang_ s</a>
+<a class="sourceLine" id="cb16-8" title="8"></a>
+<a class="sourceLine" id="cb16-9" title="9"><span class="ot">runB ::</span> <span class="dt">Bang_</span> (<span class="dt">StablePtr</span> (<span class="dt">IO</span> ())) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</a>
+<a class="sourceLine" id="cb16-10" title="10">runB b <span class="fu">=</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb16-11" title="11">  io <span class="ot">&lt;-</span> deRefStablePtr <span class="fu">$</span> fromBang_ b</a>
+<a class="sourceLine" id="cb16-12" title="12">  io</a>
+<a class="sourceLine" id="cb16-13" title="13"></a>
+<a class="sourceLine" id="cb16-14" title="14"><span class="ot">main ::</span> <span class="dt">IO</span> ()</a>
+<a class="sourceLine" id="cb16-15" title="15">main <span class="fu">=</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb16-16" title="16">  l <span class="ot">&lt;-</span> <span class="fu">getLine</span></a>
+<a class="sourceLine" id="cb16-17" title="17">  b <span class="ot">&lt;-</span> iToB <span class="fu">$</span> <span class="fu">print</span> l</a>
+<a class="sourceLine" id="cb16-18" title="18">  runB b</a></code></pre></div>
 <p>ところが先のエラーがなぜ起きていたかというと予期しないEApがあったからじゃなイカ。 この変なEApだけごまかせばなんとかなるんじゃなイカ？ どうやらこのEApという型はfromAp関数でEVarを剥き出しにしてからパターンマッチされるようでゲソ。</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb17-1" data-line-number="1"><span class="co">-- File: ajhc/src/E/Type.hs</span></a>
-<a class="sourceLine" id="cb17-2" data-line-number="2"><span class="ot">fromAp ::</span> <span class="dt">E</span> <span class="ot">-&gt;</span> (<span class="dt">E</span>,[<span class="dt">E</span>])</a>
-<a class="sourceLine" id="cb17-3" data-line-number="3">fromAp e <span class="fu">=</span> f [] e <span class="kw">where</span></a>
-<a class="sourceLine" id="cb17-4" data-line-number="4">    f as (<span class="dt">EAp</span> e a) <span class="fu">=</span> f (a<span class="fu">:</span>as) e</a>
-<a class="sourceLine" id="cb17-5" data-line-number="5">    f as e  <span class="fu">=</span>  (e,as)</a>
-<a class="sourceLine" id="cb17-6" data-line-number="6"></a>
-<a class="sourceLine" id="cb17-7" data-line-number="7"><span class="co">-- File: ajhc/src/Grin/FromE.hs</span></a>
-<a class="sourceLine" id="cb17-8" data-line-number="8">    ce e <span class="fu">|</span> (<span class="dt">EVar</span> tvr,as) <span class="ot">&lt;-</span> fromAp e <span class="fu">=</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb17-9" data-line-number="9">        as <span class="ot">&lt;-</span> return <span class="fu">$</span> args as</a>
-<a class="sourceLine" id="cb17-10" data-line-number="10">        lfunc <span class="ot">&lt;-</span> asks lfuncMap</a>
-<a class="sourceLine" id="cb17-11" data-line-number="11">        <span class="kw">let</span> fty <span class="fu">=</span> toTypes <span class="dt">TyNode</span> (getType e)</a>
-<a class="sourceLine" id="cb17-12" data-line-number="12">        <span class="kw">case</span> mlookup (tvrIdent tvr) (ccafMap cenv) <span class="kw">of</span></a>
-<a class="sourceLine" id="cb17-13" data-line-number="13">            <span class="dt">Just</span> (<span class="dt">Const</span> c) <span class="ot">-&gt;</span> app fty (<span class="dt">Return</span> [c]) as</a>
-<a class="sourceLine" id="cb17-14" data-line-number="14">            <span class="dt">Just</span> x<span class="fu">@</span><span class="dt">Var</span> {} <span class="ot">-&gt;</span> app fty (gEval x) as</a>
-<a class="sourceLine" id="cb17-15" data-line-number="15">            <span class="dt">Nothing</span> <span class="fu">|</span> <span class="dt">Just</span> (v,n,rt) <span class="ot">&lt;-</span> mlookup (tvrIdent tvr) lfunc <span class="ot">-&gt;</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb17-16" data-line-number="16">                    <span class="kw">let</span> (x,y) <span class="fu">=</span> splitAt n as</a>
-<a class="sourceLine" id="cb17-17" data-line-number="17">                    app fty (<span class="dt">App</span> v (keepIts x) rt) y</a>
-<a class="sourceLine" id="cb17-18" data-line-number="18">            <span class="dt">Nothing</span> <span class="ot">-&gt;</span> <span class="kw">case</span> mlookup (tvrIdent tvr) (scMap cenv) <span class="kw">of</span></a>
-<a class="sourceLine" id="cb17-19" data-line-number="19">                <span class="dt">Just</span> (v,as',es)</a>
-<a class="sourceLine" id="cb17-20" data-line-number="20">                    <span class="fu">|</span> length as <span class="fu">&gt;=</span> length as' <span class="ot">-&gt;</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb17-21" data-line-number="21">                        <span class="kw">let</span> (x,y) <span class="fu">=</span> splitAt (length as') as</a>
-<a class="sourceLine" id="cb17-22" data-line-number="22">                        app fty (<span class="dt">App</span> v (keepIts x) es) y</a>
-<a class="sourceLine" id="cb17-23" data-line-number="23">                    <span class="fu">|</span> otherwise <span class="ot">-&gt;</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb17-24" data-line-number="24">                        <span class="kw">let</span> pt <span class="fu">=</span> partialTag v (length as' <span class="fu">-</span> length as)</a>
-<a class="sourceLine" id="cb17-25" data-line-number="25">                        return <span class="fu">$</span> dstore (<span class="dt">NodeC</span> pt (keepIts as))</a>
-<a class="sourceLine" id="cb17-26" data-line-number="26">                <span class="dt">Nothing</span> <span class="fu">|</span> not (isLifted <span class="fu">$</span> <span class="dt">EVar</span> tvr) <span class="ot">-&gt;</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb17-27" data-line-number="27">                    mtick' <span class="st">&quot;Grin.FromE.app-unlifted&quot;</span></a>
-<a class="sourceLine" id="cb17-28" data-line-number="28">                    app fty (<span class="dt">Return</span> [toVal tvr]) as</a>
-<a class="sourceLine" id="cb17-29" data-line-number="29">                <span class="dt">Nothing</span> <span class="ot">-&gt;</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb17-30" data-line-number="30">                    <span class="kw">case</span> as <span class="kw">of</span></a>
-<a class="sourceLine" id="cb17-31" data-line-number="31">                        [] <span class="ot">-&gt;</span> evalVar fty tvr</a>
-<a class="sourceLine" id="cb17-32" data-line-number="32">                        _ <span class="ot">-&gt;</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb17-33" data-line-number="33">                            ee <span class="ot">&lt;-</span> evalVar [<span class="dt">TyNode</span>] tvr</a>
-<a class="sourceLine" id="cb17-34" data-line-number="34">                            app fty ee as</a>
-<a class="sourceLine" id="cb17-35" data-line-number="35">            _ <span class="ot">-&gt;</span> error <span class="st">&quot;FromE.ce: bad.&quot;</span></a></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb17-1" title="1"><span class="co">-- File: ajhc/src/E/Type.hs</span></a>
+<a class="sourceLine" id="cb17-2" title="2"><span class="ot">fromAp ::</span> <span class="dt">E</span> <span class="ot">-&gt;</span> (<span class="dt">E</span>,[<span class="dt">E</span>])</a>
+<a class="sourceLine" id="cb17-3" title="3">fromAp e <span class="fu">=</span> f [] e <span class="kw">where</span></a>
+<a class="sourceLine" id="cb17-4" title="4">    f as (<span class="dt">EAp</span> e a) <span class="fu">=</span> f (a<span class="fu">:</span>as) e</a>
+<a class="sourceLine" id="cb17-5" title="5">    f as e  <span class="fu">=</span>  (e,as)</a>
+<a class="sourceLine" id="cb17-6" title="6"></a>
+<a class="sourceLine" id="cb17-7" title="7"><span class="co">-- File: ajhc/src/Grin/FromE.hs</span></a>
+<a class="sourceLine" id="cb17-8" title="8">    ce e <span class="fu">|</span> (<span class="dt">EVar</span> tvr,as) <span class="ot">&lt;-</span> fromAp e <span class="fu">=</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb17-9" title="9">        as <span class="ot">&lt;-</span> <span class="fu">return</span> <span class="fu">$</span> args as</a>
+<a class="sourceLine" id="cb17-10" title="10">        lfunc <span class="ot">&lt;-</span> asks lfuncMap</a>
+<a class="sourceLine" id="cb17-11" title="11">        <span class="kw">let</span> fty <span class="fu">=</span> toTypes <span class="dt">TyNode</span> (getType e)</a>
+<a class="sourceLine" id="cb17-12" title="12">        <span class="kw">case</span> mlookup (tvrIdent tvr) (ccafMap cenv) <span class="kw">of</span></a>
+<a class="sourceLine" id="cb17-13" title="13">            <span class="dt">Just</span> (<span class="dt">Const</span> c) <span class="ot">-&gt;</span> app fty (<span class="dt">Return</span> [c]) as</a>
+<a class="sourceLine" id="cb17-14" title="14">            <span class="dt">Just</span> x<span class="fu">@</span><span class="dt">Var</span> {} <span class="ot">-&gt;</span> app fty (gEval x) as</a>
+<a class="sourceLine" id="cb17-15" title="15">            <span class="dt">Nothing</span> <span class="fu">|</span> <span class="dt">Just</span> (v,n,rt) <span class="ot">&lt;-</span> mlookup (tvrIdent tvr) lfunc <span class="ot">-&gt;</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb17-16" title="16">                    <span class="kw">let</span> (x,y) <span class="fu">=</span> <span class="fu">splitAt</span> n as</a>
+<a class="sourceLine" id="cb17-17" title="17">                    app fty (<span class="dt">App</span> v (keepIts x) rt) y</a>
+<a class="sourceLine" id="cb17-18" title="18">            <span class="dt">Nothing</span> <span class="ot">-&gt;</span> <span class="kw">case</span> mlookup (tvrIdent tvr) (scMap cenv) <span class="kw">of</span></a>
+<a class="sourceLine" id="cb17-19" title="19">                <span class="dt">Just</span> (v,as',es)</a>
+<a class="sourceLine" id="cb17-20" title="20">                    <span class="fu">|</span> <span class="fu">length</span> as <span class="fu">&gt;=</span> <span class="fu">length</span> as' <span class="ot">-&gt;</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb17-21" title="21">                        <span class="kw">let</span> (x,y) <span class="fu">=</span> <span class="fu">splitAt</span> (<span class="fu">length</span> as') as</a>
+<a class="sourceLine" id="cb17-22" title="22">                        app fty (<span class="dt">App</span> v (keepIts x) es) y</a>
+<a class="sourceLine" id="cb17-23" title="23">                    <span class="fu">|</span> <span class="fu">otherwise</span> <span class="ot">-&gt;</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb17-24" title="24">                        <span class="kw">let</span> pt <span class="fu">=</span> partialTag v (<span class="fu">length</span> as' <span class="fu">-</span> <span class="fu">length</span> as)</a>
+<a class="sourceLine" id="cb17-25" title="25">                        <span class="fu">return</span> <span class="fu">$</span> dstore (<span class="dt">NodeC</span> pt (keepIts as))</a>
+<a class="sourceLine" id="cb17-26" title="26">                <span class="dt">Nothing</span> <span class="fu">|</span> <span class="fu">not</span> (isLifted <span class="fu">$</span> <span class="dt">EVar</span> tvr) <span class="ot">-&gt;</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb17-27" title="27">                    mtick' <span class="st">&quot;Grin.FromE.app-unlifted&quot;</span></a>
+<a class="sourceLine" id="cb17-28" title="28">                    app fty (<span class="dt">Return</span> [toVal tvr]) as</a>
+<a class="sourceLine" id="cb17-29" title="29">                <span class="dt">Nothing</span> <span class="ot">-&gt;</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb17-30" title="30">                    <span class="kw">case</span> as <span class="kw">of</span></a>
+<a class="sourceLine" id="cb17-31" title="31">                        [] <span class="ot">-&gt;</span> evalVar fty tvr</a>
+<a class="sourceLine" id="cb17-32" title="32">                        _ <span class="ot">-&gt;</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb17-33" title="33">                            ee <span class="ot">&lt;-</span> evalVar [<span class="dt">TyNode</span>] tvr</a>
+<a class="sourceLine" id="cb17-34" title="34">                            app fty ee as</a>
+<a class="sourceLine" id="cb17-35" title="35">            _ <span class="ot">-&gt;</span> <span class="fu">error</span> <span class="st">&quot;FromE.ce: bad.&quot;</span></a></code></pre></div>
 <p>そこでイカのようなfromBang_プリミティブを抹殺する関数を作ったでゲソ!</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb18-1" data-line-number="1"><span class="ot">    stripBang ::</span> <span class="dt">E</span> <span class="ot">-&gt;</span> <span class="dt">E</span></a>
-<a class="sourceLine" id="cb18-2" data-line-number="2">    stripBang e <span class="fu">=</span> f e <span class="kw">where</span></a>
-<a class="sourceLine" id="cb18-3" data-line-number="3">      f (<span class="dt">EAp</span> p a) <span class="fu">=</span> g p a</a>
-<a class="sourceLine" id="cb18-4" data-line-number="4">      f e <span class="fu">=</span> e</a>
-<a class="sourceLine" id="cb18-5" data-line-number="5">      g (<span class="dt">EPrim</span> (<span class="dt">PrimPrim</span> <span class="st">&quot;fromBang_&quot;</span>) [b] _) a <span class="fu">=</span> <span class="dt">EAp</span> b a</a>
-<a class="sourceLine" id="cb18-6" data-line-number="6">      g e a <span class="fu">=</span> <span class="dt">EAp</span> e a</a></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb18-1" title="1"><span class="ot">    stripBang ::</span> <span class="dt">E</span> <span class="ot">-&gt;</span> <span class="dt">E</span></a>
+<a class="sourceLine" id="cb18-2" title="2">    stripBang e <span class="fu">=</span> f e <span class="kw">where</span></a>
+<a class="sourceLine" id="cb18-3" title="3">      f (<span class="dt">EAp</span> p a) <span class="fu">=</span> g p a</a>
+<a class="sourceLine" id="cb18-4" title="4">      f e <span class="fu">=</span> e</a>
+<a class="sourceLine" id="cb18-5" title="5">      g (<span class="dt">EPrim</span> (<span class="dt">PrimPrim</span> <span class="st">&quot;fromBang_&quot;</span>) [b] _) a <span class="fu">=</span> <span class="dt">EAp</span> b a</a>
+<a class="sourceLine" id="cb18-6" title="6">      g e a <span class="fu">=</span> <span class="dt">EAp</span> e a</a></code></pre></div>
 <p>このstripBangを通してからfromApにeを食わせたところ無事エラーが出なくなったでゲソ。 ちょっと危険な気もするが、大目に見てほしいでゲソ。</p>
 <h2 id="実装">実装</h2>
 <p>ここまで来ればforkOSを実装するのは簡単でゲソ。</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb19-1" data-line-number="1"><span class="co">-- File: ajhc/lib/haskell-extras/Control/Concurrent.hs</span></a>
-<a class="sourceLine" id="cb19-2" data-line-number="2"><span class="ot">{-# LANGUAGE ForeignFunctionInterface #-}</span></a>
-<a class="sourceLine" id="cb19-3" data-line-number="3"><span class="kw">module</span> <span class="dt">Control.Concurrent</span> (forkOS, <span class="dt">ThreadId</span>) <span class="kw">where</span></a>
-<a class="sourceLine" id="cb19-4" data-line-number="4"><span class="kw">import</span> <span class="dt">Foreign.Ptr</span></a>
-<a class="sourceLine" id="cb19-5" data-line-number="5"><span class="kw">import</span> <span class="dt">Foreign.StablePtr</span></a>
-<a class="sourceLine" id="cb19-6" data-line-number="6"><span class="kw">import</span> <span class="dt">Foreign.Storable</span></a>
-<a class="sourceLine" id="cb19-7" data-line-number="7"><span class="kw">import</span> <span class="dt">Foreign.Marshal.Alloc</span></a>
-<a class="sourceLine" id="cb19-8" data-line-number="8"><span class="kw">import</span> <span class="dt">Control.Monad</span> (when)</a>
-<a class="sourceLine" id="cb19-9" data-line-number="9"><span class="kw">import</span> <span class="dt">Jhc.Prim.Rts</span></a>
-<a class="sourceLine" id="cb19-10" data-line-number="10"></a>
-<a class="sourceLine" id="cb19-11" data-line-number="11"><span class="kw">data</span> <span class="ot">{-# CTYPE &quot;rts/conc.h jhc_threadid_t&quot; #-}</span> <span class="dt">CthreadIdT</span></a>
-<a class="sourceLine" id="cb19-12" data-line-number="12"><span class="kw">data</span> <span class="dt">ThreadId</span> <span class="fu">=</span> <span class="dt">ThreadId</span> <span class="dt">CthreadIdT</span></a>
-<a class="sourceLine" id="cb19-13" data-line-number="13"></a>
-<a class="sourceLine" id="cb19-14" data-line-number="14">foreign <span class="kw">import</span> ccall &quot;rts/conc.h forkOS_createThread&quot; forkOScreateThread ::</a>
-<a class="sourceLine" id="cb19-15" data-line-number="15">   <span class="dt">FunPtr</span> (<span class="dt">Bang_</span> (<span class="dt">StablePtr</span> (<span class="dt">IO</span> ())) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Ptr</span> ())) <span class="ot">-&gt;</span> <span class="dt">Bang_</span> a <span class="ot">-&gt;</span> <span class="dt">Ptr</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">CthreadIdT</span></a>
-<a class="sourceLine" id="cb19-16" data-line-number="16"></a>
-<a class="sourceLine" id="cb19-17" data-line-number="17"><span class="ot">forkOScreateThreadWrapper ::</span> <span class="dt">Bang_</span> (<span class="dt">StablePtr</span> (<span class="dt">IO</span> ())) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Ptr</span> ())</a>
-<a class="sourceLine" id="cb19-18" data-line-number="18">forkOScreateThreadWrapper b <span class="fu">=</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb19-19" data-line-number="19">  <span class="kw">let</span> s <span class="fu">=</span> fromBang_ b</a>
-<a class="sourceLine" id="cb19-20" data-line-number="20">  d <span class="ot">&lt;-</span> deRefStablePtr s</a>
-<a class="sourceLine" id="cb19-21" data-line-number="21">  d</a>
-<a class="sourceLine" id="cb19-22" data-line-number="22">  freeStablePtr s</a>
-<a class="sourceLine" id="cb19-23" data-line-number="23">  return nullPtr</a>
-<a class="sourceLine" id="cb19-24" data-line-number="24"></a>
-<a class="sourceLine" id="cb19-25" data-line-number="25">foreign export ccall <span class="st">&quot;forkOScreateThreadWrapper&quot;</span><span class="ot"> forkOScreateThreadWrapper ::</span></a>
-<a class="sourceLine" id="cb19-26" data-line-number="26">  <span class="dt">Bang_</span> (<span class="dt">StablePtr</span> (<span class="dt">IO</span> ())) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Ptr</span> ())</a>
-<a class="sourceLine" id="cb19-27" data-line-number="27">foreign <span class="kw">import</span> ccall &quot;&amp;forkOScreateThreadWrapper&quot; p_forkOScreateThreadWrapper ::</a>
-<a class="sourceLine" id="cb19-28" data-line-number="28">  <span class="dt">FunPtr</span> (<span class="dt">Bang_</span> (<span class="dt">StablePtr</span> (<span class="dt">IO</span> ())) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Ptr</span> ()))</a>
-<a class="sourceLine" id="cb19-29" data-line-number="29"></a>
-<a class="sourceLine" id="cb19-30" data-line-number="30"><span class="ot">forkOS ::</span> <span class="dt">IO</span> () <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">ThreadId</span></a>
-<a class="sourceLine" id="cb19-31" data-line-number="31">forkOS f <span class="fu">=</span> alloca <span class="fu">$</span> \ip <span class="ot">-&gt;</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb19-32" data-line-number="32">  s <span class="ot">&lt;-</span> newStablePtr f</a>
-<a class="sourceLine" id="cb19-33" data-line-number="33">  pth <span class="ot">&lt;-</span> forkOScreateThread p_forkOScreateThreadWrapper (toBang_ s) ip</a>
-<a class="sourceLine" id="cb19-34" data-line-number="34">  i <span class="ot">&lt;-</span> peek ip</a>
-<a class="sourceLine" id="cb19-35" data-line-number="35">  when (i <span class="fu">/=</span> <span class="dv">0</span>) <span class="fu">$</span> fail <span class="st">&quot;Cannot create OS thread.&quot;</span></a>
-<a class="sourceLine" id="cb19-36" data-line-number="36">  return <span class="fu">$</span> <span class="dt">ThreadId</span> pth</a></code></pre></div>
-<div class="sourceCode" id="cb20"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb20-1" data-line-number="1"><span class="co">// File: ajhc/rts/rts/conc.c</span></a>
-<a class="sourceLine" id="cb20-2" data-line-number="2">jhc_threadid_t</a>
-<a class="sourceLine" id="cb20-3" data-line-number="3">forkOS_createThread(<span class="dt">void</span> *(*wrapper) (<span class="dt">void</span> *), <span class="dt">void</span> *entry, <span class="dt">int</span> *err)</a>
-<a class="sourceLine" id="cb20-4" data-line-number="4">{</a>
-<a class="sourceLine" id="cb20-5" data-line-number="5">        pthread_t tid;</a>
-<a class="sourceLine" id="cb20-6" data-line-number="6">        *err = pthread_create(&amp;tid, NULL, wrapper, entry);</a>
-<a class="sourceLine" id="cb20-7" data-line-number="7">        <span class="cf">if</span> (*err) {</a>
-<a class="sourceLine" id="cb20-8" data-line-number="8">                pthread_detach(tid);</a>
-<a class="sourceLine" id="cb20-9" data-line-number="9">        }</a>
-<a class="sourceLine" id="cb20-10" data-line-number="10">        <span class="cf">return</span> tid;</a>
-<a class="sourceLine" id="cb20-11" data-line-number="11">}</a></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb19-1" title="1"><span class="co">-- File: ajhc/lib/haskell-extras/Control/Concurrent.hs</span></a>
+<a class="sourceLine" id="cb19-2" title="2"><span class="ot">{-# LANGUAGE ForeignFunctionInterface #-}</span></a>
+<a class="sourceLine" id="cb19-3" title="3"><span class="kw">module</span> <span class="dt">Control.Concurrent</span> (forkOS, <span class="dt">ThreadId</span>) <span class="kw">where</span></a>
+<a class="sourceLine" id="cb19-4" title="4"><span class="kw">import</span> <span class="dt">Foreign.Ptr</span></a>
+<a class="sourceLine" id="cb19-5" title="5"><span class="kw">import</span> <span class="dt">Foreign.StablePtr</span></a>
+<a class="sourceLine" id="cb19-6" title="6"><span class="kw">import</span> <span class="dt">Foreign.Storable</span></a>
+<a class="sourceLine" id="cb19-7" title="7"><span class="kw">import</span> <span class="dt">Foreign.Marshal.Alloc</span></a>
+<a class="sourceLine" id="cb19-8" title="8"><span class="kw">import</span> <span class="dt">Control.Monad</span> (when)</a>
+<a class="sourceLine" id="cb19-9" title="9"><span class="kw">import</span> <span class="dt">Jhc.Prim.Rts</span></a>
+<a class="sourceLine" id="cb19-10" title="10"></a>
+<a class="sourceLine" id="cb19-11" title="11"><span class="kw">data</span> <span class="ot">{-# CTYPE &quot;rts/conc.h jhc_threadid_t&quot; #-}</span> <span class="dt">CthreadIdT</span></a>
+<a class="sourceLine" id="cb19-12" title="12"><span class="kw">data</span> <span class="dt">ThreadId</span> <span class="fu">=</span> <span class="dt">ThreadId</span> <span class="dt">CthreadIdT</span></a>
+<a class="sourceLine" id="cb19-13" title="13"></a>
+<a class="sourceLine" id="cb19-14" title="14">foreign <span class="kw">import</span> ccall &quot;rts/conc.h forkOS_createThread&quot; forkOScreateThread ::</a>
+<a class="sourceLine" id="cb19-15" title="15">   <span class="dt">FunPtr</span> (<span class="dt">Bang_</span> (<span class="dt">StablePtr</span> (<span class="dt">IO</span> ())) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Ptr</span> ())) <span class="ot">-&gt;</span> <span class="dt">Bang_</span> a <span class="ot">-&gt;</span> <span class="dt">Ptr</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">CthreadIdT</span></a>
+<a class="sourceLine" id="cb19-16" title="16"></a>
+<a class="sourceLine" id="cb19-17" title="17"><span class="ot">forkOScreateThreadWrapper ::</span> <span class="dt">Bang_</span> (<span class="dt">StablePtr</span> (<span class="dt">IO</span> ())) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Ptr</span> ())</a>
+<a class="sourceLine" id="cb19-18" title="18">forkOScreateThreadWrapper b <span class="fu">=</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb19-19" title="19">  <span class="kw">let</span> s <span class="fu">=</span> fromBang_ b</a>
+<a class="sourceLine" id="cb19-20" title="20">  d <span class="ot">&lt;-</span> deRefStablePtr s</a>
+<a class="sourceLine" id="cb19-21" title="21">  d</a>
+<a class="sourceLine" id="cb19-22" title="22">  freeStablePtr s</a>
+<a class="sourceLine" id="cb19-23" title="23">  <span class="fu">return</span> nullPtr</a>
+<a class="sourceLine" id="cb19-24" title="24"></a>
+<a class="sourceLine" id="cb19-25" title="25">foreign export ccall <span class="st">&quot;forkOScreateThreadWrapper&quot;</span><span class="ot"> forkOScreateThreadWrapper ::</span></a>
+<a class="sourceLine" id="cb19-26" title="26">  <span class="dt">Bang_</span> (<span class="dt">StablePtr</span> (<span class="dt">IO</span> ())) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Ptr</span> ())</a>
+<a class="sourceLine" id="cb19-27" title="27">foreign <span class="kw">import</span> ccall &quot;&amp;forkOScreateThreadWrapper&quot; p_forkOScreateThreadWrapper ::</a>
+<a class="sourceLine" id="cb19-28" title="28">  <span class="dt">FunPtr</span> (<span class="dt">Bang_</span> (<span class="dt">StablePtr</span> (<span class="dt">IO</span> ())) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Ptr</span> ()))</a>
+<a class="sourceLine" id="cb19-29" title="29"></a>
+<a class="sourceLine" id="cb19-30" title="30"><span class="ot">forkOS ::</span> <span class="dt">IO</span> () <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">ThreadId</span></a>
+<a class="sourceLine" id="cb19-31" title="31">forkOS f <span class="fu">=</span> alloca <span class="fu">$</span> \ip <span class="ot">-&gt;</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb19-32" title="32">  s <span class="ot">&lt;-</span> newStablePtr f</a>
+<a class="sourceLine" id="cb19-33" title="33">  pth <span class="ot">&lt;-</span> forkOScreateThread p_forkOScreateThreadWrapper (toBang_ s) ip</a>
+<a class="sourceLine" id="cb19-34" title="34">  i <span class="ot">&lt;-</span> peek ip</a>
+<a class="sourceLine" id="cb19-35" title="35">  when (i <span class="fu">/=</span> <span class="dv">0</span>) <span class="fu">$</span> <span class="fu">fail</span> <span class="st">&quot;Cannot create OS thread.&quot;</span></a>
+<a class="sourceLine" id="cb19-36" title="36">  <span class="fu">return</span> <span class="fu">$</span> <span class="dt">ThreadId</span> pth</a></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb20-1" title="1"><span class="co">// File: ajhc/rts/rts/conc.c</span></a>
+<a class="sourceLine" id="cb20-2" title="2">jhc_threadid_t</a>
+<a class="sourceLine" id="cb20-3" title="3">forkOS_createThread(<span class="dt">void</span> *(*wrapper) (<span class="dt">void</span> *), <span class="dt">void</span> *entry, <span class="dt">int</span> *err)</a>
+<a class="sourceLine" id="cb20-4" title="4">{</a>
+<a class="sourceLine" id="cb20-5" title="5">        pthread_t tid;</a>
+<a class="sourceLine" id="cb20-6" title="6">        *err = pthread_create(&amp;tid, NULL, wrapper, entry);</a>
+<a class="sourceLine" id="cb20-7" title="7">        <span class="cf">if</span> (*err) {</a>
+<a class="sourceLine" id="cb20-8" title="8">                pthread_detach(tid);</a>
+<a class="sourceLine" id="cb20-9" title="9">        }</a>
+<a class="sourceLine" id="cb20-10" title="10">        <span class="cf">return</span> tid;</a>
+<a class="sourceLine" id="cb20-11" title="11">}</a></code></pre></div>
 <section class="footnotes">
 <hr />
 <ol>
