@@ -83,7 +83,7 @@
 <p>このアプリは単なるOpenGL ESのデモアプリで使い方はイカの動画を見ればすぐわかると思うでゲソ。</p>
 <iframe width="420" height="315" src="//www.youtube.com/embed/n6cepTfnFoo" frameborder="0" allowfullscreen>
 </iframe>
-<p>このCubeアプリのソースコードは <a href="https://github.com/ajhc/demo-android-ndk/tree/master/cube" class="uri">https://github.com/ajhc/demo-android-ndk/tree/master/cube</a> にあり、以下のようなディレクトリツリーを持っているでゲソ。</p>
+<p>このCubeアプリのソースコードは <a href="https://github.com/ajhc/demo-android-ndk/tree/master/cube">https://github.com/ajhc/demo-android-ndk/tree/master/cube</a> にあり、以下のようなディレクトリツリーを持っているでゲソ。</p>
 <pre><code>$ pwd
 /home/kiwamu/src/demo-android-ndk/cube
 $ tree
@@ -114,62 +114,62 @@ $ tree
 <p>C言語とHaskellの界面の話題や、ビルド手順は先の同人誌が詳しいでゲソ。 この記事では上記ファイルの内、Haskellで書かれているCubeVertices.hsとMain.hsについて解説するでゲソ。</p>
 <h2 id="cubevertices.hsファイルについて">CubeVertices.hsファイルについて</h2>
 <p>まずこの立方体のデータがどこにあるかでゲソ。 それは簡単でイカのモジュールでゲソ。</p>
-<p><a href="https://github.com/ajhc/demo-android-ndk/blob/master/cube/hs_src/CubeVertices.hs" class="uri">https://github.com/ajhc/demo-android-ndk/blob/master/cube/hs_src/CubeVertices.hs</a></p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">module</span> <span class="dt">CubeVertices</span> <span class="kw">where</span></a>
-<a class="sourceLine" id="cb2-2" title="2"></a>
-<a class="sourceLine" id="cb2-3" title="3"><span class="kw">import</span> <span class="dt">AndroidNdk</span></a>
-<a class="sourceLine" id="cb2-4" title="4"></a>
-<a class="sourceLine" id="cb2-5" title="5"><span class="ot">vertices ::</span> [<span class="dt">GLfloat</span>]</a>
-<a class="sourceLine" id="cb2-6" title="6">vertices <span class="fu">=</span> [</a>
-<a class="sourceLine" id="cb2-7" title="7">    <span class="co">-- front</span></a>
-<a class="sourceLine" id="cb2-8" title="8">    <span class="fu">-</span><span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, </a>
-<a class="sourceLine" id="cb2-9" title="9">    <span class="fu">-</span><span class="fl">0.5</span>, <span class="fu">-</span><span class="fl">0.5</span>, <span class="fl">0.5</span>, </a>
-<a class="sourceLine" id="cb2-10" title="10">    <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>,</a>
-<a class="sourceLine" id="cb2-11" title="11">    <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, </a>
-<a class="sourceLine" id="cb2-12" title="12">    <span class="fu">-</span><span class="fl">0.5</span>, <span class="fu">-</span><span class="fl">0.5</span>, <span class="fl">0.5</span>, </a>
-<a class="sourceLine" id="cb2-13" title="13">    <span class="fl">0.5</span>, <span class="fu">-</span><span class="fl">0.5</span>, <span class="fl">0.5</span>,</a>
-<a class="sourceLine" id="cb2-14" title="14">    <span class="co">-- right</span></a>
-<a class="sourceLine" id="cb2-15" title="15">    <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, </a>
-<a class="sourceLine" id="cb2-16" title="16"><span class="co">--snip--</span></a>
-<a class="sourceLine" id="cb2-17" title="17"><span class="ot">colors ::</span> [<span class="dt">GLfloat</span>]</a>
-<a class="sourceLine" id="cb2-18" title="18">colors <span class="fu">=</span> [</a>
-<a class="sourceLine" id="cb2-19" title="19">    <span class="co">-- front</span></a>
-<a class="sourceLine" id="cb2-20" title="20">    <span class="fl">0.0625</span>,<span class="fl">0.57421875</span>,<span class="fl">0.92578125</span>,<span class="fl">1.0</span>,</a>
-<a class="sourceLine" id="cb2-21" title="21">    <span class="fl">0.0625</span>,<span class="fl">0.57421875</span>,<span class="fl">0.92578125</span>,<span class="fl">1.0</span>,</a>
-<a class="sourceLine" id="cb2-22" title="22">    <span class="fl">0.0625</span>,<span class="fl">0.57421875</span>,<span class="fl">0.92578125</span>,<span class="fl">1.0</span>,</a>
-<a class="sourceLine" id="cb2-23" title="23">    <span class="fl">0.0625</span>,<span class="fl">0.57421875</span>,<span class="fl">0.92578125</span>,<span class="fl">1.0</span>,</a>
-<a class="sourceLine" id="cb2-24" title="24">    <span class="fl">0.0625</span>,<span class="fl">0.57421875</span>,<span class="fl">0.92578125</span>,<span class="fl">1.0</span>,</a>
-<a class="sourceLine" id="cb2-25" title="25">    <span class="fl">0.0625</span>,<span class="fl">0.57421875</span>,<span class="fl">0.92578125</span>,<span class="fl">1.0</span>,</a>
-<a class="sourceLine" id="cb2-26" title="26">    <span class="co">-- right</span></a>
-<a class="sourceLine" id="cb2-27" title="27">    <span class="fl">0.29296875</span>,<span class="fl">0.66796875</span>,<span class="fl">0.92578125</span>,<span class="fl">1.0</span>,</a></code></pre></div>
+<p><a href="https://github.com/ajhc/demo-android-ndk/blob/master/cube/hs_src/CubeVertices.hs">https://github.com/ajhc/demo-android-ndk/blob/master/cube/hs_src/CubeVertices.hs</a></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">module</span> <span class="dt">CubeVertices</span> <span class="kw">where</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a></span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="kw">import</span> <span class="dt">AndroidNdk</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a></span>
+<span id="cb2-5"><a href="#cb2-5"></a><span class="ot">vertices ::</span> [<span class="dt">GLfloat</span>]</span>
+<span id="cb2-6"><a href="#cb2-6"></a>vertices <span class="ot">=</span> [</span>
+<span id="cb2-7"><a href="#cb2-7"></a>    <span class="co">-- front</span></span>
+<span id="cb2-8"><a href="#cb2-8"></a>    <span class="op">-</span><span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, </span>
+<span id="cb2-9"><a href="#cb2-9"></a>    <span class="op">-</span><span class="fl">0.5</span>, <span class="op">-</span><span class="fl">0.5</span>, <span class="fl">0.5</span>, </span>
+<span id="cb2-10"><a href="#cb2-10"></a>    <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>,</span>
+<span id="cb2-11"><a href="#cb2-11"></a>    <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, </span>
+<span id="cb2-12"><a href="#cb2-12"></a>    <span class="op">-</span><span class="fl">0.5</span>, <span class="op">-</span><span class="fl">0.5</span>, <span class="fl">0.5</span>, </span>
+<span id="cb2-13"><a href="#cb2-13"></a>    <span class="fl">0.5</span>, <span class="op">-</span><span class="fl">0.5</span>, <span class="fl">0.5</span>,</span>
+<span id="cb2-14"><a href="#cb2-14"></a>    <span class="co">-- right</span></span>
+<span id="cb2-15"><a href="#cb2-15"></a>    <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, </span>
+<span id="cb2-16"><a href="#cb2-16"></a><span class="co">--snip--</span></span>
+<span id="cb2-17"><a href="#cb2-17"></a><span class="ot">colors ::</span> [<span class="dt">GLfloat</span>]</span>
+<span id="cb2-18"><a href="#cb2-18"></a>colors <span class="ot">=</span> [</span>
+<span id="cb2-19"><a href="#cb2-19"></a>    <span class="co">-- front</span></span>
+<span id="cb2-20"><a href="#cb2-20"></a>    <span class="fl">0.0625</span>,<span class="fl">0.57421875</span>,<span class="fl">0.92578125</span>,<span class="fl">1.0</span>,</span>
+<span id="cb2-21"><a href="#cb2-21"></a>    <span class="fl">0.0625</span>,<span class="fl">0.57421875</span>,<span class="fl">0.92578125</span>,<span class="fl">1.0</span>,</span>
+<span id="cb2-22"><a href="#cb2-22"></a>    <span class="fl">0.0625</span>,<span class="fl">0.57421875</span>,<span class="fl">0.92578125</span>,<span class="fl">1.0</span>,</span>
+<span id="cb2-23"><a href="#cb2-23"></a>    <span class="fl">0.0625</span>,<span class="fl">0.57421875</span>,<span class="fl">0.92578125</span>,<span class="fl">1.0</span>,</span>
+<span id="cb2-24"><a href="#cb2-24"></a>    <span class="fl">0.0625</span>,<span class="fl">0.57421875</span>,<span class="fl">0.92578125</span>,<span class="fl">1.0</span>,</span>
+<span id="cb2-25"><a href="#cb2-25"></a>    <span class="fl">0.0625</span>,<span class="fl">0.57421875</span>,<span class="fl">0.92578125</span>,<span class="fl">1.0</span>,</span>
+<span id="cb2-26"><a href="#cb2-26"></a>    <span class="co">-- right</span></span>
+<span id="cb2-27"><a href="#cb2-27"></a>    <span class="fl">0.29296875</span>,<span class="fl">0.66796875</span>,<span class="fl">0.92578125</span>,<span class="fl">1.0</span>,</span></code></pre></div>
 <p>verticesとcolorsという名前のリストが入っているだけでゲソ。 このリストはMain.hsで使用されて、それぞれglVertexPointerとglColorPointerに渡されるだけじゃなイカ。 あとはHaskellじゃなくてOpenGLの知識でゲソ。</p>
 <h2 id="glvertexpointerとglcolorpointerの呼び出し">glVertexPointerとglColorPointerの呼び出し</h2>
 <p>そのglVertexPointerとglColorPointerはどこから呼び出されるかというとMain.hsのengineDrawFrame関数でゲソ。</p>
-<p><a href="https://github.com/ajhc/demo-android-ndk/blob/master/cube/hs_src/Main.hs#L80" class="uri">https://github.com/ajhc/demo-android-ndk/blob/master/cube/hs_src/Main.hs#L80</a></p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb3-1" title="1"><span class="ot">engineDrawFrame ::</span> <span class="dt">AndroidEngine</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</a>
-<a class="sourceLine" id="cb3-2" title="2">engineDrawFrame enghs <span class="fu">=</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb3-3" title="3">  <span class="kw">let</span> disp  <span class="fu">=</span> engEglDisplay enghs</a>
-<a class="sourceLine" id="cb3-4" title="4">      surf  <span class="fu">=</span> engEglSurface enghs</a>
-<a class="sourceLine" id="cb3-5" title="5">      w     <span class="fu">=</span> <span class="fu">fromIntegral</span> <span class="fu">$</span> engWidth enghs</a>
-<a class="sourceLine" id="cb3-6" title="6">      h     <span class="fu">=</span> <span class="fu">fromIntegral</span> <span class="fu">$</span> engHeight enghs</a>
-<a class="sourceLine" id="cb3-7" title="7">      s     <span class="fu">=</span> engState enghs</a>
-<a class="sourceLine" id="cb3-8" title="8">      dx    <span class="fu">=</span> <span class="fu">fromIntegral</span> <span class="fu">$</span> sStateDx s</a>
-<a class="sourceLine" id="cb3-9" title="9">      dy    <span class="fu">=</span> <span class="fu">fromIntegral</span> <span class="fu">$</span> sStateDy s</a>
-<a class="sourceLine" id="cb3-10" title="10">      angle <span class="fu">=</span> sStateAngle s</a>
-<a class="sourceLine" id="cb3-11" title="11">  when (disp <span class="fu">/=</span> c_EGL_NO_DISPLAY) <span class="fu">$</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb3-12" title="12">    c_glClear <span class="fu">$</span> c_GL_COLOR_BUFFER_BIT <span class="fu">.|.</span> c_GL_DEPTH_BUFFER_BIT</a>
-<a class="sourceLine" id="cb3-13" title="13">    withArray vertices <span class="fu">$</span> \vp <span class="ot">-&gt;</span> withArray colors <span class="fu">$</span> \cp <span class="ot">-&gt;</span> <span class="kw">do</span> <span class="co">-- xxx heavy</span></a>
-<a class="sourceLine" id="cb3-14" title="14">      c_glEnableClientState c_GL_VERTEX_ARRAY</a>
-<a class="sourceLine" id="cb3-15" title="15">      c_glEnableClientState c_GL_COLOR_ARRAY</a>
-<a class="sourceLine" id="cb3-16" title="16">      c_glVertexPointer <span class="dv">3</span> c_GL_FLOAT <span class="dv">0</span> vp</a>
-<a class="sourceLine" id="cb3-17" title="17">      c_glColorPointer <span class="dv">4</span> c_GL_FLOAT <span class="dv">0</span> cp</a>
-<a class="sourceLine" id="cb3-18" title="18">      c_glRotatef ((<span class="fu">sqrt</span> (dx <span class="fu">**</span> <span class="dv">2</span> <span class="fu">+</span> dy <span class="fu">**</span> <span class="dv">2</span>)) <span class="fu">/</span> <span class="fl">10.0</span>) dy dx <span class="fl">0.0</span></a>
-<a class="sourceLine" id="cb3-19" title="19">      c_glDrawArrays c_GL_TRIANGLES <span class="dv">0</span> <span class="dv">36</span></a>
-<a class="sourceLine" id="cb3-20" title="20">      c_glDisableClientState c_GL_VERTEX_ARRAY</a>
-<a class="sourceLine" id="cb3-21" title="21">      c_glDisableClientState c_GL_COLOR_ARRAY</a>
-<a class="sourceLine" id="cb3-22" title="22">    void <span class="fu">$</span> c_eglSwapBuffers disp surf</a></code></pre></div>
+<p><a href="https://github.com/ajhc/demo-android-ndk/blob/master/cube/hs_src/Main.hs#L80">https://github.com/ajhc/demo-android-ndk/blob/master/cube/hs_src/Main.hs#L80</a></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1"></a><span class="ot">engineDrawFrame ::</span> <span class="dt">AndroidEngine</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb3-2"><a href="#cb3-2"></a>engineDrawFrame enghs <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a>  <span class="kw">let</span> disp  <span class="ot">=</span> engEglDisplay enghs</span>
+<span id="cb3-4"><a href="#cb3-4"></a>      surf  <span class="ot">=</span> engEglSurface enghs</span>
+<span id="cb3-5"><a href="#cb3-5"></a>      w     <span class="ot">=</span> <span class="fu">fromIntegral</span> <span class="op">$</span> engWidth enghs</span>
+<span id="cb3-6"><a href="#cb3-6"></a>      h     <span class="ot">=</span> <span class="fu">fromIntegral</span> <span class="op">$</span> engHeight enghs</span>
+<span id="cb3-7"><a href="#cb3-7"></a>      s     <span class="ot">=</span> engState enghs</span>
+<span id="cb3-8"><a href="#cb3-8"></a>      dx    <span class="ot">=</span> <span class="fu">fromIntegral</span> <span class="op">$</span> sStateDx s</span>
+<span id="cb3-9"><a href="#cb3-9"></a>      dy    <span class="ot">=</span> <span class="fu">fromIntegral</span> <span class="op">$</span> sStateDy s</span>
+<span id="cb3-10"><a href="#cb3-10"></a>      angle <span class="ot">=</span> sStateAngle s</span>
+<span id="cb3-11"><a href="#cb3-11"></a>  when (disp <span class="op">/=</span> c_EGL_NO_DISPLAY) <span class="op">$</span> <span class="kw">do</span></span>
+<span id="cb3-12"><a href="#cb3-12"></a>    c_glClear <span class="op">$</span> c_GL_COLOR_BUFFER_BIT <span class="op">.|.</span> c_GL_DEPTH_BUFFER_BIT</span>
+<span id="cb3-13"><a href="#cb3-13"></a>    withArray vertices <span class="op">$</span> \vp <span class="ot">-&gt;</span> withArray colors <span class="op">$</span> \cp <span class="ot">-&gt;</span> <span class="kw">do</span> <span class="co">-- xxx heavy</span></span>
+<span id="cb3-14"><a href="#cb3-14"></a>      c_glEnableClientState c_GL_VERTEX_ARRAY</span>
+<span id="cb3-15"><a href="#cb3-15"></a>      c_glEnableClientState c_GL_COLOR_ARRAY</span>
+<span id="cb3-16"><a href="#cb3-16"></a>      c_glVertexPointer <span class="dv">3</span> c_GL_FLOAT <span class="dv">0</span> vp</span>
+<span id="cb3-17"><a href="#cb3-17"></a>      c_glColorPointer <span class="dv">4</span> c_GL_FLOAT <span class="dv">0</span> cp</span>
+<span id="cb3-18"><a href="#cb3-18"></a>      c_glRotatef ((<span class="fu">sqrt</span> (dx <span class="op">**</span> <span class="dv">2</span> <span class="op">+</span> dy <span class="op">**</span> <span class="dv">2</span>)) <span class="op">/</span> <span class="fl">10.0</span>) dy dx <span class="fl">0.0</span></span>
+<span id="cb3-19"><a href="#cb3-19"></a>      c_glDrawArrays c_GL_TRIANGLES <span class="dv">0</span> <span class="dv">36</span></span>
+<span id="cb3-20"><a href="#cb3-20"></a>      c_glDisableClientState c_GL_VERTEX_ARRAY</span>
+<span id="cb3-21"><a href="#cb3-21"></a>      c_glDisableClientState c_GL_COLOR_ARRAY</span>
+<span id="cb3-22"><a href="#cb3-22"></a>    void <span class="op">$</span> c_eglSwapBuffers disp surf</span></code></pre></div>
 <p>このコード、前半はAndroidEngine型から現在の状態を引き出しているようじゃなイカ。 その後ディスプレイが初期化されていたら“c_gl”ではじまる名前の関数群、 つまりOpenGL ESの関数群を呼び出して画面描画をするでゲソ。 このOpenGL ESの関数群は以下のファイルで定義されているでゲソ。 HaskellからC言語の関数が呼び出せて便利でゲソ!</p>
-<p><a href="https://github.com/ajhc/demo-android-ndk/blob/master/lib/android-ndk/AndroidNdk/OpenGLES.hs" class="uri">https://github.com/ajhc/demo-android-ndk/blob/master/lib/android-ndk/AndroidNdk/OpenGLES.hs</a></p>
+<p><a href="https://github.com/ajhc/demo-android-ndk/blob/master/lib/android-ndk/AndroidNdk/OpenGLES.hs">https://github.com/ajhc/demo-android-ndk/blob/master/lib/android-ndk/AndroidNdk/OpenGLES.hs</a></p>
 <h2 id="androidengine型の状態変更">AndroidEngine型の状態変更</h2>
 <p>engineDrawFrame関数の実装を見ていると、AndroidEngine型に変更がないと立方体は微塵とも動かないことがわかるでゲソ。 誰かがAndroidEngine型の状態を変更していないとつじつまが合わないんじゃなイカ？ この状態を変更する犯人は二人いるんでゲソ。</p>
 <p>まず一人目はeHandleInput関数でゲソ。 この関数はタッチパネルのドラッグ動作を検出して、 AndroidEngine型に格納されている以下4つの状態を変更するでゲソ。</p>
@@ -179,70 +179,70 @@ $ tree
 <li>sStateDx: X方向のドラッグされた距離</li>
 <li>sStateDy: Y方向のドラッグされた距離</li>
 </ul>
-<p><a href="https://github.com/ajhc/demo-android-ndk/blob/master/cube/hs_src/Main.hs#L38" class="uri">https://github.com/ajhc/demo-android-ndk/blob/master/cube/hs_src/Main.hs#L38</a></p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb4-1" title="1"><span class="ot">eHandleInput ::</span> <span class="dt">AndroidEngine</span> <span class="ot">-&gt;</span> <span class="dt">AInputEventType</span> <span class="ot">-&gt;</span> <span class="dt">AMotionEventAction</span> <span class="ot">-&gt;</span> (<span class="dt">Float</span>, <span class="dt">Float</span>) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Maybe</span> <span class="dt">AndroidEngine</span>)</a>
-<a class="sourceLine" id="cb4-2" title="2">eHandleInput eng <span class="fu">=</span> go</a>
-<a class="sourceLine" id="cb4-3" title="3">  <span class="kw">where</span> go <span class="dt">AInputEventTypeMotion</span> <span class="dt">AMotionEventActionUp</span> _ <span class="fu">=</span> <span class="fu">return</span> <span class="dt">Nothing</span></a>
-<a class="sourceLine" id="cb4-4" title="4">        go <span class="dt">AInputEventTypeMotion</span> act (x,y) <span class="fu">=</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb4-5" title="5">          <span class="kw">let</span> stat <span class="fu">=</span> engState eng</a>
-<a class="sourceLine" id="cb4-6" title="6">              ox <span class="fu">=</span> <span class="kw">if</span> act <span class="fu">==</span> <span class="dt">AMotionEventActionDown</span> <span class="kw">then</span> x <span class="kw">else</span> <span class="fu">fromIntegral</span> <span class="fu">$</span> sStateX stat</a>
-<a class="sourceLine" id="cb4-7" title="7">              oy <span class="fu">=</span> <span class="kw">if</span> act <span class="fu">==</span> <span class="dt">AMotionEventActionDown</span> <span class="kw">then</span> y <span class="kw">else</span> <span class="fu">fromIntegral</span> <span class="fu">$</span> sStateY stat</a>
-<a class="sourceLine" id="cb4-8" title="8">          <span class="fu">return</span> (<span class="dt">Just</span> <span class="fu">$</span> eng { engAnimating <span class="fu">=</span> <span class="dv">1</span></a>
-<a class="sourceLine" id="cb4-9" title="9">                             , engState <span class="fu">=</span> stat { sStateX  <span class="fu">=</span> <span class="fu">truncate</span> x</a>
-<a class="sourceLine" id="cb4-10" title="10">                                               , sStateY  <span class="fu">=</span> <span class="fu">truncate</span> y</a>
-<a class="sourceLine" id="cb4-11" title="11">                                               , sStateDx <span class="fu">=</span> <span class="fu">truncate</span> <span class="fu">$</span> x <span class="fu">-</span> ox</a>
-<a class="sourceLine" id="cb4-12" title="12">                                               , sStateDy <span class="fu">=</span> <span class="fu">truncate</span> <span class="fu">$</span> y <span class="fu">-</span> oy } })</a>
-<a class="sourceLine" id="cb4-13" title="13">        go _ _ _ <span class="fu">=</span> <span class="fu">return</span> <span class="dt">Nothing</span></a></code></pre></div>
+<p><a href="https://github.com/ajhc/demo-android-ndk/blob/master/cube/hs_src/Main.hs#L38">https://github.com/ajhc/demo-android-ndk/blob/master/cube/hs_src/Main.hs#L38</a></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1"></a><span class="ot">eHandleInput ::</span> <span class="dt">AndroidEngine</span> <span class="ot">-&gt;</span> <span class="dt">AInputEventType</span> <span class="ot">-&gt;</span> <span class="dt">AMotionEventAction</span> <span class="ot">-&gt;</span> (<span class="dt">Float</span>, <span class="dt">Float</span>) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Maybe</span> <span class="dt">AndroidEngine</span>)</span>
+<span id="cb4-2"><a href="#cb4-2"></a>eHandleInput eng <span class="ot">=</span> go</span>
+<span id="cb4-3"><a href="#cb4-3"></a>  <span class="kw">where</span> go <span class="dt">AInputEventTypeMotion</span> <span class="dt">AMotionEventActionUp</span> _ <span class="ot">=</span> <span class="fu">return</span> <span class="dt">Nothing</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a>        go <span class="dt">AInputEventTypeMotion</span> act (x,y) <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb4-5"><a href="#cb4-5"></a>          <span class="kw">let</span> stat <span class="ot">=</span> engState eng</span>
+<span id="cb4-6"><a href="#cb4-6"></a>              ox <span class="ot">=</span> <span class="kw">if</span> act <span class="op">==</span> <span class="dt">AMotionEventActionDown</span> <span class="kw">then</span> x <span class="kw">else</span> <span class="fu">fromIntegral</span> <span class="op">$</span> sStateX stat</span>
+<span id="cb4-7"><a href="#cb4-7"></a>              oy <span class="ot">=</span> <span class="kw">if</span> act <span class="op">==</span> <span class="dt">AMotionEventActionDown</span> <span class="kw">then</span> y <span class="kw">else</span> <span class="fu">fromIntegral</span> <span class="op">$</span> sStateY stat</span>
+<span id="cb4-8"><a href="#cb4-8"></a>          <span class="fu">return</span> (<span class="dt">Just</span> <span class="op">$</span> eng { engAnimating <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb4-9"><a href="#cb4-9"></a>                             , engState <span class="ot">=</span> stat { sStateX  <span class="ot">=</span> <span class="fu">truncate</span> x</span>
+<span id="cb4-10"><a href="#cb4-10"></a>                                               , sStateY  <span class="ot">=</span> <span class="fu">truncate</span> y</span>
+<span id="cb4-11"><a href="#cb4-11"></a>                                               , sStateDx <span class="ot">=</span> <span class="fu">truncate</span> <span class="op">$</span> x <span class="op">-</span> ox</span>
+<span id="cb4-12"><a href="#cb4-12"></a>                                               , sStateDy <span class="ot">=</span> <span class="fu">truncate</span> <span class="op">$</span> y <span class="op">-</span> oy } })</span>
+<span id="cb4-13"><a href="#cb4-13"></a>        go _ _ _ <span class="ot">=</span> <span class="fu">return</span> <span class="dt">Nothing</span></span></code></pre></div>
 <p>二人目はeHandleCmd関数じゃなイカ。 この関数のパターンマッチは長いでゲソがほぼ <a href="https://gist.github.com/master-q/8001496#file-main-c-L182">元にしたC言語のnative-activityサンプルコード</a> のままでゲソ。 この関数でAndroidのアクティビティの状態管理をしているでゲソ。</p>
-<p><a href="https://github.com/ajhc/demo-android-ndk/blob/master/cube/hs_src/Main.hs#L53" class="uri">https://github.com/ajhc/demo-android-ndk/blob/master/cube/hs_src/Main.hs#L53</a></p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb5-1" title="1"><span class="ot">eHandleCmd ::</span> (<span class="dt">AndroidApp</span>, <span class="dt">AndroidEngine</span>) <span class="ot">-&gt;</span> <span class="dt">AAppCmd</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Maybe</span> <span class="dt">AndroidApp</span>, <span class="dt">Maybe</span> <span class="dt">AndroidEngine</span>)</a>
-<a class="sourceLine" id="cb5-2" title="2">eHandleCmd (app, eng) <span class="fu">=</span> go</a>
-<a class="sourceLine" id="cb5-3" title="3">  <span class="kw">where</span> go <span class="dt">AAppCmdSaveState</span> <span class="fu">=</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb5-4" title="4">          sstat <span class="ot">&lt;-</span> malloc</a>
-<a class="sourceLine" id="cb5-5" title="5">          poke sstat <span class="fu">$</span> engState eng</a>
-<a class="sourceLine" id="cb5-6" title="6">          <span class="fu">return</span> (<span class="dt">Just</span> <span class="fu">$</span> app { appSavedState <span class="fu">=</span> sstat</a>
-<a class="sourceLine" id="cb5-7" title="7">                             , appSavedStateSize <span class="fu">=</span> <span class="fu">toEnum</span> <span class="fu">$</span> sizeOf <span class="fu">$</span> engState eng }, <span class="dt">Nothing</span>)</a>
-<a class="sourceLine" id="cb5-8" title="8">        go <span class="dt">AAppCmdInitWindow</span> <span class="fu">|</span> appWindow app <span class="fu">/=</span> nullPtr <span class="fu">=</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb5-9" title="9">          (<span class="dt">Just</span> eng') <span class="ot">&lt;-</span> initDisplayHs androidActs eng</a>
-<a class="sourceLine" id="cb5-10" title="10">          engineDrawFrame eng'</a>
-<a class="sourceLine" id="cb5-11" title="11">          <span class="fu">return</span> (<span class="dt">Nothing</span>, <span class="dt">Just</span> eng')</a>
-<a class="sourceLine" id="cb5-12" title="12">        go <span class="dt">AAppCmdTermWindow</span> <span class="fu">=</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb5-13" title="13">          eng' <span class="ot">&lt;-</span> engineTermDisplay eng</a>
-<a class="sourceLine" id="cb5-14" title="14">          <span class="fu">return</span> (<span class="dt">Nothing</span>, <span class="dt">Just</span> eng')</a>
-<a class="sourceLine" id="cb5-15" title="15">        go <span class="dt">AAppCmdGainedFocus</span> <span class="fu">|</span> engAccelerometerSensor eng <span class="fu">/=</span> nullPtr <span class="fu">=</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb5-16" title="16">          c_ASensorEventQueue_enableSensor (engSensorEventQueue eng) (engAccelerometerSensor eng)</a>
-<a class="sourceLine" id="cb5-17" title="17">          c_ASensorEventQueue_setEventRate (engSensorEventQueue eng) (engAccelerometerSensor eng) ((<span class="dv">1000</span> <span class="ot">`div`</span> <span class="dv">60</span>) <span class="fu">*</span> <span class="dv">1000</span>)</a>
-<a class="sourceLine" id="cb5-18" title="18">          <span class="fu">return</span> (<span class="dt">Nothing</span>, <span class="dt">Nothing</span>)</a>
-<a class="sourceLine" id="cb5-19" title="19">        go <span class="dt">AAppCmdLostFocus</span> <span class="fu">=</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb5-20" title="20">          when (engAccelerometerSensor eng <span class="fu">/=</span> nullPtr) <span class="fu">$</span> void <span class="fu">$</span></a>
-<a class="sourceLine" id="cb5-21" title="21">            c_ASensorEventQueue_disableSensor (engSensorEventQueue eng) (engAccelerometerSensor eng)</a>
-<a class="sourceLine" id="cb5-22" title="22">          <span class="kw">let</span> eng' <span class="fu">=</span> eng { engAnimating <span class="fu">=</span> <span class="dv">0</span> }</a>
-<a class="sourceLine" id="cb5-23" title="23">          engineDrawFrame eng'</a>
-<a class="sourceLine" id="cb5-24" title="24">          <span class="fu">return</span> (<span class="dt">Nothing</span>, <span class="dt">Just</span> eng')</a>
-<a class="sourceLine" id="cb5-25" title="25">        go _ <span class="fu">=</span> <span class="fu">return</span> (<span class="dt">Nothing</span>, <span class="dt">Nothing</span>)</a></code></pre></div>
+<p><a href="https://github.com/ajhc/demo-android-ndk/blob/master/cube/hs_src/Main.hs#L53">https://github.com/ajhc/demo-android-ndk/blob/master/cube/hs_src/Main.hs#L53</a></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1"></a><span class="ot">eHandleCmd ::</span> (<span class="dt">AndroidApp</span>, <span class="dt">AndroidEngine</span>) <span class="ot">-&gt;</span> <span class="dt">AAppCmd</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Maybe</span> <span class="dt">AndroidApp</span>, <span class="dt">Maybe</span> <span class="dt">AndroidEngine</span>)</span>
+<span id="cb5-2"><a href="#cb5-2"></a>eHandleCmd (app, eng) <span class="ot">=</span> go</span>
+<span id="cb5-3"><a href="#cb5-3"></a>  <span class="kw">where</span> go <span class="dt">AAppCmdSaveState</span> <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a>          sstat <span class="ot">&lt;-</span> malloc</span>
+<span id="cb5-5"><a href="#cb5-5"></a>          poke sstat <span class="op">$</span> engState eng</span>
+<span id="cb5-6"><a href="#cb5-6"></a>          <span class="fu">return</span> (<span class="dt">Just</span> <span class="op">$</span> app { appSavedState <span class="ot">=</span> sstat</span>
+<span id="cb5-7"><a href="#cb5-7"></a>                             , appSavedStateSize <span class="ot">=</span> <span class="fu">toEnum</span> <span class="op">$</span> sizeOf <span class="op">$</span> engState eng }, <span class="dt">Nothing</span>)</span>
+<span id="cb5-8"><a href="#cb5-8"></a>        go <span class="dt">AAppCmdInitWindow</span> <span class="op">|</span> appWindow app <span class="op">/=</span> nullPtr <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb5-9"><a href="#cb5-9"></a>          (<span class="dt">Just</span> eng') <span class="ot">&lt;-</span> initDisplayHs androidActs eng</span>
+<span id="cb5-10"><a href="#cb5-10"></a>          engineDrawFrame eng'</span>
+<span id="cb5-11"><a href="#cb5-11"></a>          <span class="fu">return</span> (<span class="dt">Nothing</span>, <span class="dt">Just</span> eng')</span>
+<span id="cb5-12"><a href="#cb5-12"></a>        go <span class="dt">AAppCmdTermWindow</span> <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb5-13"><a href="#cb5-13"></a>          eng' <span class="ot">&lt;-</span> engineTermDisplay eng</span>
+<span id="cb5-14"><a href="#cb5-14"></a>          <span class="fu">return</span> (<span class="dt">Nothing</span>, <span class="dt">Just</span> eng')</span>
+<span id="cb5-15"><a href="#cb5-15"></a>        go <span class="dt">AAppCmdGainedFocus</span> <span class="op">|</span> engAccelerometerSensor eng <span class="op">/=</span> nullPtr <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb5-16"><a href="#cb5-16"></a>          c_ASensorEventQueue_enableSensor (engSensorEventQueue eng) (engAccelerometerSensor eng)</span>
+<span id="cb5-17"><a href="#cb5-17"></a>          c_ASensorEventQueue_setEventRate (engSensorEventQueue eng) (engAccelerometerSensor eng) ((<span class="dv">1000</span> <span class="ot">`div`</span> <span class="dv">60</span>) <span class="op">*</span> <span class="dv">1000</span>)</span>
+<span id="cb5-18"><a href="#cb5-18"></a>          <span class="fu">return</span> (<span class="dt">Nothing</span>, <span class="dt">Nothing</span>)</span>
+<span id="cb5-19"><a href="#cb5-19"></a>        go <span class="dt">AAppCmdLostFocus</span> <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb5-20"><a href="#cb5-20"></a>          when (engAccelerometerSensor eng <span class="op">/=</span> nullPtr) <span class="op">$</span> void <span class="op">$</span></span>
+<span id="cb5-21"><a href="#cb5-21"></a>            c_ASensorEventQueue_disableSensor (engSensorEventQueue eng) (engAccelerometerSensor eng)</span>
+<span id="cb5-22"><a href="#cb5-22"></a>          <span class="kw">let</span> eng' <span class="ot">=</span> eng { engAnimating <span class="ot">=</span> <span class="dv">0</span> }</span>
+<span id="cb5-23"><a href="#cb5-23"></a>          engineDrawFrame eng'</span>
+<span id="cb5-24"><a href="#cb5-24"></a>          <span class="fu">return</span> (<span class="dt">Nothing</span>, <span class="dt">Just</span> eng')</span>
+<span id="cb5-25"><a href="#cb5-25"></a>        go _ <span class="ot">=</span> <span class="fu">return</span> (<span class="dt">Nothing</span>, <span class="dt">Nothing</span>)</span></code></pre></div>
 <h2 id="全てをつなげる簡易フレームワーク">全てをつなげる簡易フレームワーク</h2>
 <p>engineDrawFrame、eHandleInput、eHandleCmdという3つの関数が出てきたでゲソが、 これらは誰が呼び出すんでゲソ？ 呼び出す人が誰もいないなら動作するはずないじゃなイカ。 ここらへんの呼び出しはめんどうなのでフレームワークで包んでみたでゲソ。</p>
-<p><a href="https://github.com/ajhc/demo-android-ndk/blob/master/cube/hs_src/Main.hs#L13" class="uri">https://github.com/ajhc/demo-android-ndk/blob/master/cube/hs_src/Main.hs#L13</a></p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb6-1" title="1"><span class="ot">androidActs ::</span> <span class="dt">AndroidNdkActs</span></a>
-<a class="sourceLine" id="cb6-2" title="2">androidActs <span class="fu">=</span> <span class="dt">AndroidNdkActs</span> { drawFrame <span class="fu">=</span> engineDrawFrame</a>
-<a class="sourceLine" id="cb6-3" title="3">                             , initDisplay <span class="fu">=</span> engineInitDisplay</a>
-<a class="sourceLine" id="cb6-4" title="4">                             , handleInput <span class="fu">=</span> eHandleInput</a>
-<a class="sourceLine" id="cb6-5" title="5">                             , handleCmd <span class="fu">=</span> eHandleCmd }</a>
-<a class="sourceLine" id="cb6-6" title="6"></a>
-<a class="sourceLine" id="cb6-7" title="7">foreign export ccall <span class="st">&quot;engineHandleInput&quot;</span><span class="ot"> engineHandleInput ::</span> <span class="dt">FuncHandleInput</span></a>
-<a class="sourceLine" id="cb6-8" title="8">foreign <span class="kw">import</span> ccall &quot;&amp;engineHandleInput&quot; p_engineHandleInput :: <span class="dt">FunPtr</span> <span class="dt">FuncHandleInput</span></a>
-<a class="sourceLine" id="cb6-9" title="9"><span class="ot">engineHandleInput ::</span> <span class="dt">FuncHandleInput</span></a>
-<a class="sourceLine" id="cb6-10" title="10">engineHandleInput <span class="fu">=</span> handleInputHs androidActs</a>
-<a class="sourceLine" id="cb6-11" title="11"></a>
-<a class="sourceLine" id="cb6-12" title="12">foreign export ccall <span class="st">&quot;engineHandleCmd&quot;</span><span class="ot"> engineHandleCmd ::</span> <span class="dt">FuncHandleCmd</span></a>
-<a class="sourceLine" id="cb6-13" title="13">foreign <span class="kw">import</span> ccall &quot;&amp;engineHandleCmd&quot; p_engineHandleCmd :: <span class="dt">FunPtr</span> <span class="dt">FuncHandleCmd</span></a>
-<a class="sourceLine" id="cb6-14" title="14"><span class="ot">engineHandleCmd ::</span> <span class="dt">FuncHandleCmd</span></a>
-<a class="sourceLine" id="cb6-15" title="15">engineHandleCmd <span class="fu">=</span> handleCmdHs androidAct</a>
-<a class="sourceLine" id="cb6-16" title="16"></a>
-<a class="sourceLine" id="cb6-17" title="17"><span class="co">--snip--</span></a>
-<a class="sourceLine" id="cb6-18" title="18">foreign export ccall <span class="st">&quot;androidMain&quot;</span><span class="ot"> androidMain ::</span> <span class="dt">Ptr</span> <span class="dt">AndroidApp</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</a>
-<a class="sourceLine" id="cb6-19" title="19"><span class="ot">androidMain ::</span> <span class="dt">Ptr</span> <span class="dt">AndroidApp</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</a>
-<a class="sourceLine" id="cb6-20" title="20">androidMain <span class="fu">=</span> androidMainHs androidActs p_engineHandleInput p_engineHandleCmd</a></code></pre></div>
+<p><a href="https://github.com/ajhc/demo-android-ndk/blob/master/cube/hs_src/Main.hs#L13">https://github.com/ajhc/demo-android-ndk/blob/master/cube/hs_src/Main.hs#L13</a></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1"></a><span class="ot">androidActs ::</span> <span class="dt">AndroidNdkActs</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a>androidActs <span class="ot">=</span> <span class="dt">AndroidNdkActs</span> { drawFrame <span class="ot">=</span> engineDrawFrame</span>
+<span id="cb6-3"><a href="#cb6-3"></a>                             , initDisplay <span class="ot">=</span> engineInitDisplay</span>
+<span id="cb6-4"><a href="#cb6-4"></a>                             , handleInput <span class="ot">=</span> eHandleInput</span>
+<span id="cb6-5"><a href="#cb6-5"></a>                             , handleCmd <span class="ot">=</span> eHandleCmd }</span>
+<span id="cb6-6"><a href="#cb6-6"></a></span>
+<span id="cb6-7"><a href="#cb6-7"></a>foreign export ccall <span class="st">&quot;engineHandleInput&quot;</span><span class="ot"> engineHandleInput ::</span> <span class="dt">FuncHandleInput</span></span>
+<span id="cb6-8"><a href="#cb6-8"></a>foreign <span class="kw">import</span> ccall &quot;&amp;engineHandleInput&quot; p_engineHandleInput :: <span class="dt">FunPtr</span> <span class="dt">FuncHandleInput</span></span>
+<span id="cb6-9"><a href="#cb6-9"></a><span class="ot">engineHandleInput ::</span> <span class="dt">FuncHandleInput</span></span>
+<span id="cb6-10"><a href="#cb6-10"></a>engineHandleInput <span class="ot">=</span> handleInputHs androidActs</span>
+<span id="cb6-11"><a href="#cb6-11"></a></span>
+<span id="cb6-12"><a href="#cb6-12"></a>foreign export ccall <span class="st">&quot;engineHandleCmd&quot;</span><span class="ot"> engineHandleCmd ::</span> <span class="dt">FuncHandleCmd</span></span>
+<span id="cb6-13"><a href="#cb6-13"></a>foreign <span class="kw">import</span> ccall &quot;&amp;engineHandleCmd&quot; p_engineHandleCmd :: <span class="dt">FunPtr</span> <span class="dt">FuncHandleCmd</span></span>
+<span id="cb6-14"><a href="#cb6-14"></a><span class="ot">engineHandleCmd ::</span> <span class="dt">FuncHandleCmd</span></span>
+<span id="cb6-15"><a href="#cb6-15"></a>engineHandleCmd <span class="ot">=</span> handleCmdHs androidAct</span>
+<span id="cb6-16"><a href="#cb6-16"></a></span>
+<span id="cb6-17"><a href="#cb6-17"></a><span class="co">--snip--</span></span>
+<span id="cb6-18"><a href="#cb6-18"></a>foreign export ccall <span class="st">&quot;androidMain&quot;</span><span class="ot"> androidMain ::</span> <span class="dt">Ptr</span> <span class="dt">AndroidApp</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb6-19"><a href="#cb6-19"></a><span class="ot">androidMain ::</span> <span class="dt">Ptr</span> <span class="dt">AndroidApp</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb6-20"><a href="#cb6-20"></a>androidMain <span class="ot">=</span> androidMainHs androidActs p_engineHandleInput p_engineHandleCmd</span></code></pre></div>
 <p><img src="../draw/20131217_android-fw.png" /></p>
 <p>このコード少しわかりにくいので図にしてみたでゲソ。 Androidアプリが起動するとまず最初にandroidMain関数が実行されるんでゲソ。 つまりandroidMain関数はこのアプリでのエントリポイントでゲソ。 この関数はC言語から呼び出せるengineHandleInput、engineHandleCmdという関数と共に4つの関数を内包したAndroidNdkActs型をHaskellで作られたAndroidフレームワークの初期化関数androidMainHsに渡すんじゃなイカ。 このフレームワーク側ではAndroid本体からイベントがあると、 いいかんじな処理をした後にAndroidNdkActs型の中の適切な関数を呼び出してアプリを動作させるんでゲソ。 例えば、タッチパネルが操作されてたらイカのような手順で関数が呼び出されることになるでゲソ。</p>
 <ol type="1">
@@ -253,19 +253,19 @@ $ tree
 <li>eHandleInput関数がAndroidEngine型の中の状態を書き換える</li>
 </ol>
 <p>じゃぁ親玉であるandroidMain関数はどこから呼ばれるかというと、 C言語のエントリポイントが呼び出すんでゲソ。</p>
-<p><a href="https://github.com/ajhc/demo-android-ndk/blob/master/cube/jni/main.c#L31" class="uri">https://github.com/ajhc/demo-android-ndk/blob/master/cube/jni/main.c#L31</a></p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb7-1" title="1"><span class="dt">void</span> android_main(<span class="kw">struct</span> android_app* state) {</a>
-<a class="sourceLine" id="cb7-2" title="2">	app_dummy(); <span class="co">// Make sure glue isn't stripped.</span></a>
-<a class="sourceLine" id="cb7-3" title="3"></a>
-<a class="sourceLine" id="cb7-4" title="4">	<span class="co">// Init &amp; run Haskell code.</span></a>
-<a class="sourceLine" id="cb7-5" title="5">	<span class="dt">int</span> hsargc = <span class="dv">1</span>;</a>
-<a class="sourceLine" id="cb7-6" title="6">	<span class="dt">char</span> *hsargv = <span class="st">&quot;q&quot;</span>;</a>
-<a class="sourceLine" id="cb7-7" title="7">	<span class="dt">char</span> **hsargvp = &amp;hsargv;</a>
-<a class="sourceLine" id="cb7-8" title="8"></a>
-<a class="sourceLine" id="cb7-9" title="9">	hs_init(&amp;hsargc, &amp;hsargvp);</a>
-<a class="sourceLine" id="cb7-10" title="10">	androidMain(state);</a>
-<a class="sourceLine" id="cb7-11" title="11">	hs_exit();</a>
-<a class="sourceLine" id="cb7-12" title="12">}</a></code></pre></div>
+<p><a href="https://github.com/ajhc/demo-android-ndk/blob/master/cube/jni/main.c#L31">https://github.com/ajhc/demo-android-ndk/blob/master/cube/jni/main.c#L31</a></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb7-1"><a href="#cb7-1"></a><span class="dt">void</span> android_main(<span class="kw">struct</span> android_app* state) {</span>
+<span id="cb7-2"><a href="#cb7-2"></a>	app_dummy(); <span class="co">// Make sure glue isn't stripped.</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a></span>
+<span id="cb7-4"><a href="#cb7-4"></a>	<span class="co">// Init &amp; run Haskell code.</span></span>
+<span id="cb7-5"><a href="#cb7-5"></a>	<span class="dt">int</span> hsargc = <span class="dv">1</span>;</span>
+<span id="cb7-6"><a href="#cb7-6"></a>	<span class="dt">char</span> *hsargv = <span class="st">&quot;q&quot;</span>;</span>
+<span id="cb7-7"><a href="#cb7-7"></a>	<span class="dt">char</span> **hsargvp = &amp;hsargv;</span>
+<span id="cb7-8"><a href="#cb7-8"></a></span>
+<span id="cb7-9"><a href="#cb7-9"></a>	hs_init(&amp;hsargc, &amp;hsargvp);</span>
+<span id="cb7-10"><a href="#cb7-10"></a>	androidMain(state);</span>
+<span id="cb7-11"><a href="#cb7-11"></a>	hs_exit();</span>
+<span id="cb7-12"><a href="#cb7-12"></a>}</span></code></pre></div>
 <p>なんかわかったような気になったじゃなイカ!</p>
 <p>
   <div id="disqus_thread"></div>
@@ -297,8 +297,7 @@ $ tree
         This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
         <br>
         Metasepi project is supported by
-        <a href="https://twitter.com/yksym_t"><img alt="tabasconian" style="border-width:0" src="../img/yksym_t.png" /></a> ×
-        <a href="https://twitter.com/keigoi"><img alt="Keigo Imai" style="border-width:0" src="../img/keigoi.png" /></a> ×
+        <a href="https://www.qcore.co.jp/"><img alt="QuantumCore" style="border-width:0" src="../img/qcore_158x25.png" /></a> ×
         <a href="http://www.metasepi-design.com/"><img alt="METASEPI DESIGN" style="border-width:0" src="../img/metasepi_design_logo_82x25.png" /></a> ×
         <a href="../past-supporters.html">Past Supporters</a>
       </p>

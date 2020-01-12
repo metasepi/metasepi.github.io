@@ -78,7 +78,7 @@
 </ul>
 <hr>
 <p>This article is a part of <a href="http://qiita.com/advent-calendar/2013/theorem_prover">Theorem Prover Advent Calendar 2013 - Qiita [キータ]</a>.</p>
-<p>Do you know about ATS language <a href="http://www.ats-lang.org/" class="uri">http://www.ats-lang.org/</a>? It has both dependent type and linear type, and to be theorem prover also theorem prover. It supports a variety of programming paradigms that include:</p>
+<p>Do you know about ATS language <a href="http://www.ats-lang.org/">http://www.ats-lang.org/</a>? It has both dependent type and linear type, and to be theorem prover also theorem prover. It supports a variety of programming paradigms that include:</p>
 <ul>
 <li>Functional programming</li>
 <li>Imperative programming</li>
@@ -131,7 +131,7 @@ $ size hello
 <p>Furthermore, <a href="http://benchmarksgame.alioth.debian.org/u64/benchmark.php?test=all&amp;lang=ats&amp;lang2=gcc&amp;data=u64">ATS is two times slower than C langugage at worst (on Computer Language Benchmarks Game)</a>. That is to say ATS is fast!</p>
 <p>However, any infomation about the ATS lanugage aren’t found in Japan… At beginning, let’s try to translate <a href="http://cs.likai.org/ats/ml-programmers-guide-to-ats">ML programmer’s guide to ATS - liulk @ cs-people</a> into Japanese, to become ATS kung-fu. De-gesso!</p>
 <hr />
-<p>This blog post will not be refreshed, because I decided to put any translation about ATS into github repository. Please see <a href="https://github.com/jats-ug/translate/blob/master/Web/cs.likai.org/ats/ml-programmers-guide-to-ats.md" class="uri">https://github.com/jats-ug/translate/blob/master/Web/cs.likai.org/ats/ml-programmers-guide-to-ats.md</a>.</p>
+<p>This blog post will not be refreshed, because I decided to put any translation about ATS into github repository. Please see <a href="https://github.com/jats-ug/translate/blob/master/Web/cs.likai.org/ats/ml-programmers-guide-to-ats.md">https://github.com/jats-ug/translate/blob/master/Web/cs.likai.org/ats/ml-programmers-guide-to-ats.md</a>.</p>
 <h1 id="mlプログラマ向けats言語ガイド">MLプログラマ向けATS言語ガイド</h1>
 <p>このガイドではATS (Applied Type System) でのプログラミング作法を解説はしません。 それでも、熟練のMLプログラマであればすぐにATSの用語を理解してATSのコードを読み始めることができると思います。</p>
 <h2 id="atsのすばらしき世界">ATSのすばらしき世界</h2>
@@ -170,31 +170,31 @@ $ size hello
 <p>重要なことですが、MLと異なり、ATSの型検査器はとても限定された型推論しか行ないません。 あなたは明示的に十分な型注釈を与える必要があります。 そうすればATSは型の導出できるようになるでしょう。</p>
 <h2 id="めくるめく静">めくるめく静</h2>
 <p>ATSはMLに少し似ています。 型とデータ型を定義することができます。</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><a class="sourceLine" id="cb4-1" title="1"><span class="co">(* ATS *)</span></a>
-<a class="sourceLine" id="cb4-2" title="2">typedef t = <span class="dt">int</span></a>
-<a class="sourceLine" id="cb4-3" title="3">typedef pair (a:<span class="kw">type</span>, b:<span class="kw">type</span>) = '(a, b)</a>
-<a class="sourceLine" id="cb4-4" title="4">datatype <span class="dt">option</span> (a:<span class="kw">type</span>) =</a>
-<a class="sourceLine" id="cb4-5" title="5">  | <span class="dt">Some</span>(a) <span class="kw">of</span> a</a>
-<a class="sourceLine" id="cb4-6" title="6">  | <span class="dt">None</span>(a)</a></code></pre></div>
-<div class="sourceCode" id="cb5"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><a class="sourceLine" id="cb5-1" title="1"><span class="co">(* SML *)</span></a>
-<a class="sourceLine" id="cb5-2" title="2"><span class="kw">type</span> t = <span class="dt">int</span></a>
-<a class="sourceLine" id="cb5-3" title="3"><span class="kw">type</span> ('a, 'b) pair = 'a * 'b</a>
-<a class="sourceLine" id="cb5-4" title="4">datatype 'a <span class="dt">option</span> =</a>
-<a class="sourceLine" id="cb5-5" title="5">    <span class="dt">Some</span> <span class="kw">of</span> 'a</a>
-<a class="sourceLine" id="cb5-6" title="6">  | <span class="dt">None</span></a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span id="cb4-1"><a href="#cb4-1"></a><span class="co">(* ATS *)</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a>typedef t = <span class="dt">int</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a>typedef pair (a:<span class="kw">type</span>, b:<span class="kw">type</span>) = '(a, b)</span>
+<span id="cb4-4"><a href="#cb4-4"></a>datatype <span class="dt">option</span> (a:<span class="kw">type</span>) =</span>
+<span id="cb4-5"><a href="#cb4-5"></a>  | <span class="dt">Some</span>(a) <span class="kw">of</span> a</span>
+<span id="cb4-6"><a href="#cb4-6"></a>  | <span class="dt">None</span>(a)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span id="cb5-1"><a href="#cb5-1"></a><span class="co">(* SML *)</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="kw">type</span> t = <span class="dt">int</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="kw">type</span> ('a, 'b) pair = 'a * 'b</span>
+<span id="cb5-4"><a href="#cb5-4"></a>datatype 'a <span class="dt">option</span> =</span>
+<span id="cb5-5"><a href="#cb5-5"></a>    <span class="dt">Some</span> <span class="kw">of</span> 'a</span>
+<span id="cb5-6"><a href="#cb5-6"></a>  | <span class="dt">None</span></span></code></pre></div>
 <p>上記のSMLコードでは、定義済みのint型があったとき、 新しいtという名前の型をint型の別名として定義しています。 また、いくつかの型変数をパラメータとして取るような型を別名として定義できます。 さらに型変数aをパラメータとして取るoptionというデータ型も定義しています。 これらの識別子はすべて静的な識別子です。 対して、動的な識別子というのは実行時の値になります。</p>
 <p>一方ATSでは、データ型のコンストラクタに型変数を明示的に適用してやる必要があることに注意してください。 データ型に関する詳細な情報は <a href="http://www.ats-lang.org/htdocs-old/TUTORIAL/contents/datatypes.html">Datatypes in the ATS tutorial</a> を参照してくだっさい。 しかし、まずはこの章の残りを読んでからでも良いでしょう。</p>
 <p>型宣言は静的な識別子を“type”という種の静的な式に割り付けます。 つまりtypedefはstadefの特殊形です。 次に示す2つの静的な宣言はほぼ同じです。</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><a class="sourceLine" id="cb6-1" title="1"><span class="co">(* ATS (1) *)</span></a>
-<a class="sourceLine" id="cb6-2" title="2"><span class="co">(* sta t:type *)</span></a>
-<a class="sourceLine" id="cb6-3" title="3">typedef t = <span class="dt">int</span></a>
-<a class="sourceLine" id="cb6-4" title="4">typedef pair (a:<span class="kw">type</span>, b:<span class="kw">type</span>) =</a>
-<a class="sourceLine" id="cb6-5" title="5">  '(a, b)</a></code></pre></div>
-<div class="sourceCode" id="cb7"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><a class="sourceLine" id="cb7-1" title="1"><span class="co">(* ATS (2) *)</span></a>
-<a class="sourceLine" id="cb7-2" title="2"><span class="co">(* sta t:_ *)</span></a>
-<a class="sourceLine" id="cb7-3" title="3">stadef t = <span class="dt">int</span></a>
-<a class="sourceLine" id="cb7-4" title="4">stadef pair (a:<span class="kw">type</span>, b:<span class="kw">type</span>) =</a>
-<a class="sourceLine" id="cb7-5" title="5">  '(a, b)</a></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span id="cb6-1"><a href="#cb6-1"></a><span class="co">(* ATS (1) *)</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="co">(* sta t:type *)</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a>typedef t = <span class="dt">int</span></span>
+<span id="cb6-4"><a href="#cb6-4"></a>typedef pair (a:<span class="kw">type</span>, b:<span class="kw">type</span>) =</span>
+<span id="cb6-5"><a href="#cb6-5"></a>  '(a, b)</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span id="cb7-1"><a href="#cb7-1"></a><span class="co">(* ATS (2) *)</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="co">(* sta t:_ *)</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a>stadef t = <span class="dt">int</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a>stadef pair (a:<span class="kw">type</span>, b:<span class="kw">type</span>) =</span>
+<span id="cb7-5"><a href="#cb7-5"></a>  '(a, b)</span></code></pre></div>
 <p>この2つが違うのはtypedefがtが種“type”であることを保証するのに対して、 stadefは何も保証しないという点です。</p>
 <p>型は、静的な式や静的な識別子が取り得る数多くの種の内の一つです。 他の種としては以下が挙げられます。</p>
 <ul>
@@ -298,18 +298,18 @@ datatype
 <li>0 &lt;= 4 &amp;&amp; 4 &lt; 10 は種“bool”の静的な式です</li>
 <li>一般的に、静的なnat_lt関数は次のように定義できます</li>
 </ul>
-<div class="sourceCode" id="cb8"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><a class="sourceLine" id="cb8-1" title="1"><span class="co">(* ATS *)</span></a>
-<a class="sourceLine" id="cb8-2" title="2">stadef nat_lt (i: <span class="dt">int</span>, limit: <span class="dt">int</span>) =</a>
-<a class="sourceLine" id="cb8-3" title="3">  <span class="dv">0</span> &lt;= i &amp;&amp; i &lt; limit</a></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span id="cb8-1"><a href="#cb8-1"></a><span class="co">(* ATS *)</span></span>
+<span id="cb8-2"><a href="#cb8-2"></a>stadef nat_lt (i: <span class="dt">int</span>, limit: <span class="dt">int</span>) =</span>
+<span id="cb8-3"><a href="#cb8-3"></a>  <span class="dv">0</span> &lt;= i &amp;&amp; i &lt; limit</span></code></pre></div>
 <p>静的な関数であるnat_ltは、種boolが要求されればいつでも使うことができます。 例えば、実行時に数値の引数の範囲に制約をつけたい場合を考えましょう。</p>
 <ul>
 <li>ビルトインの静的な識別子intはオーバーロードされています。 種“type”と種“int -&gt; type”の2つの定義を持っています。二次的なintは依存型の数値で静的な式によって指示されています。</li>
 <li>int(3) は種“type”の静的な式です</li>
 <li>ガードを使った存在記号を用いて、数値型を指定した範囲に制限することができます。</li>
 </ul>
-<div class="sourceCode" id="cb9"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><a class="sourceLine" id="cb9-1" title="1"><span class="co">(* ATS *)</span></a>
-<a class="sourceLine" id="cb9-2" title="2">typedef NatLt (n: <span class="dt">int</span>) =</a>
-<a class="sourceLine" id="cb9-3" title="3">  [i: <span class="dt">int</span> | nat_lt (i, n)] <span class="dt">int</span>(i)</a></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span id="cb9-1"><a href="#cb9-1"></a><span class="co">(* ATS *)</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a>typedef NatLt (n: <span class="dt">int</span>) =</span>
+<span id="cb9-3"><a href="#cb9-3"></a>  [i: <span class="dt">int</span> | nat_lt (i, n)] <span class="dt">int</span>(i)</span></code></pre></div>
 <p>これで静的な関数 NatLt: int -&gt; type を定義できました。 静的な数値nを与えれば、NatLtは 0 から n - 1 までの範囲を持つ数値型のサブセットとしての型を返します。 NatLtの実装はこう読めるでしょう。 「種intであり、nat_lt(i, n)が真で、int(i)型として生産されるのようなiが存在する。」</p>
 <p>NatLt(n)型を使った関数は以下のようになるでしょう。</p>
 <p>~~~ {.ocaml} (* ATS *) fun digit_of_num (i: NatLt(10)): char = … ~~~</p>
@@ -426,9 +426,9 @@ Sequence<br /> (List/Array)<br />
 <p>読者をおどろかせるかもしれませんが、ATSにといてintはt@ypeです。 64ビットマシンのC言語型であるintとlongを考えてみると、 intは32ビット、longは64ビット、そしてポインタは64ビットです。 intはポインタと同じサイズではありません。 同様に、ATSではlongもまたt@ypeです。 16ビットマシンの場合、intは16ビット、longは32ビット、ポインタは16ビットであるからです。</p>
 <h2 id="落ち着かない関数たち">落ち着かない関数たち</h2>
 <p>ATSでの関数の型の詳細は注意深く調査するべきでしょう。 その簡単な構成はMLと似ていて、シンプルなものです。</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><a class="sourceLine" id="cb10-1" title="1"><span class="co">(* ATS (.sats) *)</span></a>
-<a class="sourceLine" id="cb10-2" title="2"><span class="kw">fun</span> function_name (x1: t1, ..., xn: tn): t' =</a>
-<a class="sourceLine" id="cb10-3" title="3">  <span class="st">&quot;c_name&quot;</span></a></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span id="cb10-1"><a href="#cb10-1"></a><span class="co">(* ATS (.sats) *)</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a><span class="kw">fun</span> function_name (x1: t1, ..., xn: tn): t' =</span>
+<span id="cb10-3"><a href="#cb10-3"></a>  <span class="st">&quot;c_name&quot;</span></span></code></pre></div>
 <p>~~~ {.ocaml} (* SML (signature) <em>) val function_name: (t1 </em> … * tn) -&gt; t’ ~~~</p>
 <p>C言語に変換すると、function_nameはc_nameという名前になることに注意してください。 もっともこれは任意ですが。 これは以下のように使われます。</p>
 <ol type="1">
@@ -442,26 +442,26 @@ Sequence<br /> (List/Array)<br />
 <li>タグを指定しないかぎり、デフォルトでは関数はクロージャとして使えず、部分適用も使えない (タグについては後に説明します)</li>
 </ul>
 <p>依存型にガードとアサートを追加すれば、以下のようになります。</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><a class="sourceLine" id="cb11-1" title="1"><span class="co">(* ATS (.sats) *)</span></a>
-<a class="sourceLine" id="cb11-2" title="2"><span class="kw">fun</span> function_name</a>
-<a class="sourceLine" id="cb11-3" title="3">    {forall quantifiers | guards} (x1: t1, ..., xn: tn):</a>
-<a class="sourceLine" id="cb11-4" title="4">    [exists quantifiers | asserts] t' =</a>
-<a class="sourceLine" id="cb11-5" title="5">  <span class="st">&quot;c_name&quot;</span></a></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span id="cb11-1"><a href="#cb11-1"></a><span class="co">(* ATS (.sats) *)</span></span>
+<span id="cb11-2"><a href="#cb11-2"></a><span class="kw">fun</span> function_name</span>
+<span id="cb11-3"><a href="#cb11-3"></a>    {forall quantifiers | guards} (x1: t1, ..., xn: tn):</span>
+<span id="cb11-4"><a href="#cb11-4"></a>    [exists quantifiers | asserts] t' =</span>
+<span id="cb11-5"><a href="#cb11-5"></a>  <span class="st">&quot;c_name&quot;</span></span></code></pre></div>
 <p>ガードはforall量化子の項で書くことができる種boolの静的な式です。 アサートはforallとexists量化子の項で書くことができる種boolの静的な式です。 なおかつ、t1 … tn はforall量化子の項で書くことができる種typeの静的な式です。 そしてt’はforallとexists量化子の項で書くことができる種typeの静的な式です。</p>
 <p>証明の項をさらに追加してみましょう。</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><a class="sourceLine" id="cb12-1" title="1"><span class="co">(* ATS (.sats) *)</span></a>
-<a class="sourceLine" id="cb12-2" title="2"><span class="kw">fun</span> function_name</a>
-<a class="sourceLine" id="cb12-3" title="3">    {forall quantifiers | guards} (pf1: prop1, ..., pfp: propp | x1: t1, ..., xn: tn):</a>
-<a class="sourceLine" id="cb12-4" title="4">    [exists quantifiers | asserts] (prop'1, ..., prop'q | t') =</a>
-<a class="sourceLine" id="cb12-5" title="5">  <span class="st">&quot;c_name&quot;</span></a></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span id="cb12-1"><a href="#cb12-1"></a><span class="co">(* ATS (.sats) *)</span></span>
+<span id="cb12-2"><a href="#cb12-2"></a><span class="kw">fun</span> function_name</span>
+<span id="cb12-3"><a href="#cb12-3"></a>    {forall quantifiers | guards} (pf1: prop1, ..., pfp: propp | x1: t1, ..., xn: tn):</span>
+<span id="cb12-4"><a href="#cb12-4"></a>    [exists quantifiers | asserts] (prop'1, ..., prop'q | t') =</span>
+<span id="cb12-5"><a href="#cb12-5"></a>  <span class="st">&quot;c_name&quot;</span></span></code></pre></div>
 <p>アンカリー化された引数は、証明の変数とプログラムの変数の2つの部分に分断されたことに注意してください。 証明の変数はコンパイルが完了すると削除されます。 プログラムの変数はコンパイルされてもそのまま残ります。</p>
 <p>最後になりますが、ATSはタグとして副作用を追跡するためにアロー型を使います。</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><a class="sourceLine" id="cb13-1" title="1"><span class="co">(* ATS (.sats) *)</span></a>
-<a class="sourceLine" id="cb13-2" title="2"><span class="kw">fun</span> function_name</a>
-<a class="sourceLine" id="cb13-3" title="3">    {forall quantifiers | guards} (pf1: prop1, ..., pfp: propp | x1: t1, ..., xn: tn)</a>
-<a class="sourceLine" id="cb13-4" title="4">  :&lt;tag1, ..., tagk&gt;</a>
-<a class="sourceLine" id="cb13-5" title="5">    [exists quantifiers | asserts] (prop'1, ..., prop'q | t') =</a>
-<a class="sourceLine" id="cb13-6" title="6">  <span class="st">&quot;c_name&quot;</span></a></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span id="cb13-1"><a href="#cb13-1"></a><span class="co">(* ATS (.sats) *)</span></span>
+<span id="cb13-2"><a href="#cb13-2"></a><span class="kw">fun</span> function_name</span>
+<span id="cb13-3"><a href="#cb13-3"></a>    {forall quantifiers | guards} (pf1: prop1, ..., pfp: propp | x1: t1, ..., xn: tn)</span>
+<span id="cb13-4"><a href="#cb13-4"></a>  :&lt;tag1, ..., tagk&gt;</span>
+<span id="cb13-5"><a href="#cb13-5"></a>    [exists quantifiers | asserts] (prop'1, ..., prop'q | t') =</span>
+<span id="cb13-6"><a href="#cb13-6"></a>  <span class="st">&quot;c_name&quot;</span></span></code></pre></div>
 <p>もし関数の型を静的な式として書きたければ、 (これまで見てきた関数のシグニチャに反していますが) 型の表現は以下のようになるでしょう。</p>
 <p>~~~ {.ocaml} (* ATS (static expression) *) {forall…} (prop1, …, propp | t1, …, tn) -&lt;tag1, …, tagk&gt; [exists…] (prop’1, …, prop’q | t’) ~~~</p>
 <h2 id="タグ付きのアロー型">タグ付きのアロー型</h2>
@@ -487,74 +487,74 @@ Sequence<br /> (List/Array)<br />
 <p>~~~ {.c} char <em>fgets(char </em>s, int size, FILE *stream); ~~~</p>
 <p>manページには 「fgets()はstreamから最大で size - 1 個の文字を読み込み、sが指すバッファに格納する。 ’\0’が一つバッファの中の最後の文字の後に書き込まれる。」 とあり、さらに 「fgets()は、成功するとsを返し、エラーや1文字も読み込んでいないのにファイルの終わりになった場合に NULL を返す。」 とあります。</p>
 <p>ATSでの宣言を見てみましょう。コメントをたくさん入れてみました。</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><a class="sourceLine" id="cb14-1" title="1"><span class="co">(* fgets_vはfgetsの結果である成功か失敗を表わします。</span></a>
-<a class="sourceLine" id="cb14-2" title="2"><span class="co"> *)</span></a>
-<a class="sourceLine" id="cb14-3" title="3">dataview fgets_v (sz:<span class="dt">int</span>, addr, addr) =</a>
-<a class="sourceLine" id="cb14-4" title="4">  | <span class="co">(* 成功した場合、lアドレスは長さnの文字列を格納している</span></a>
-<a class="sourceLine" id="cb14-5" title="5"><span class="co">     * サイズszの文字列バッファでしょう。</span></a>
-<a class="sourceLine" id="cb14-6" title="6"><span class="co">     *)</span></a>
-<a class="sourceLine" id="cb14-7" title="7">    {n:nat | n &lt; sz} {l:addr | l &lt;&gt; null}</a>
-<a class="sourceLine" id="cb14-8" title="8">      fgets_v_succ(sz, l, l) <span class="kw">of</span> strbuf(sz, n) @ l</a>
-<a class="sourceLine" id="cb14-9" title="9"></a>
-<a class="sourceLine" id="cb14-10" title="10">  | <span class="co">(* 失敗した場合、lアドレスは単にサイズszの空箱のはずです *)</span></a>
-<a class="sourceLine" id="cb14-11" title="11">    {l:addr}</a>
-<a class="sourceLine" id="cb14-12" title="12">      fgets_v_fail(sz, l, null) <span class="kw">of</span> <span class="dt">bytes</span>(sz) @ l</a>
-<a class="sourceLine" id="cb14-13" title="13"></a>
-<a class="sourceLine" id="cb14-14" title="14"><span class="kw">fun</span> fgets</a>
-<a class="sourceLine" id="cb14-15" title="15">    <span class="co">(* countは読み込むバイト数です。</span></a>
-<a class="sourceLine" id="cb14-16" title="16"><span class="co">     * それはバッファのサイズであるsz以内でなければなりません。</span></a>
-<a class="sourceLine" id="cb14-17" title="17"><span class="co">     *)</span></a>
-<a class="sourceLine" id="cb14-18" title="18">    {count, sz:<span class="dt">int</span> | <span class="dv">0</span> &lt; count; count &lt;= sz}</a>
-<a class="sourceLine" id="cb14-19" title="19"></a>
-<a class="sourceLine" id="cb14-20" title="20">    <span class="co">(* fmはファイルモードのための静的な種です。 *)</span></a>
-<a class="sourceLine" id="cb14-21" title="21">    {m:fm}</a>
-<a class="sourceLine" id="cb14-22" title="22"></a>
-<a class="sourceLine" id="cb14-23" title="23">    <span class="co">(* lはバッファのアドレスを示す依存型です。 *)</span></a>
-<a class="sourceLine" id="cb14-24" title="24">    {l:addr}</a>
-<a class="sourceLine" id="cb14-25" title="25"></a>
-<a class="sourceLine" id="cb14-26" title="26">    ( <span class="co">(* ファイルモードが読み出しアクセスを含んでいることの証明。 *)</span></a>
-<a class="sourceLine" id="cb14-27" title="27">      pf_mod: file_mode_lte(m, r),</a>
-<a class="sourceLine" id="cb14-28" title="28">      <span class="co">(* szバイトの列がlに存在することに対する線形論理の証明。 *)</span></a>
-<a class="sourceLine" id="cb14-29" title="29">      pf_buf: <span class="dt">bytes</span>(sz) @ l</a>
-<a class="sourceLine" id="cb14-30" title="30">    | <span class="co">(* lアドレスによって指示されるポインタを引数に取る。 *)</span></a>
-<a class="sourceLine" id="cb14-31" title="31">      s: ptr(l),</a>
-<a class="sourceLine" id="cb14-32" title="32">      <span class="co">(* 読み込む最大のバイト数を引数に取る。  *)</span></a>
-<a class="sourceLine" id="cb14-33" title="33">      size: <span class="dt">int</span>(count),</a>
-<a class="sourceLine" id="cb14-34" title="34">      <span class="co">(* モードmによってオープンされたFILE構造体への参照を引数に取る。 *)</span></a>
-<a class="sourceLine" id="cb14-35" title="35">      stream: &amp;FILE(m)</a>
-<a class="sourceLine" id="cb14-36" title="36">    )</a>
-<a class="sourceLine" id="cb14-37" title="37">  :&lt;&gt;</a>
-<a class="sourceLine" id="cb14-38" title="38">    <span class="co">(* l'は返値のポインタを指示します。 *)</span></a>
-<a class="sourceLine" id="cb14-39" title="39">    [l':addr]</a>
-<a class="sourceLine" id="cb14-40" title="40"></a>
-<a class="sourceLine" id="cb14-41" title="41">    ( <span class="co">(* pf_bufは消費され、ここでl'に一致する変化を形成します。 *)</span></a>
-<a class="sourceLine" id="cb14-42" title="42">      <span class="co">(* pf_buf is consumed, and this determines what it turns into</span></a>
-<a class="sourceLine" id="cb14-43" title="43"><span class="co">       * according to l'.</span></a>
-<a class="sourceLine" id="cb14-44" title="44"><span class="co">       *)</span></a>
-<a class="sourceLine" id="cb14-45" title="45">      fgets_v(sz, l, l')</a>
-<a class="sourceLine" id="cb14-46" title="46">    | <span class="co">(* l'で示すポインタを返します。 *)</span></a>
-<a class="sourceLine" id="cb14-47" title="47">      ptr(l')</a>
-<a class="sourceLine" id="cb14-48" title="48">    ) =</a>
-<a class="sourceLine" id="cb14-49" title="49">  <span class="st">&quot;fgets&quot;</span></a></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span id="cb14-1"><a href="#cb14-1"></a><span class="co">(* fgets_vはfgetsの結果である成功か失敗を表わします。</span></span>
+<span id="cb14-2"><a href="#cb14-2"></a><span class="co"> *)</span></span>
+<span id="cb14-3"><a href="#cb14-3"></a>dataview fgets_v (sz:<span class="dt">int</span>, addr, addr) =</span>
+<span id="cb14-4"><a href="#cb14-4"></a>  | <span class="co">(* 成功した場合、lアドレスは長さnの文字列を格納している</span></span>
+<span id="cb14-5"><a href="#cb14-5"></a><span class="co">     * サイズszの文字列バッファでしょう。</span></span>
+<span id="cb14-6"><a href="#cb14-6"></a><span class="co">     *)</span></span>
+<span id="cb14-7"><a href="#cb14-7"></a>    {n:nat | n &lt; sz} {l:addr | l &lt;&gt; null}</span>
+<span id="cb14-8"><a href="#cb14-8"></a>      fgets_v_succ(sz, l, l) <span class="kw">of</span> strbuf(sz, n) @ l</span>
+<span id="cb14-9"><a href="#cb14-9"></a></span>
+<span id="cb14-10"><a href="#cb14-10"></a>  | <span class="co">(* 失敗した場合、lアドレスは単にサイズszの空箱のはずです *)</span></span>
+<span id="cb14-11"><a href="#cb14-11"></a>    {l:addr}</span>
+<span id="cb14-12"><a href="#cb14-12"></a>      fgets_v_fail(sz, l, null) <span class="kw">of</span> <span class="dt">bytes</span>(sz) @ l</span>
+<span id="cb14-13"><a href="#cb14-13"></a></span>
+<span id="cb14-14"><a href="#cb14-14"></a><span class="kw">fun</span> fgets</span>
+<span id="cb14-15"><a href="#cb14-15"></a>    <span class="co">(* countは読み込むバイト数です。</span></span>
+<span id="cb14-16"><a href="#cb14-16"></a><span class="co">     * それはバッファのサイズであるsz以内でなければなりません。</span></span>
+<span id="cb14-17"><a href="#cb14-17"></a><span class="co">     *)</span></span>
+<span id="cb14-18"><a href="#cb14-18"></a>    {count, sz:<span class="dt">int</span> | <span class="dv">0</span> &lt; count; count &lt;= sz}</span>
+<span id="cb14-19"><a href="#cb14-19"></a></span>
+<span id="cb14-20"><a href="#cb14-20"></a>    <span class="co">(* fmはファイルモードのための静的な種です。 *)</span></span>
+<span id="cb14-21"><a href="#cb14-21"></a>    {m:fm}</span>
+<span id="cb14-22"><a href="#cb14-22"></a></span>
+<span id="cb14-23"><a href="#cb14-23"></a>    <span class="co">(* lはバッファのアドレスを示す依存型です。 *)</span></span>
+<span id="cb14-24"><a href="#cb14-24"></a>    {l:addr}</span>
+<span id="cb14-25"><a href="#cb14-25"></a></span>
+<span id="cb14-26"><a href="#cb14-26"></a>    ( <span class="co">(* ファイルモードが読み出しアクセスを含んでいることの証明。 *)</span></span>
+<span id="cb14-27"><a href="#cb14-27"></a>      pf_mod: file_mode_lte(m, r),</span>
+<span id="cb14-28"><a href="#cb14-28"></a>      <span class="co">(* szバイトの列がlに存在することに対する線形論理の証明。 *)</span></span>
+<span id="cb14-29"><a href="#cb14-29"></a>      pf_buf: <span class="dt">bytes</span>(sz) @ l</span>
+<span id="cb14-30"><a href="#cb14-30"></a>    | <span class="co">(* lアドレスによって指示されるポインタを引数に取る。 *)</span></span>
+<span id="cb14-31"><a href="#cb14-31"></a>      s: ptr(l),</span>
+<span id="cb14-32"><a href="#cb14-32"></a>      <span class="co">(* 読み込む最大のバイト数を引数に取る。  *)</span></span>
+<span id="cb14-33"><a href="#cb14-33"></a>      size: <span class="dt">int</span>(count),</span>
+<span id="cb14-34"><a href="#cb14-34"></a>      <span class="co">(* モードmによってオープンされたFILE構造体への参照を引数に取る。 *)</span></span>
+<span id="cb14-35"><a href="#cb14-35"></a>      stream: &amp;FILE(m)</span>
+<span id="cb14-36"><a href="#cb14-36"></a>    )</span>
+<span id="cb14-37"><a href="#cb14-37"></a>  :&lt;&gt;</span>
+<span id="cb14-38"><a href="#cb14-38"></a>    <span class="co">(* l'は返値のポインタを指示します。 *)</span></span>
+<span id="cb14-39"><a href="#cb14-39"></a>    [l':addr]</span>
+<span id="cb14-40"><a href="#cb14-40"></a></span>
+<span id="cb14-41"><a href="#cb14-41"></a>    ( <span class="co">(* pf_bufは消費され、ここでl'に一致する変化を形成します。 *)</span></span>
+<span id="cb14-42"><a href="#cb14-42"></a>      <span class="co">(* pf_buf is consumed, and this determines what it turns into</span></span>
+<span id="cb14-43"><a href="#cb14-43"></a><span class="co">       * according to l'.</span></span>
+<span id="cb14-44"><a href="#cb14-44"></a><span class="co">       *)</span></span>
+<span id="cb14-45"><a href="#cb14-45"></a>      fgets_v(sz, l, l')</span>
+<span id="cb14-46"><a href="#cb14-46"></a>    | <span class="co">(* l'で示すポインタを返します。 *)</span></span>
+<span id="cb14-47"><a href="#cb14-47"></a>      ptr(l')</span>
+<span id="cb14-48"><a href="#cb14-48"></a>    ) =</span>
+<span id="cb14-49"><a href="#cb14-49"></a>  <span class="st">&quot;fgets&quot;</span></span></code></pre></div>
 <p>この例はATS/Anariatsの <a href="https://svn.code.sf.net/p/ats-lang/code/trunk/libc/SATS/stdio.sats">libc/SATS/stdio.sats</a> を元にしています。 わずかな修正と多くのコメントによる注釈が加えてあります。 はじめて見る人には明確には思えないかもしれません。 いくつかポイントがあります。</p>
 <ul>
 <li>実際のバッファサイズ(静的な変数sz)がfgets()が使用するサイズ(静的な変数count)よりも大きいことを許可しています。これはlibc/SATS/stdio.satsにおけるfgetsで定式化されています。しかしfgets()にバッファを全て使わないようには強制しません。</li>
 <li>fgets()がNULLではない値を返す場合、以前と同じポインタを返さなければなりません。しかもそのポインタはstrbufによって解釈を与えれていて、文字列バッファはゼロ終端されています。そうでない場合、同じく bytes(sz) @ l が返ります。fgets()の結果の種別を見分ける唯一の方法は、if式でそのポインタがNULLであるのかチェックすることです。もしあなたがチェックを見逃したら、型エラーになります。しかしエラーのチェックに飽き飽きすることもあるでしょう。そんな時はlibc/SATS/stdio.satsで定義されている例外を使うバージョンであるfgets_exn()を使うこともできます。</li>
 </ul>
 <p>参考のために、上記のコードからコメントを削除したものを載せておきます。</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><a class="sourceLine" id="cb15-1" title="1">dataview fgets_v (sz:<span class="dt">int</span>, addr, addr) =</a>
-<a class="sourceLine" id="cb15-2" title="2">  | {n:nat | n &lt; sz} {l:addr | l &lt;&gt; null}</a>
-<a class="sourceLine" id="cb15-3" title="3">      fgets_v_succ(sz, l, l) <span class="kw">of</span> strbuf(sz, n) @ l</a>
-<a class="sourceLine" id="cb15-4" title="4">  | {l:addr}</a>
-<a class="sourceLine" id="cb15-5" title="5">      fgets_v_fail(sz, l, null) <span class="kw">of</span> <span class="dt">bytes</span>(sz) @ l</a>
-<a class="sourceLine" id="cb15-6" title="6"></a>
-<a class="sourceLine" id="cb15-7" title="7"><span class="kw">fun</span> fgets</a>
-<a class="sourceLine" id="cb15-8" title="8">    {n, sz:<span class="dt">int</span> | <span class="dv">0</span> &lt; n; n &lt;= sz} {m:fm} {l:addr} (</a>
-<a class="sourceLine" id="cb15-9" title="9">      pf_mod: file_mode_lte(m, r), pf_buf: <span class="dt">bytes</span>(sz) @ l</a>
-<a class="sourceLine" id="cb15-10" title="10">    | s: ptr(l), size: <span class="dt">int</span>(n), stream: &amp;FILE(m))</a>
-<a class="sourceLine" id="cb15-11" title="11">  :&lt;&gt;</a>
-<a class="sourceLine" id="cb15-12" title="12">    [l':addr] (fgets_v(sz, l, l') | ptr(l')) =</a>
-<a class="sourceLine" id="cb15-13" title="13">  <span class="st">&quot;fgets&quot;</span></a></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span id="cb15-1"><a href="#cb15-1"></a>dataview fgets_v (sz:<span class="dt">int</span>, addr, addr) =</span>
+<span id="cb15-2"><a href="#cb15-2"></a>  | {n:nat | n &lt; sz} {l:addr | l &lt;&gt; null}</span>
+<span id="cb15-3"><a href="#cb15-3"></a>      fgets_v_succ(sz, l, l) <span class="kw">of</span> strbuf(sz, n) @ l</span>
+<span id="cb15-4"><a href="#cb15-4"></a>  | {l:addr}</span>
+<span id="cb15-5"><a href="#cb15-5"></a>      fgets_v_fail(sz, l, null) <span class="kw">of</span> <span class="dt">bytes</span>(sz) @ l</span>
+<span id="cb15-6"><a href="#cb15-6"></a></span>
+<span id="cb15-7"><a href="#cb15-7"></a><span class="kw">fun</span> fgets</span>
+<span id="cb15-8"><a href="#cb15-8"></a>    {n, sz:<span class="dt">int</span> | <span class="dv">0</span> &lt; n; n &lt;= sz} {m:fm} {l:addr} (</span>
+<span id="cb15-9"><a href="#cb15-9"></a>      pf_mod: file_mode_lte(m, r), pf_buf: <span class="dt">bytes</span>(sz) @ l</span>
+<span id="cb15-10"><a href="#cb15-10"></a>    | s: ptr(l), size: <span class="dt">int</span>(n), stream: &amp;FILE(m))</span>
+<span id="cb15-11"><a href="#cb15-11"></a>  :&lt;&gt;</span>
+<span id="cb15-12"><a href="#cb15-12"></a>    [l':addr] (fgets_v(sz, l, l') | ptr(l')) =</span>
+<span id="cb15-13"><a href="#cb15-13"></a>  <span class="st">&quot;fgets&quot;</span></span></code></pre></div>
 <h2 id="この文書のtodo">この文書のTODO</h2>
 <ul>
 <li>fn (再帰なし) と fun (再帰あり) の比較との終端の計測</li>
@@ -589,8 +589,7 @@ Sequence<br /> (List/Array)<br />
         This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
         <br>
         Metasepi project is supported by
-        <a href="https://twitter.com/yksym_t"><img alt="tabasconian" style="border-width:0" src="../../img/yksym_t.png" /></a> ×
-        <a href="https://twitter.com/keigoi"><img alt="Keigo Imai" style="border-width:0" src="../../img/keigoi.png" /></a> ×
+        <a href="https://www.qcore.co.jp/"><img alt="QuantumCore" style="border-width:0" src="../../img/qcore_158x25.png" /></a> ×
         <a href="http://www.metasepi-design.com/"><img alt="METASEPI DESIGN" style="border-width:0" src="../../img/metasepi_design_logo_82x25.png" /></a> ×
         <a href="../../past-supporters.html">Past Supporters</a>
       </p>

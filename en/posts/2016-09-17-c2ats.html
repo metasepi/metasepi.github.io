@@ -76,8 +76,8 @@
 <p>How about generating ATS code importing such C language interface? The C interface already has static types, which are weaker than ATS’s. Converting strong types into weak ones is hard. But I expect that the other way around is some easy.</p>
 <h2 id="the-c2ats-utility">The c2ats utility</h2>
 <ul>
-<li>Hackage: <a href="https://hackage.haskell.org/package/c2ats" class="uri">https://hackage.haskell.org/package/c2ats</a></li>
-<li>Source code: <a href="https://github.com/metasepi/c2ats" class="uri">https://github.com/metasepi/c2ats</a></li>
+<li>Hackage: <a href="https://hackage.haskell.org/package/c2ats">https://hackage.haskell.org/package/c2ats</a></li>
+<li>Source code: <a href="https://github.com/metasepi/c2ats">https://github.com/metasepi/c2ats</a></li>
 </ul>
 <p>The c2ats is an utility to generate ATS’s sats file importing from C language header, semi-automatically. The sats file includes many declarations from C language as following:</p>
 <pre><code>$ vi example.h
@@ -120,63 +120,63 @@ $ wc -l example.sats
 318 example.sats</code></pre>
 <p>The <code>example.sats</code> has all of declarations in <code>stdio.h</code> and also the headers depended.</p>
 <p>You may write following code using imported interface from <code>stdio.h</code>:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><a class="sourceLine" id="cb4-1" title="1"><span class="co">(* File: main.dats *)</span></a>
-<a class="sourceLine" id="cb4-2" title="2"><span class="ot">#include &quot;share/atspre_define.hats&quot;</span></a>
-<a class="sourceLine" id="cb4-3" title="3"><span class="ot">#include &quot;share/atspre_staload.hats&quot;</span></a>
-<a class="sourceLine" id="cb4-4" title="4"></a>
-<a class="sourceLine" id="cb4-5" title="5">staload UN = <span class="st">&quot;prelude/SATS/unsafe.sats&quot;</span></a>
-<a class="sourceLine" id="cb4-6" title="6"></a>
-<a class="sourceLine" id="cb4-7" title="7">staload <span class="st">&quot;example.sats&quot;</span></a>
-<a class="sourceLine" id="cb4-8" title="8"></a>
-<a class="sourceLine" id="cb4-9" title="9"><span class="kw">fun</span> my_fopen (file: <span class="dt">string</span>, mode: <span class="dt">string</span>):</a>
-<a class="sourceLine" id="cb4-10" title="10">  [l:addr] (ptr_v_1(type_c2ats_FILE, l) | ptr l) = ret where {</a>
-<a class="sourceLine" id="cb4-11" title="11">  <span class="kw">val</span> pn = string2ptr file</a>
-<a class="sourceLine" id="cb4-12" title="12">  <span class="kw">val</span> (pfnat, fpfnat | pn) = $UN.ptr_vtake pn</a>
-<a class="sourceLine" id="cb4-13" title="13">  <span class="kw">val</span> pm = string2ptr mode</a>
-<a class="sourceLine" id="cb4-14" title="14">  <span class="kw">val</span> (pfmat, fpfmat | pm) = $UN.ptr_vtake pm</a>
-<a class="sourceLine" id="cb4-15" title="15"></a>
-<a class="sourceLine" id="cb4-16" title="16">  <span class="kw">val</span> (pffp | fp) = fun_c2ats_fopen (pfnat, pfmat | pn, pm)</a>
-<a class="sourceLine" id="cb4-17" title="17"></a>
-<a class="sourceLine" id="cb4-18" title="18">  prval () = fpfnat pfnat</a>
-<a class="sourceLine" id="cb4-19" title="19">  prval () = fpfmat pfmat</a>
-<a class="sourceLine" id="cb4-20" title="20"></a>
-<a class="sourceLine" id="cb4-21" title="21">  <span class="kw">val</span> ret = (pffp | fp)</a>
-<a class="sourceLine" id="cb4-22" title="22">}</a>
-<a class="sourceLine" id="cb4-23" title="23"></a>
-<a class="sourceLine" id="cb4-24" title="24"><span class="kw">fun</span> my_fread {l:addr}{n:<span class="dt">int</span> | n &gt; <span class="dv">0</span>}</a>
-<a class="sourceLine" id="cb4-25" title="25">  (pffp: !type_c2ats_FILE @ l | fp: ptr l, len: size_t (n)): (size_t, strptr) = ret where {</a>
-<a class="sourceLine" id="cb4-26" title="26">  implement{} string_tabulate$fopr (s) = <span class="ch">'_'</span></a>
-<a class="sourceLine" id="cb4-27" title="27">  <span class="kw">val</span> buf = strnptr2strptr (string_tabulate len)</a>
-<a class="sourceLine" id="cb4-28" title="28">  <span class="kw">val</span> pbuf = strptr2ptr buf</a>
-<a class="sourceLine" id="cb4-29" title="29"></a>
-<a class="sourceLine" id="cb4-30" title="30">  <span class="kw">val</span> r = fun_c2ats_fread (pffp | pbuf, <span class="dv">1</span>UL, $UN.cast2ulint len, fp)</a>
-<a class="sourceLine" id="cb4-31" title="31">  <span class="kw">val</span> r = $UN.cast2size r</a>
-<a class="sourceLine" id="cb4-32" title="32">  <span class="kw">val</span> pbufr = add_ptr_bsz (pbuf, r)</a>
-<a class="sourceLine" id="cb4-33" title="33">  <span class="kw">val</span> () = <span class="kw">if</span> r &lt; len <span class="kw">then</span> $UN.ptr0_set&lt;<span class="dt">char</span>&gt;(pbufr, '\<span class="dv">0</span>')</a>
-<a class="sourceLine" id="cb4-34" title="34"></a>
-<a class="sourceLine" id="cb4-35" title="35">  <span class="kw">val</span> ret = (r, buf)</a>
-<a class="sourceLine" id="cb4-36" title="36">}</a>
-<a class="sourceLine" id="cb4-37" title="37"></a>
-<a class="sourceLine" id="cb4-38" title="38"><span class="kw">fun</span> my_fclose {l:addr} (pffp: type_c2ats_FILE @ l | fp: ptr l): <span class="dt">int</span> = ret where {</a>
-<a class="sourceLine" id="cb4-39" title="39">  <span class="kw">val</span> ret = fun_c2ats_fclose (pffp | fp)</a>
-<a class="sourceLine" id="cb4-40" title="40"></a>
-<a class="sourceLine" id="cb4-41" title="41">  <span class="kw">val</span> fp = __cast (pffp | fp) where {</a>
-<a class="sourceLine" id="cb4-42" title="42">    extern castfn __cast: {l1:addr} (ptr_v_1(type_c2ats_FILE, l1) | ptr l1) -&gt; ()</a>
-<a class="sourceLine" id="cb4-43" title="43">  }</a>
-<a class="sourceLine" id="cb4-44" title="44">}</a>
-<a class="sourceLine" id="cb4-45" title="45"></a>
-<a class="sourceLine" id="cb4-46" title="46"><span class="kw">fun</span> readshow {l:addr} (pffp: !type_c2ats_FILE @ l | fp: ptr l): void = {</a>
-<a class="sourceLine" id="cb4-47" title="47">  <span class="kw">val</span> (r, str) = my_fread (pffp | fp, i2sz(<span class="dv">128</span>))</a>
-<a class="sourceLine" id="cb4-48" title="48">  <span class="kw">val</span> () = print str</a>
-<a class="sourceLine" id="cb4-49" title="49">  <span class="kw">val</span> () = free str</a>
-<a class="sourceLine" id="cb4-50" title="50">  <span class="kw">val</span> () = <span class="kw">if</span> r &gt; <span class="dv">0</span> <span class="kw">then</span> readshow (pffp | fp)</a>
-<a class="sourceLine" id="cb4-51" title="51">}</a>
-<a class="sourceLine" id="cb4-52" title="52"></a>
-<a class="sourceLine" id="cb4-53" title="53">implement main0 () = {</a>
-<a class="sourceLine" id="cb4-54" title="54">  <span class="kw">val</span> (pffp | fp) = my_fopen (<span class="st">&quot;main.dats&quot;</span>, <span class="st">&quot;r&quot;</span>)</a>
-<a class="sourceLine" id="cb4-55" title="55">  <span class="kw">val</span> () = readshow (pffp | fp)</a>
-<a class="sourceLine" id="cb4-56" title="56">  <span class="kw">val</span> r = my_fclose (pffp | fp)</a>
-<a class="sourceLine" id="cb4-57" title="57">}</a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span id="cb4-1"><a href="#cb4-1"></a><span class="co">(* File: main.dats *)</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="ot">#include &quot;share/atspre_define.hats&quot;</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="ot">#include &quot;share/atspre_staload.hats&quot;</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a></span>
+<span id="cb4-5"><a href="#cb4-5"></a>staload UN = <span class="st">&quot;prelude/SATS/unsafe.sats&quot;</span></span>
+<span id="cb4-6"><a href="#cb4-6"></a></span>
+<span id="cb4-7"><a href="#cb4-7"></a>staload <span class="st">&quot;example.sats&quot;</span></span>
+<span id="cb4-8"><a href="#cb4-8"></a></span>
+<span id="cb4-9"><a href="#cb4-9"></a><span class="kw">fun</span> my_fopen (file: <span class="dt">string</span>, mode: <span class="dt">string</span>):</span>
+<span id="cb4-10"><a href="#cb4-10"></a>  [l:addr] (ptr_v_1(type_c2ats_FILE, l) | ptr l) = ret where {</span>
+<span id="cb4-11"><a href="#cb4-11"></a>  <span class="kw">val</span> pn = string2ptr file</span>
+<span id="cb4-12"><a href="#cb4-12"></a>  <span class="kw">val</span> (pfnat, fpfnat | pn) = $UN.ptr_vtake pn</span>
+<span id="cb4-13"><a href="#cb4-13"></a>  <span class="kw">val</span> pm = string2ptr mode</span>
+<span id="cb4-14"><a href="#cb4-14"></a>  <span class="kw">val</span> (pfmat, fpfmat | pm) = $UN.ptr_vtake pm</span>
+<span id="cb4-15"><a href="#cb4-15"></a></span>
+<span id="cb4-16"><a href="#cb4-16"></a>  <span class="kw">val</span> (pffp | fp) = fun_c2ats_fopen (pfnat, pfmat | pn, pm)</span>
+<span id="cb4-17"><a href="#cb4-17"></a></span>
+<span id="cb4-18"><a href="#cb4-18"></a>  prval () = fpfnat pfnat</span>
+<span id="cb4-19"><a href="#cb4-19"></a>  prval () = fpfmat pfmat</span>
+<span id="cb4-20"><a href="#cb4-20"></a></span>
+<span id="cb4-21"><a href="#cb4-21"></a>  <span class="kw">val</span> ret = (pffp | fp)</span>
+<span id="cb4-22"><a href="#cb4-22"></a>}</span>
+<span id="cb4-23"><a href="#cb4-23"></a></span>
+<span id="cb4-24"><a href="#cb4-24"></a><span class="kw">fun</span> my_fread {l:addr}{n:<span class="dt">int</span> | n &gt; <span class="dv">0</span>}</span>
+<span id="cb4-25"><a href="#cb4-25"></a>  (pffp: !type_c2ats_FILE @ l | fp: ptr l, len: size_t (n)): (size_t, strptr) = ret where {</span>
+<span id="cb4-26"><a href="#cb4-26"></a>  implement{} string_tabulate$fopr (s) = <span class="ch">'_'</span></span>
+<span id="cb4-27"><a href="#cb4-27"></a>  <span class="kw">val</span> buf = strnptr2strptr (string_tabulate len)</span>
+<span id="cb4-28"><a href="#cb4-28"></a>  <span class="kw">val</span> pbuf = strptr2ptr buf</span>
+<span id="cb4-29"><a href="#cb4-29"></a></span>
+<span id="cb4-30"><a href="#cb4-30"></a>  <span class="kw">val</span> r = fun_c2ats_fread (pffp | pbuf, <span class="dv">1</span>UL, $UN.cast2ulint len, fp)</span>
+<span id="cb4-31"><a href="#cb4-31"></a>  <span class="kw">val</span> r = $UN.cast2size r</span>
+<span id="cb4-32"><a href="#cb4-32"></a>  <span class="kw">val</span> pbufr = add_ptr_bsz (pbuf, r)</span>
+<span id="cb4-33"><a href="#cb4-33"></a>  <span class="kw">val</span> () = <span class="kw">if</span> r &lt; len <span class="kw">then</span> $UN.ptr0_set&lt;<span class="dt">char</span>&gt;(pbufr, '\<span class="dv">0</span>')</span>
+<span id="cb4-34"><a href="#cb4-34"></a></span>
+<span id="cb4-35"><a href="#cb4-35"></a>  <span class="kw">val</span> ret = (r, buf)</span>
+<span id="cb4-36"><a href="#cb4-36"></a>}</span>
+<span id="cb4-37"><a href="#cb4-37"></a></span>
+<span id="cb4-38"><a href="#cb4-38"></a><span class="kw">fun</span> my_fclose {l:addr} (pffp: type_c2ats_FILE @ l | fp: ptr l): <span class="dt">int</span> = ret where {</span>
+<span id="cb4-39"><a href="#cb4-39"></a>  <span class="kw">val</span> ret = fun_c2ats_fclose (pffp | fp)</span>
+<span id="cb4-40"><a href="#cb4-40"></a></span>
+<span id="cb4-41"><a href="#cb4-41"></a>  <span class="kw">val</span> fp = __cast (pffp | fp) where {</span>
+<span id="cb4-42"><a href="#cb4-42"></a>    extern castfn __cast: {l1:addr} (ptr_v_1(type_c2ats_FILE, l1) | ptr l1) -&gt; ()</span>
+<span id="cb4-43"><a href="#cb4-43"></a>  }</span>
+<span id="cb4-44"><a href="#cb4-44"></a>}</span>
+<span id="cb4-45"><a href="#cb4-45"></a></span>
+<span id="cb4-46"><a href="#cb4-46"></a><span class="kw">fun</span> readshow {l:addr} (pffp: !type_c2ats_FILE @ l | fp: ptr l): void = {</span>
+<span id="cb4-47"><a href="#cb4-47"></a>  <span class="kw">val</span> (r, str) = my_fread (pffp | fp, i2sz(<span class="dv">128</span>))</span>
+<span id="cb4-48"><a href="#cb4-48"></a>  <span class="kw">val</span> () = print str</span>
+<span id="cb4-49"><a href="#cb4-49"></a>  <span class="kw">val</span> () = free str</span>
+<span id="cb4-50"><a href="#cb4-50"></a>  <span class="kw">val</span> () = <span class="kw">if</span> r &gt; <span class="dv">0</span> <span class="kw">then</span> readshow (pffp | fp)</span>
+<span id="cb4-51"><a href="#cb4-51"></a>}</span>
+<span id="cb4-52"><a href="#cb4-52"></a></span>
+<span id="cb4-53"><a href="#cb4-53"></a>implement main0 () = {</span>
+<span id="cb4-54"><a href="#cb4-54"></a>  <span class="kw">val</span> (pffp | fp) = my_fopen (<span class="st">&quot;main.dats&quot;</span>, <span class="st">&quot;r&quot;</span>)</span>
+<span id="cb4-55"><a href="#cb4-55"></a>  <span class="kw">val</span> () = readshow (pffp | fp)</span>
+<span id="cb4-56"><a href="#cb4-56"></a>  <span class="kw">val</span> r = my_fclose (pffp | fp)</span>
+<span id="cb4-57"><a href="#cb4-57"></a>}</span></code></pre></div>
 <p>Above code is using imported interfaces, <code>fun_c2ats_fopen</code>, <code>fun_c2ats_fread</code> and <code>fun_c2ats_fclose</code>. And the code is work:</p>
 <pre><code>$ patscc main.dats -DATS_MEMALLOC_LIBC
 $ ./a.out | head
@@ -191,48 +191,48 @@ fun my_fopen (file: string, mode: string):
   [l:addr] (ptr_v_1(type_c2ats_FILE, l) | ptr l) = ret where {
   val pn = string2ptr file</code></pre>
 <p>However, above code is so messy. Because imported interface has bad signatures. If modify sats files as following:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><a class="sourceLine" id="cb6-1" title="1"><span class="co">(* example.sats *)</span></a>
-<a class="sourceLine" id="cb6-2" title="2"><span class="co">(* --snip-- *)</span></a>
-<a class="sourceLine" id="cb6-3" title="3"><span class="kw">fun</span> fun_c2ats_fclose: {l1:addr} (ptr_v_1(type_c2ats_FILE, l1) | ptr l1) -&gt; <span class="dt">int</span> = <span class="st">&quot;mac#fclose&quot;</span></a>
-<a class="sourceLine" id="cb6-4" title="4"><span class="co">(* --snip-- *)</span></a>
-<a class="sourceLine" id="cb6-5" title="5"><span class="kw">fun</span> fun_c2ats_fopen: (<span class="dt">string</span>, <span class="dt">string</span>) -&gt; [l1:addr] (ptr_v_1(type_c2ats_FILE, l1) | ptr l1) = <span class="st">&quot;mac#fopen&quot;</span></a>
-<a class="sourceLine" id="cb6-6" title="6"><span class="co">(* --snip-- *)</span></a>
-<a class="sourceLine" id="cb6-7" title="7"><span class="kw">fun</span> fun_c2ats_fread: {l1:addr} (!ptr_v_1(type_c2ats_FILE, l1) | ptr, size_t, size_t, ptr l1) -&gt; size_t = <span class="st">&quot;mac#fread&quot;</span></a>
-<a class="sourceLine" id="cb6-8" title="8"><span class="co">(* --snip-- *)</span></a></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span id="cb6-1"><a href="#cb6-1"></a><span class="co">(* example.sats *)</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="co">(* --snip-- *)</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a><span class="kw">fun</span> fun_c2ats_fclose: {l1:addr} (ptr_v_1(type_c2ats_FILE, l1) | ptr l1) -&gt; <span class="dt">int</span> = <span class="st">&quot;mac#fclose&quot;</span></span>
+<span id="cb6-4"><a href="#cb6-4"></a><span class="co">(* --snip-- *)</span></span>
+<span id="cb6-5"><a href="#cb6-5"></a><span class="kw">fun</span> fun_c2ats_fopen: (<span class="dt">string</span>, <span class="dt">string</span>) -&gt; [l1:addr] (ptr_v_1(type_c2ats_FILE, l1) | ptr l1) = <span class="st">&quot;mac#fopen&quot;</span></span>
+<span id="cb6-6"><a href="#cb6-6"></a><span class="co">(* --snip-- *)</span></span>
+<span id="cb6-7"><a href="#cb6-7"></a><span class="kw">fun</span> fun_c2ats_fread: {l1:addr} (!ptr_v_1(type_c2ats_FILE, l1) | ptr, size_t, size_t, ptr l1) -&gt; size_t = <span class="st">&quot;mac#fread&quot;</span></span>
+<span id="cb6-8"><a href="#cb6-8"></a><span class="co">(* --snip-- *)</span></span></code></pre></div>
 <p>you can get better dats code as following:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><a class="sourceLine" id="cb7-1" title="1"><span class="co">(* main.dats *)</span></a>
-<a class="sourceLine" id="cb7-2" title="2"><span class="ot">#include &quot;share/atspre_define.hats&quot;</span></a>
-<a class="sourceLine" id="cb7-3" title="3"><span class="ot">#include &quot;share/atspre_staload.hats&quot;</span></a>
-<a class="sourceLine" id="cb7-4" title="4"></a>
-<a class="sourceLine" id="cb7-5" title="5">staload UN = <span class="st">&quot;prelude/SATS/unsafe.sats&quot;</span></a>
-<a class="sourceLine" id="cb7-6" title="6"></a>
-<a class="sourceLine" id="cb7-7" title="7">staload <span class="st">&quot;example.sats&quot;</span></a>
-<a class="sourceLine" id="cb7-8" title="8"></a>
-<a class="sourceLine" id="cb7-9" title="9"><span class="kw">fun</span> my_fread {l:addr}{n:<span class="dt">int</span> | n &gt; <span class="dv">0</span>}</a>
-<a class="sourceLine" id="cb7-10" title="10">  (pffp: !type_c2ats_FILE @ l | fp: ptr l, len: size_t (n)): (size_t, strptr) = ret where {</a>
-<a class="sourceLine" id="cb7-11" title="11">  implement{} string_tabulate$fopr (s) = <span class="ch">'_'</span></a>
-<a class="sourceLine" id="cb7-12" title="12">  <span class="kw">val</span> buf = strnptr2strptr (string_tabulate len)</a>
-<a class="sourceLine" id="cb7-13" title="13">  <span class="kw">val</span> pbuf = strptr2ptr buf</a>
-<a class="sourceLine" id="cb7-14" title="14"></a>
-<a class="sourceLine" id="cb7-15" title="15">  <span class="kw">val</span> r = fun_c2ats_fread (pffp | pbuf, i2sz <span class="dv">1</span>, len, fp)</a>
-<a class="sourceLine" id="cb7-16" title="16">  <span class="kw">val</span> pbufr = add_ptr_bsz (pbuf, r)</a>
-<a class="sourceLine" id="cb7-17" title="17">  <span class="kw">val</span> () = <span class="kw">if</span> r &lt; len <span class="kw">then</span> $UN.ptr0_set&lt;<span class="dt">char</span>&gt;(pbufr, '\<span class="dv">0</span>')</a>
-<a class="sourceLine" id="cb7-18" title="18"></a>
-<a class="sourceLine" id="cb7-19" title="19">  <span class="kw">val</span> ret = (r, buf)</a>
-<a class="sourceLine" id="cb7-20" title="20">}</a>
-<a class="sourceLine" id="cb7-21" title="21"></a>
-<a class="sourceLine" id="cb7-22" title="22"><span class="kw">fun</span> readshow {l:addr} (pffp: !type_c2ats_FILE @ l | fp: ptr l): void = {</a>
-<a class="sourceLine" id="cb7-23" title="23">  <span class="kw">val</span> (r, str) = my_fread (pffp | fp, i2sz(<span class="dv">128</span>))</a>
-<a class="sourceLine" id="cb7-24" title="24">  <span class="kw">val</span> () = print str</a>
-<a class="sourceLine" id="cb7-25" title="25">  <span class="kw">val</span> () = free str</a>
-<a class="sourceLine" id="cb7-26" title="26">  <span class="kw">val</span> () = <span class="kw">if</span> r &gt; <span class="dv">0</span> <span class="kw">then</span> readshow (pffp | fp)</a>
-<a class="sourceLine" id="cb7-27" title="27">}</a>
-<a class="sourceLine" id="cb7-28" title="28"></a>
-<a class="sourceLine" id="cb7-29" title="29">implement main0 () = {</a>
-<a class="sourceLine" id="cb7-30" title="30">  <span class="kw">val</span> (pffp | fp) = fun_c2ats_fopen (<span class="st">&quot;main.dats&quot;</span>, <span class="st">&quot;r&quot;</span>)</a>
-<a class="sourceLine" id="cb7-31" title="31">  <span class="kw">val</span> () = readshow (pffp | fp)</a>
-<a class="sourceLine" id="cb7-32" title="32">  <span class="kw">val</span> r = fun_c2ats_fclose (pffp | fp)</a>
-<a class="sourceLine" id="cb7-33" title="33">}</a></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span id="cb7-1"><a href="#cb7-1"></a><span class="co">(* main.dats *)</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="ot">#include &quot;share/atspre_define.hats&quot;</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="ot">#include &quot;share/atspre_staload.hats&quot;</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a></span>
+<span id="cb7-5"><a href="#cb7-5"></a>staload UN = <span class="st">&quot;prelude/SATS/unsafe.sats&quot;</span></span>
+<span id="cb7-6"><a href="#cb7-6"></a></span>
+<span id="cb7-7"><a href="#cb7-7"></a>staload <span class="st">&quot;example.sats&quot;</span></span>
+<span id="cb7-8"><a href="#cb7-8"></a></span>
+<span id="cb7-9"><a href="#cb7-9"></a><span class="kw">fun</span> my_fread {l:addr}{n:<span class="dt">int</span> | n &gt; <span class="dv">0</span>}</span>
+<span id="cb7-10"><a href="#cb7-10"></a>  (pffp: !type_c2ats_FILE @ l | fp: ptr l, len: size_t (n)): (size_t, strptr) = ret where {</span>
+<span id="cb7-11"><a href="#cb7-11"></a>  implement{} string_tabulate$fopr (s) = <span class="ch">'_'</span></span>
+<span id="cb7-12"><a href="#cb7-12"></a>  <span class="kw">val</span> buf = strnptr2strptr (string_tabulate len)</span>
+<span id="cb7-13"><a href="#cb7-13"></a>  <span class="kw">val</span> pbuf = strptr2ptr buf</span>
+<span id="cb7-14"><a href="#cb7-14"></a></span>
+<span id="cb7-15"><a href="#cb7-15"></a>  <span class="kw">val</span> r = fun_c2ats_fread (pffp | pbuf, i2sz <span class="dv">1</span>, len, fp)</span>
+<span id="cb7-16"><a href="#cb7-16"></a>  <span class="kw">val</span> pbufr = add_ptr_bsz (pbuf, r)</span>
+<span id="cb7-17"><a href="#cb7-17"></a>  <span class="kw">val</span> () = <span class="kw">if</span> r &lt; len <span class="kw">then</span> $UN.ptr0_set&lt;<span class="dt">char</span>&gt;(pbufr, '\<span class="dv">0</span>')</span>
+<span id="cb7-18"><a href="#cb7-18"></a></span>
+<span id="cb7-19"><a href="#cb7-19"></a>  <span class="kw">val</span> ret = (r, buf)</span>
+<span id="cb7-20"><a href="#cb7-20"></a>}</span>
+<span id="cb7-21"><a href="#cb7-21"></a></span>
+<span id="cb7-22"><a href="#cb7-22"></a><span class="kw">fun</span> readshow {l:addr} (pffp: !type_c2ats_FILE @ l | fp: ptr l): void = {</span>
+<span id="cb7-23"><a href="#cb7-23"></a>  <span class="kw">val</span> (r, str) = my_fread (pffp | fp, i2sz(<span class="dv">128</span>))</span>
+<span id="cb7-24"><a href="#cb7-24"></a>  <span class="kw">val</span> () = print str</span>
+<span id="cb7-25"><a href="#cb7-25"></a>  <span class="kw">val</span> () = free str</span>
+<span id="cb7-26"><a href="#cb7-26"></a>  <span class="kw">val</span> () = <span class="kw">if</span> r &gt; <span class="dv">0</span> <span class="kw">then</span> readshow (pffp | fp)</span>
+<span id="cb7-27"><a href="#cb7-27"></a>}</span>
+<span id="cb7-28"><a href="#cb7-28"></a></span>
+<span id="cb7-29"><a href="#cb7-29"></a>implement main0 () = {</span>
+<span id="cb7-30"><a href="#cb7-30"></a>  <span class="kw">val</span> (pffp | fp) = fun_c2ats_fopen (<span class="st">&quot;main.dats&quot;</span>, <span class="st">&quot;r&quot;</span>)</span>
+<span id="cb7-31"><a href="#cb7-31"></a>  <span class="kw">val</span> () = readshow (pffp | fp)</span>
+<span id="cb7-32"><a href="#cb7-32"></a>  <span class="kw">val</span> r = fun_c2ats_fclose (pffp | fp)</span>
+<span id="cb7-33"><a href="#cb7-33"></a>}</span></code></pre></div>
 <p>Totally, the c2ats generates a scaffold (you may be familiar with <a href="http://rubyonrails.org/">Ruby on Rails</a>) to build ATS application. Sometimes, it’s useful to create application rapidly. However, such scaffold should be replaced with better signature until shipping our product.</p>
 <h2 id="future-plan">Future plan</h2>
 <p>The c2ats is not yet a completed product. We have some plans to use it on Metasepi project.</p>
@@ -272,8 +272,7 @@ fun my_fopen (file: string, mode: string):
         This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
         <br>
         Metasepi project is supported by
-        <a href="https://twitter.com/yksym_t"><img alt="tabasconian" style="border-width:0" src="../../img/yksym_t.png" /></a> ×
-        <a href="https://twitter.com/keigoi"><img alt="Keigo Imai" style="border-width:0" src="../../img/keigoi.png" /></a> ×
+        <a href="https://www.qcore.co.jp/"><img alt="QuantumCore" style="border-width:0" src="../../img/qcore_158x25.png" /></a> ×
         <a href="http://www.metasepi-design.com/"><img alt="METASEPI DESIGN" style="border-width:0" src="../../img/metasepi_design_logo_82x25.png" /></a> ×
         <a href="../../past-supporters.html">Past Supporters</a>
       </p>

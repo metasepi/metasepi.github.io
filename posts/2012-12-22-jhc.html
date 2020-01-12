@@ -141,7 +141,7 @@ Fib_jhc:
 <li>jhcのRTSをコンパイル</li>
 <li>5と6をリンクして実行バイナリ作成</li>
 </ol>
-<p>hlファイルというのは、GHCで言うところの静的リンクオブジェクト(hoge.a) とインターフェイスファイル(hoge.hi)を合わせたモノと機能としてはだいたい同じでゲソ。 その実体はCoreまで変換されたHaskellのソースコードの寄せ集めでゲソ。 GHCとは異なりjhcはhlファイルの中に完全な実コードを持たせてより強力な最適化を行えるようにしているんでゲソ。 <a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></p>
+<p>hlファイルというのは、GHCで言うところの静的リンクオブジェクト(hoge.a) とインターフェイスファイル(hoge.hi)を合わせたモノと機能としてはだいたい同じでゲソ。 その実体はCoreまで変換されたHaskellのソースコードの寄せ集めでゲソ。 GHCとは異なりjhcはhlファイルの中に完全な実コードを持たせてより強力な最適化を行えるようにしているんでゲソ。 <a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
 <p>GHCと比較して、このコンパイル方式の特徴としてはイカが挙げれるでゲッソ。 特にcが効いているためにGHCと比較してバイナリサイズが小さくなるんじゃなイカ？</p>
 <ol type="a">
 <li>全ての要素はC言語を経由してバイナリになる</li>
@@ -212,10 +212,10 @@ $ cat /var/lib/dpkg/info/jhc-doc.list
 /usr/share/doc-base
 /usr/share/doc-base/jhc</code></pre>
 <p>んーパッケージ化してプログラムを管理するっていい気持ちでゲッソ!</p>
-<section class="footnotes">
+<section class="footnotes" role="doc-endnotes">
 <hr />
 <ol>
-<li id="fn1"><p>2012/12/23修正: <a href="https://twitter.com/shelarcy/status/282711258300567552">@shelarcyさんからの指摘</a>を受けて修正<a href="#fnref1" class="footnote-back">↩</a></p></li>
+<li id="fn1" role="doc-endnote"><p>2012/12/23修正: <a href="https://twitter.com/shelarcy/status/282711258300567552">@shelarcyさんからの指摘</a>を受けて修正<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 <p>
@@ -248,8 +248,7 @@ $ cat /var/lib/dpkg/info/jhc-doc.list
         This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
         <br>
         Metasepi project is supported by
-        <a href="https://twitter.com/yksym_t"><img alt="tabasconian" style="border-width:0" src="../img/yksym_t.png" /></a> ×
-        <a href="https://twitter.com/keigoi"><img alt="Keigo Imai" style="border-width:0" src="../img/keigoi.png" /></a> ×
+        <a href="https://www.qcore.co.jp/"><img alt="QuantumCore" style="border-width:0" src="../img/qcore_158x25.png" /></a> ×
         <a href="http://www.metasepi-design.com/"><img alt="METASEPI DESIGN" style="border-width:0" src="../img/metasepi_design_logo_82x25.png" /></a> ×
         <a href="../past-supporters.html">Past Supporters</a>
       </p>
