@@ -8,8 +8,16 @@
         <name>Kiwamu Okabe</name>
         <email>kiwamu@debian.or.jp</email>
     </author>
-    <updated>2019-07-19T00:00:00Z</updated>
+    <updated>2020-10-14T00:00:00Z</updated>
     <entry>
+    <title>ATS2 and VeriFast avoid some of FreeBSD vulnerabilities</title>
+    <link href="http://metasepi.org//en/posts/2020-10-14-avoid-freebsd-security-issue.html" />
+    <id>http://metasepi.org//en/posts/2020-10-14-avoid-freebsd-security-issue.html</id>
+    <published>2020-10-14T00:00:00Z</published>
+    <updated>2020-10-14T00:00:00Z</updated>
+    <summary type="html"><![CDATA[Mechanically avoid 16% of latest FreeBSD vulnerabilities without code review.]]></summary>
+</entry>
+<entry>
     <title>A toy translator C to ATS</title>
     <link href="http://metasepi.org//en/posts/2019-07-19-toy-translator-c-to-ats.html" />
     <id>http://metasepi.org//en/posts/2019-07-19-toy-translator-c-to-ats.html</id>
@@ -80,14 +88,6 @@
     <published>2014-10-19T00:00:00Z</published>
     <updated>2014-10-19T00:00:00Z</updated>
     <summary type="html"><![CDATA[ATS application on Arduino Uno]]></summary>
-</entry>
-<entry>
-    <title>(UnderConstruction) ATS2 internal overview</title>
-    <link href="http://metasepi.org//en/posts/2014-09-14-ats2_internal_overview.html" />
-    <id>http://metasepi.org//en/posts/2014-09-14-ats2_internal_overview.html</id>
-    <published>2014-09-14T00:00:00Z</published>
-    <updated>2014-09-14T00:00:00Z</updated>
-    <summary type="html"><![CDATA[First trying to read source code of ATS2 compiler.]]></summary>
 </entry>
 
 </feed>

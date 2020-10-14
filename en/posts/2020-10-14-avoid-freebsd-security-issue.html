@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>ATS2 and VeriFast avoid some of FreeBSD vulnerabilities - Metasepi</title>
+
+  <meta name="description" content="metasepi.org">
+  <meta name="author" content="Kiwamu Okabe">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="http://metasepi.org/rss_en.xml" rel="alternate" title="Blog" type="application/rss+xml">
+
+  <!-- CSS concatenated and minified via ant build script-->
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="../../css/syntax.css">
+  <link rel="stylesheet" href="../../css/calendar.css">
+  <!-- end CSS-->
+
+  <link rel="stylesheet" href="../../css/default.css">
+
+  <script src="../../js/libs/modernizr-2.0.6.min.js"></script>
+</head>
+
+<body onload="prettyPrint()">
+  <div id="fb-root"></div>
+  <script>
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = '//connect.facebook.net/ja_JP/all.js#xfbml=1';
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
+
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <a href="../../">Metasepi</a>
+      </div>
+
+      <div class="nav">
+        <li><a href="../../">Home</a></li>
+        <li><a href="../../en/posts.html">Blog</a>(<a href="../../posts.html">ja</a>)</li>
+        <li><a href="../../papers.html">Papers</a></li>
+        <li><a href="../../map.html">Map</a></li>
+        <li><a href="../../memories.html">Memories</a></li>
+        <li><a href="../../about.html">About</a></li>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="content clearfix">
+      <h1>ATS2 and VeriFast avoid some of FreeBSD vulnerabilities</h1>
+<div class="info">Posted on October 14, 2020 / Tags: <a href="../../en/tags/ats.html">ats</a>, <a href="../../en/tags/verifast.html">verifast</a>, <a href="../../en/tags/security.html">security</a>, <a href="../../en/tags/vulnerability.html">vulnerability</a>, <a href="../../en/tags/freebsd.html">freebsd</a>, <a href="../../en/tags/kernel.html">kernel</a>, <a href="../../en/tags/postmortem.html">postmortem</a></div>
+<h2>Table of contents</h2>
+<ul>
+<li><a href="#tldr">TL;DR</a></li>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#vulnerabilities">Vulnerabilities</a></li>
+<li><a href="#solutions">Solutions</a><ul>
+<li><a href="#ats2-language">ATS2 language</a></li>
+<li><a href="#verifast-verifier">VeriFast verifier</a></li>
+</ul></li>
+<li><a href="#how-to-avoid-vulnerabilities">How to avoid vulnerabilities</a><ul>
+<li><a href="#pattern-a-forget-to-free-memory">Pattern A: forget to free memory</a></li>
+<li><a href="#pattern-b-forget-to-lock-before-using-structure">Pattern B: forget to lock before using structure</a></li>
+<li><a href="#pattern-c-miss-use-reference-counting">Pattern C: miss-use reference counting</a></li>
+<li><a href="#pattern-d-return-uninitialized-value">Pattern D: return uninitialized value</a></li>
+</ul></li>
+<li><a href="#conclusion-and-discussion">Conclusion and Discussion</a></li>
+<li><a href="#future-works">Future works</a></li>
+<li><a href="#acknowledgements">Acknowledgements</a></li>
+</ul>
+<hr>
+<h2 id="tldr">TL;DR</h2>
+<p>After investigating latest 50 of the FreeBSD vulnerabilities, 8 of them could be avoided by the <a href="http://www.ats-lang.org/">ATS2 language</a>, and 5 of them could be avoided by the <a href="https://github.com/verifast/verifast">VeriFast verifier</a>. It means we can mechanically avoid <strong>16%</strong> of the latest vulnerabilities without human resource such as code review.</p>
+<h2 id="introduction">Introduction</h2>
+<p>There are many vulnerabilities on software. Operating systems such as Linux and *BSD are no exception. It undoubtedly causes bad impact on human society, because such software have become infrastructure of that. On the other hand, there are many solution, such as new language and verifier. They claim that they can avoid some of the bugs.</p>
+<p>So, is it true? In this blog post, let’s pick up some of vulnerabilities, apply some solutions, and know how to avoid the vulnerabilities.</p>
+<h2 id="vulnerabilities">Vulnerabilities</h2>
+<p>Firstly, we need concrete vulnerabilities to be avoided. At first glance, <a href="https://cve.mitre.org/">Common Vulnerabilities and Exposures (CVE)</a> seem like a promising option. But the CVE often doesn’t provide:</p>
+<ul>
+<li>a patch to fix the vulnerability</li>
+<li>the reason why it happened</li>
+<li>the background</li>
+</ul>
+<p>Then we choose <a href="https://www.freebsd.org/security/advisories.html">FreeBSD Security Advisories</a> which provide above. And also we chose only kernel vulnerabilities, because we are focusing kernel development. The latest 50 of vulnerabilities are chosen on <a href="https://github.com/metasepi/postmortem">a git repository</a>.</p>
+<pre class="shell"><code>$ git clone git@github.com:metasepi/postmortem.git
+$ ls postmortem/Security-Advisory/FreeBSD-kernel/ | grep FreeBSD | wc -l
+50
+$ ls postmortem/Security-Advisory/FreeBSD-kernel/ | grep FreeBSD
+FreeBSD-SA-17:09.shm/
+FreeBSD-SA-17:10.kldstat/
+FreeBSD-SA-18:01.ipsec/
+--snip--
+FreeBSD-SA-20:27.ure/
+FreeBSD-SA-20:28.bhyve_vmcs/
+FreeBSD-SA-20:29.bhyve_svm/</code></pre>
+<p>After carefully reading patches of then, we found following could be easily avoided by some solutions:</p>
+<ul>
+<li><a href="https://github.com/metasepi/postmortem/tree/master/Security-Advisory/FreeBSD-kernel/FreeBSD-SA-17:10.kldstat">FreeBSD-SA-17:10.kldstat</a></li>
+<li><a href="https://github.com/metasepi/postmortem/tree/master/Security-Advisory/FreeBSD-kernel/FreeBSD-SA-19:02.fd">FreeBSD-SA-19:02.fd</a></li>
+<li><a href="https://github.com/metasepi/postmortem/tree/master/Security-Advisory/FreeBSD-kernel/FreeBSD-SA-19:14.freebsd32">FreeBSD-SA-19:14.freebsd32</a></li>
+<li><a href="https://github.com/metasepi/postmortem/tree/master/Security-Advisory/FreeBSD-kernel/FreeBSD-SA-19:15.mqueuefs">FreeBSD-SA-19:15.mqueuefs</a></li>
+<li><a href="https://github.com/metasepi/postmortem/tree/master/Security-Advisory/FreeBSD-kernel/FreeBSD-SA-19:24.mqueuefs">FreeBSD-SA-19:24.mqueuefs</a></li>
+<li><a href="https://github.com/metasepi/postmortem/tree/master/Security-Advisory/FreeBSD-kernel/FreeBSD-SA-20:03.thrmisc">FreeBSD-SA-20:03.thrmisc</a></li>
+<li><a href="https://github.com/metasepi/postmortem/tree/master/Security-Advisory/FreeBSD-kernel/FreeBSD-SA-20:14.sctp">FreeBSD-SA-20:14.sctp</a></li>
+<li><a href="https://github.com/metasepi/postmortem/tree/master/Security-Advisory/FreeBSD-kernel/FreeBSD-SA-20:20.ipv6">FreeBSD-SA-20:20.ipv6</a></li>
+</ul>
+<h2 id="solutions">Solutions</h2>
+<p>We have two options to avoid bugs such as vulnerabilities today.</p>
+<h3 id="ats2-language">ATS2 language</h3>
+<p><a href="http://www.ats-lang.org/">ATS2</a> is a statically typed programming language which provides both dependent types and linear types. The latter is effective for safe memory usage.</p>
+<h3 id="verifast-verifier">VeriFast verifier</h3>
+<p><a href="https://github.com/verifast/verifast">VeriFast</a> is a tool for modular formal verification of correctness properties of C programs annotated with preconditions and postconditions written in separation logic. The annotation enforces safe memory usage.</p>
+<h2 id="how-to-avoid-vulnerabilities">How to avoid vulnerabilities</h2>
+<p>Instead of re-writing real kernel code, we wrote pseudo codes to establish that the solutions can avoid the vulnerabilities. The vulnerabilities avoided by the solutions are classified into the following four patterns.</p>
+<h3 id="pattern-a-forget-to-free-memory">Pattern A: forget to free memory</h3>
+<p>The following are in this pattern:</p>
+<ul>
+<li><a href="https://github.com/metasepi/postmortem/tree/master/Security-Advisory/FreeBSD-kernel/FreeBSD-SA-19:02.fd">FreeBSD-SA-19:02.fd</a></li>
+<li><a href="https://github.com/metasepi/postmortem/tree/master/Security-Advisory/FreeBSD-kernel/FreeBSD-SA-19:15.mqueuefs">FreeBSD-SA-19:15.mqueuefs</a></li>
+<li><a href="https://github.com/metasepi/postmortem/tree/master/Security-Advisory/FreeBSD-kernel/FreeBSD-SA-19:24.mqueuefs">FreeBSD-SA-19:24.mqueuefs</a></li>
+</ul>
+<p>This pattern could be avoided by both ATS2 and VeriFast.</p>
+<p>Original vulnerabilities in C language are caused with forgetting to free memory such as following:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb2-1"><a href="#cb2-1"></a><span class="dt">void</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>m_dispose_extcontrolm(<span class="kw">struct</span> mbuf *m)</span>
+<span id="cb2-3"><a href="#cb2-3"></a>{</span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="co">// --snip--</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a>				<span class="cf">while</span> (nfd-- &gt; <span class="dv">0</span>) {</span>
+<span id="cb2-6"><a href="#cb2-6"></a>					fd = *fds++;</span>
+<span id="cb2-7"><a href="#cb2-7"></a>					error = fget(td, fd, &amp;cap_no_rights,</span>
+<span id="cb2-8"><a href="#cb2-8"></a>					    &amp;fp);</span>
+<span id="cb2-9"><a href="#cb2-9"></a>					<span class="cf">if</span> (error == <span class="dv">0</span>) {</span>
+<span id="cb2-10"><a href="#cb2-10"></a>						fdclose(td, fp, fd);</span>
+<span id="cb2-11"><a href="#cb2-11"></a>						<span class="co">// fdrop(fp, td); // &lt;= Forget calling</span></span>
+<span id="cb2-12"><a href="#cb2-12"></a>					}</span>
+<span id="cb2-13"><a href="#cb2-13"></a>				}</span></code></pre></div>
+<p>Above code causes run-time error, which is hard to be found on coding review.</p>
+<p>ATS2 can avoid this vulnerabilities. If you forget to free memory such as following,</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode ats"><code class="sourceCode ats"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">fun</span> m_dispose_extcontrolm (): int = <span class="kw">let</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a>    <span class="kw">fun</span> loop <span class="dt">{n:int | n &gt;= 0}</span> (nfd: int n): void =</span>
+<span id="cb3-3"><a href="#cb3-3"></a>      <span class="kw">if</span> nfd &lt;= <span class="dv">0</span> <span class="kw">then</span> ()</span>
+<span id="cb3-4"><a href="#cb3-4"></a>      <span class="kw">else</span> <span class="kw">let</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a>          <span class="kw">val</span> (pf_fp | fp, error) = fget()</span>
+<span id="cb3-6"><a href="#cb3-6"></a>          <span class="kw">val</span> () = <span class="kw">if</span> error = <span class="dv">0</span> <span class="kw">then</span> {</span>
+<span id="cb3-7"><a href="#cb3-7"></a>              <span class="kw">prval</span> Some_v(pf_fp2) = pf_fp</span>
+<span id="cb3-8"><a href="#cb3-8"></a>              <span class="kw">val</span> () = fdclose(pf_fp2 | fp)</span>
+<span id="cb3-9"><a href="#cb3-9"></a>              <span class="co">// val () = fdrop(pf_fp2 | fp) // &lt;= Forget calling</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a>            }</span>
+<span id="cb3-11"><a href="#cb3-11"></a>            <span class="kw">else</span> {</span>
+<span id="cb3-12"><a href="#cb3-12"></a>              <span class="kw">prval</span> None_v() = pf_fp</span>
+<span id="cb3-13"><a href="#cb3-13"></a>            }</span>
+<span id="cb3-14"><a href="#cb3-14"></a>        <span class="kw">in</span></span>
+<span id="cb3-15"><a href="#cb3-15"></a>          loop(nfd - <span class="dv">1</span>)</span>
+<span id="cb3-16"><a href="#cb3-16"></a>        <span class="kw">end</span></span>
+<span id="cb3-17"><a href="#cb3-17"></a>    <span class="kw">val</span> fd = <span class="dv">1</span></span>
+<span id="cb3-18"><a href="#cb3-18"></a>    <span class="kw">val</span> nfd = <span class="dv">10</span></span>
+<span id="cb3-19"><a href="#cb3-19"></a>  <span class="kw">in</span></span>
+<span id="cb3-20"><a href="#cb3-20"></a>    loop <span class="dv">10</span>; <span class="dv">0</span></span>
+<span id="cb3-21"><a href="#cb3-21"></a>  <span class="kw">end</span></span></code></pre></div>
+<p>then ATS2 compiler causes compile error. It means you can notice this bug before shipping. You can try to see the compile result on your PC as following:</p>
+<pre class="shell"><code>$ (cd postmortem/Security-Advisory/FreeBSD-kernel/FreeBSD-SA-19:02.fd/Resolution/ATS2 &amp;&amp; make)</code></pre>
+<p>VeriFast can also avoid this vulnerabilities. If you forget to free memory such as following,</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb5-1"><a href="#cb5-1"></a><span class="dt">int</span> m_dispose_extcontrolm()</span>
+<span id="cb5-2"><a href="#cb5-2"></a>    <span class="co">//@ requires true;</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a>    <span class="co">//@ ensures true;</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a>{</span>
+<span id="cb5-5"><a href="#cb5-5"></a>    <span class="dt">int</span> fd = <span class="dv">1</span>;</span>
+<span id="cb5-6"><a href="#cb5-6"></a>    <span class="dt">int</span> nfd = <span class="dv">10</span>;</span>
+<span id="cb5-7"><a href="#cb5-7"></a>    <span class="dt">int</span> error;</span>
+<span id="cb5-8"><a href="#cb5-8"></a>    <span class="cf">while</span> (nfd &gt; <span class="dv">0</span>)</span>
+<span id="cb5-9"><a href="#cb5-9"></a>        <span class="co">//@ invariant emp;</span></span>
+<span id="cb5-10"><a href="#cb5-10"></a>    {</span>
+<span id="cb5-11"><a href="#cb5-11"></a>        <span class="kw">struct</span> file *fp;</span>
+<span id="cb5-12"><a href="#cb5-12"></a>        error = fget(&amp;fp);</span>
+<span id="cb5-13"><a href="#cb5-13"></a>        <span class="cf">if</span> (error == <span class="dv">0</span>) {</span>
+<span id="cb5-14"><a href="#cb5-14"></a>            fdclose(fp, fd);</span>
+<span id="cb5-15"><a href="#cb5-15"></a>            <span class="co">// fdrop(fp); // &lt;= Forget calling</span></span>
+<span id="cb5-16"><a href="#cb5-16"></a>        }</span>
+<span id="cb5-17"><a href="#cb5-17"></a>        nfd--;</span>
+<span id="cb5-18"><a href="#cb5-18"></a>    }</span>
+<span id="cb5-19"><a href="#cb5-19"></a>    <span class="cf">return</span> <span class="dv">0</span>;</span>
+<span id="cb5-20"><a href="#cb5-20"></a>}</span></code></pre></div>
+<p>then VeriFast verifier find it on verification. It means you can notice this bug before shipping. You can try to see the verification result on your PC as following:</p>
+<pre class="shell"><code>$ (cd postmortem/Security-Advisory/FreeBSD-kernel/FreeBSD-SA-19:02.fd/Resolution/VeriFast &amp;&amp; make)</code></pre>
+<h3 id="pattern-b-forget-to-lock-before-using-structure">Pattern B: forget to lock before using structure</h3>
+<p>The following are in this pattern:</p>
+<ul>
+<li><a href="https://github.com/metasepi/postmortem/tree/master/Security-Advisory/FreeBSD-kernel/FreeBSD-SA-20:20.ipv6">FreeBSD-SA-20:20.ipv6</a></li>
+</ul>
+<p>This pattern could be avoided by both ATS2 and VeriFast.</p>
+<p>Original vulnerability in C language is caused with forgetting to lock structure such as following:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb7-1"><a href="#cb7-1"></a><span class="dt">int</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a>ip6_ctloutput(<span class="kw">struct</span> socket *so, <span class="kw">struct</span> sockopt *sopt)</span>
+<span id="cb7-3"><a href="#cb7-3"></a>{</span>
+<span id="cb7-4"><a href="#cb7-4"></a><span class="co">// --snip--</span></span>
+<span id="cb7-5"><a href="#cb7-5"></a>				INP_WLOCK(inp);</span>
+<span id="cb7-6"><a href="#cb7-6"></a>				error = ip6_pcbopts(&amp;inp-&gt;in6p_outputopts, m,</span>
+<span id="cb7-7"><a href="#cb7-7"></a>				    so, sopt);</span>
+<span id="cb7-8"><a href="#cb7-8"></a>				INP_WUNLOCK(inp);</span></code></pre></div>
+<p>Above code causes run-time error, which is hard to be found on coding review.</p>
+<p>ATS2 can avoid this vulnerabilities. If you forget to lock structure such as following,</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode ats"><code class="sourceCode ats"><span id="cb8-1"><a href="#cb8-1"></a><span class="kw">implement</span> ip6_ctloutput(sh) = <span class="kw">let</span></span>
+<span id="cb8-2"><a href="#cb8-2"></a>    <span class="co">// val (pfl, pf | x) = shared_lock{ip6_pktopts}(sh) // &lt;= Forget calling</span></span>
+<span id="cb8-3"><a href="#cb8-3"></a>    <span class="kw">val</span> error = ip6_pcbopts(pf | x)</span>
+<span id="cb8-4"><a href="#cb8-4"></a>    <span class="co">// val () = shared_unlock(pfl, pf | sh, x) // &lt;= Forget calling</span></span>
+<span id="cb8-5"><a href="#cb8-5"></a>  <span class="kw">in</span></span>
+<span id="cb8-6"><a href="#cb8-6"></a>    error</span>
+<span id="cb8-7"><a href="#cb8-7"></a>  <span class="kw">end</span></span></code></pre></div>
+<p>then ATS2 compiler causes compile error. It means you can notice this bug before shipping. You can try to see the compile result on your PC as following:</p>
+<pre class="shell"><code>$ (cd postmortem/Security-Advisory/FreeBSD-kernel/FreeBSD-SA-20:20.ipv6/Resolution/ATS2 &amp;&amp; make)</code></pre>
+<p>VeriFast can also avoid this vulnerabilities. If you forget to lock structure such as following,</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb10-1"><a href="#cb10-1"></a><span class="dt">int</span> ip6_ctloutput(<span class="kw">struct</span> inpcb *inp)</span>
+<span id="cb10-2"><a href="#cb10-2"></a>    <span class="co">//@ requires thread_run_data(ip6_thread)(inp);</span></span>
+<span id="cb10-3"><a href="#cb10-3"></a>    <span class="co">//@ ensures thread_run_data(ip6_thread)(inp);</span></span>
+<span id="cb10-4"><a href="#cb10-4"></a>{</span>
+<span id="cb10-5"><a href="#cb10-5"></a>    <span class="dt">int</span> error;</span>
+<span id="cb10-6"><a href="#cb10-6"></a>    <span class="co">//@ open thread_run_data(ip6_thread)(inp);</span></span>
+<span id="cb10-7"><a href="#cb10-7"></a>    <span class="kw">struct</span> mutex *m = inp-&gt;mutex;</span>
+<span id="cb10-8"><a href="#cb10-8"></a>    <span class="co">// mutex_acquire(m); // &lt;= Forget calling</span></span>
+<span id="cb10-9"><a href="#cb10-9"></a>    <span class="co">// //@ open inpcb(inp)();</span></span>
+<span id="cb10-10"><a href="#cb10-10"></a>    error = ip6_pcbopts(&amp;inp-&gt;in6p_outputopts);</span>
+<span id="cb10-11"><a href="#cb10-11"></a>    <span class="co">// //@ close inpcb(inp)();</span></span>
+<span id="cb10-12"><a href="#cb10-12"></a>    <span class="co">// mutex_release(m); // &lt;= Forget calling</span></span>
+<span id="cb10-13"><a href="#cb10-13"></a>    <span class="co">//@ close thread_run_data(ip6_thread)(inp);</span></span>
+<span id="cb10-14"><a href="#cb10-14"></a>    <span class="cf">return</span> error;</span>
+<span id="cb10-15"><a href="#cb10-15"></a>}</span></code></pre></div>
+<p>then VeriFast verifier find it on verification. It means you can notice this bug before shipping. You can try to see the verification result on your PC as following:</p>
+<pre class="shell"><code>$ (cd postmortem/Security-Advisory/FreeBSD-kernel/FreeBSD-SA-20:20.ipv6/Resolution/VeriFast &amp;&amp; make)</code></pre>
+<h3 id="pattern-c-miss-use-reference-counting">Pattern C: miss-use reference counting</h3>
+<p>The following are in this pattern:</p>
+<ul>
+<li><a href="https://github.com/metasepi/postmortem/tree/master/Security-Advisory/FreeBSD-kernel/FreeBSD-SA-20:14.sctp">FreeBSD-SA-20:14.sctp</a></li>
+</ul>
+<p>This pattern could be avoided by both ATS2 and VeriFast.</p>
+<p>Original vulnerability in C language is caused with freeing when <code>refcount &gt; 1</code> such as following:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb12-1"><a href="#cb12-1"></a><span class="dt">int</span></span>
+<span id="cb12-2"><a href="#cb12-2"></a>sctp_insert_sharedkey(<span class="kw">struct</span> sctp_keyhead *shared_keys,</span>
+<span id="cb12-3"><a href="#cb12-3"></a>    sctp_sharedkey_t *new_skey)</span>
+<span id="cb12-4"><a href="#cb12-4"></a>{</span>
+<span id="cb12-5"><a href="#cb12-5"></a><span class="co">// --snip--</span></span>
+<span id="cb12-6"><a href="#cb12-6"></a>			<span class="cf">if</span> ((skey-&gt;deactivated) &amp;&amp; (skey-&gt;refcount &gt; <span class="dv">1</span>)) {</span>
+<span id="cb12-7"><a href="#cb12-7"></a>				SCTPDBG(SCTP_DEBUG_AUTH1,</span>
+<span id="cb12-8"><a href="#cb12-8"></a>				    <span class="st">&quot;can't replace shared key id %u</span><span class="sc">\n</span><span class="st">&quot;</span>,</span>
+<span id="cb12-9"><a href="#cb12-9"></a>				    new_skey-&gt;keyid);</span>
+<span id="cb12-10"><a href="#cb12-10"></a>				<span class="cf">return</span> (EBUSY);</span>
+<span id="cb12-11"><a href="#cb12-11"></a>			}</span>
+<span id="cb12-12"><a href="#cb12-12"></a>			SCTPDBG(SCTP_DEBUG_AUTH1,</span>
+<span id="cb12-13"><a href="#cb12-13"></a>			    <span class="st">&quot;replacing shared key id %u</span><span class="sc">\n</span><span class="st">&quot;</span>,</span>
+<span id="cb12-14"><a href="#cb12-14"></a>			    new_skey-&gt;keyid);</span>
+<span id="cb12-15"><a href="#cb12-15"></a>			LIST_INSERT_BEFORE(skey, new_skey, next);</span>
+<span id="cb12-16"><a href="#cb12-16"></a>			LIST_REMOVE(skey, next);</span>
+<span id="cb12-17"><a href="#cb12-17"></a>			sctp_free_sharedkey(skey); <span class="co">// Free `skey` if `refcount &gt; 1`</span></span>
+<span id="cb12-18"><a href="#cb12-18"></a>			<span class="cf">return</span> (<span class="dv">0</span>);</span></code></pre></div>
+<p>Above code causes run-time error, which is hard to be found on coding review.</p>
+<p>ATS2 can avoid this vulnerabilities. If you try to free <code>skey</code> when <code>refcount &gt; 1</code> such as following,</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode ats"><code class="sourceCode ats"><span id="cb13-1"><a href="#cb13-1"></a><span class="kw">fun</span> sctp_insert_sharedkey <span class="dt">{l:addr}{r:int}</span> (pf_skey: !sctp_shared_key(r) @ l &gt;&gt; option_v (sctp_shared_key(r) @ l, n != <span class="dv">0</span>) | skey: ptr l): #[n:int] int n =</span>
+<span id="cb13-2"><a href="#cb13-2"></a>  <span class="kw">if</span> (!skey.deactivated != <span class="dv">0</span>) * (!skey.refcount &gt; <span class="dv">1</span>) <span class="co">// `*` operator means `&amp;&amp;`</span></span>
+<span id="cb13-3"><a href="#cb13-3"></a>  <span class="kw">then</span> <span class="kw">let</span></span>
+<span id="cb13-4"><a href="#cb13-4"></a>      <span class="kw">prval</span> () = pf_skey := Some_v pf_skey</span>
+<span id="cb13-5"><a href="#cb13-5"></a>    <span class="kw">in</span></span>
+<span id="cb13-6"><a href="#cb13-6"></a>      EBUSY</span>
+<span id="cb13-7"><a href="#cb13-7"></a>    <span class="kw">end</span></span>
+<span id="cb13-8"><a href="#cb13-8"></a>  <span class="kw">else</span> <span class="kw">let</span></span>
+<span id="cb13-9"><a href="#cb13-9"></a>      <span class="co">// Insert new_skey</span></span>
+<span id="cb13-10"><a href="#cb13-10"></a>      <span class="kw">val</span> () = sctp_free_sharedkey(pf_skey | skey) <span class="co">// Free `skey` if `refcount &gt; 1`</span></span>
+<span id="cb13-11"><a href="#cb13-11"></a>      <span class="kw">prval</span> () = pf_skey := None_v ()</span>
+<span id="cb13-12"><a href="#cb13-12"></a>    <span class="kw">in</span></span>
+<span id="cb13-13"><a href="#cb13-13"></a>      <span class="dv">0</span></span>
+<span id="cb13-14"><a href="#cb13-14"></a>    <span class="kw">end</span></span></code></pre></div>
+<p>then ATS2 compiler causes compile error. It means you can notice this bug before shipping. You can try to see the compile result on your PC as following:</p>
+<pre class="shell"><code>$ (cd postmortem/Security-Advisory/FreeBSD-kernel/FreeBSD-SA-20:14.sctp/Resolution/ATS2 &amp;&amp; make)</code></pre>
+<p>VeriFast can also avoid this vulnerabilities. If you forget to free <code>skey</code> when <code>refcount &gt; 1</code> such as following,</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb15-1"><a href="#cb15-1"></a><span class="dt">int</span> sctp_insert_sharedkey(sctp_sharedkey_t *skey)</span>
+<span id="cb15-2"><a href="#cb15-2"></a>    <span class="co">//@ requires malloc_block_sctp_shared_key(skey) &amp;*&amp; skey-&gt;refcount |-&gt; _ &amp;*&amp; skey-&gt;deactivated |-&gt; _;</span></span>
+<span id="cb15-3"><a href="#cb15-3"></a>    <span class="co">/*@</span></span>
+<span id="cb15-4"><a href="#cb15-4"></a><span class="co">    ensures</span></span>
+<span id="cb15-5"><a href="#cb15-5"></a><span class="co">        result == 0 ? // success</span></span>
+<span id="cb15-6"><a href="#cb15-6"></a><span class="co">           true</span></span>
+<span id="cb15-7"><a href="#cb15-7"></a><span class="co">        : // failure</span></span>
+<span id="cb15-8"><a href="#cb15-8"></a><span class="co">           malloc_block_sctp_shared_key(skey) &amp;*&amp; skey-&gt;refcount |-&gt; _ &amp;*&amp; skey-&gt;deactivated |-&gt; _</span></span>
+<span id="cb15-9"><a href="#cb15-9"></a><span class="co">        ;</span></span>
+<span id="cb15-10"><a href="#cb15-10"></a><span class="co">    @*/</span></span>
+<span id="cb15-11"><a href="#cb15-11"></a>{</span>
+<span id="cb15-12"><a href="#cb15-12"></a>    <span class="cf">if</span> ((skey-&gt;deactivated) &amp;&amp; (skey-&gt;refcount &gt; <span class="dv">1</span>)) {</span>
+<span id="cb15-13"><a href="#cb15-13"></a>        <span class="cf">return</span> EBUSY;</span>
+<span id="cb15-14"><a href="#cb15-14"></a>    }</span>
+<span id="cb15-15"><a href="#cb15-15"></a>    <span class="co">// Insert new_skey</span></span>
+<span id="cb15-16"><a href="#cb15-16"></a>    sctp_free_sharedkey(skey); <span class="co">// Free `skey` if `refcount &gt; 1`</span></span>
+<span id="cb15-17"><a href="#cb15-17"></a>    <span class="cf">return</span> <span class="dv">0</span>;</span>
+<span id="cb15-18"><a href="#cb15-18"></a>}</span></code></pre></div>
+<p>then VeriFast verifier find it on verification. It means you can notice this bug before shipping. You can try to see the verification result on your PC as following:</p>
+<pre class="shell"><code>$ (cd postmortem/Security-Advisory/FreeBSD-kernel/FreeBSD-SA-20:14.sctp/Resolution/VeriFast &amp;&amp; make)</code></pre>
+<h3 id="pattern-d-return-uninitialized-value">Pattern D: return uninitialized value</h3>
+<p>The following are in this pattern:</p>
+<ul>
+<li><a href="https://github.com/metasepi/postmortem/tree/master/Security-Advisory/FreeBSD-kernel/FreeBSD-SA-17:10.kldstat">FreeBSD-SA-17:10.kldstat</a></li>
+<li><a href="https://github.com/metasepi/postmortem/tree/master/Security-Advisory/FreeBSD-kernel/FreeBSD-SA-19:14.freebsd32">FreeBSD-SA-19:14.freebsd32</a></li>
+<li><a href="https://github.com/metasepi/postmortem/tree/master/Security-Advisory/FreeBSD-kernel/FreeBSD-SA-20:03.thrmisc">FreeBSD-SA-20:03.thrmisc</a></li>
+</ul>
+<p>This pattern could be only avoided by ATS2. <a href="https://groups.google.com/g/verifast/c/vJUViRAQbkI/m/1uSJJ-VOBAAJ">VeriFast does not yet avoided these.</a></p>
+<p>Original vulnerabilities in C language are caused with returning uninitialized value to user space such as following:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb17-1"><a href="#cb17-1"></a><span class="kw">typedef</span> <span class="kw">struct</span> thrmisc {</span>
+<span id="cb17-2"><a href="#cb17-2"></a>    <span class="dt">char</span>	pr_tname[MAXCOMLEN+<span class="dv">1</span>]; <span class="co">// &lt;= `bzero` doesn't initialize this</span></span>
+<span id="cb17-3"><a href="#cb17-3"></a>    u_int	_pad;</span>
+<span id="cb17-4"><a href="#cb17-4"></a>} thrmisc_t;</span>
+<span id="cb17-5"><a href="#cb17-5"></a><span class="kw">typedef</span> thrmisc_t elf_thrmisc_t;</span>
+<span id="cb17-6"><a href="#cb17-6"></a></span>
+<span id="cb17-7"><a href="#cb17-7"></a><span class="dt">static</span> <span class="dt">void</span></span>
+<span id="cb17-8"><a href="#cb17-8"></a>__elfN(note_thrmisc)(<span class="dt">void</span> *arg, <span class="kw">struct</span> sbuf *sb, <span class="dt">size_t</span> *sizep)</span>
+<span id="cb17-9"><a href="#cb17-9"></a>{</span>
+<span id="cb17-10"><a href="#cb17-10"></a>	<span class="kw">struct</span> thread *td;</span>
+<span id="cb17-11"><a href="#cb17-11"></a>	elf_thrmisc_t thrmisc; <span class="co">// &lt;= allocate in kernel stack</span></span>
+<span id="cb17-12"><a href="#cb17-12"></a></span>
+<span id="cb17-13"><a href="#cb17-13"></a>	td = (<span class="kw">struct</span> thread *)arg;</span>
+<span id="cb17-14"><a href="#cb17-14"></a>	<span class="cf">if</span> (sb != NULL) {</span>
+<span id="cb17-15"><a href="#cb17-15"></a>		KASSERT(*sizep == <span class="kw">sizeof</span>(thrmisc), (<span class="st">&quot;invalid size&quot;</span>));</span>
+<span id="cb17-16"><a href="#cb17-16"></a>		bzero(&amp;thrmisc._pad, <span class="kw">sizeof</span>(thrmisc._pad));</span>
+<span id="cb17-17"><a href="#cb17-17"></a>		strcpy(thrmisc.pr_tname, td-&gt;td_name);</span>
+<span id="cb17-18"><a href="#cb17-18"></a>		sbuf_bcat(sb, &amp;thrmisc, <span class="kw">sizeof</span>(thrmisc)); <span class="co">// &lt;= return uninitialized value to user space</span></span></code></pre></div>
+<p>Above code causes run-time error, which is hard to be found on coding review.</p>
+<p>ATS2 can avoid this vulnerabilities. If you forget to return uninitialized value to user space such as following,</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode ats"><code class="sourceCode ats"><span id="cb18-1"><a href="#cb18-1"></a><span class="kw">typedef</span> elf_thrmisc_t = @{</span>
+<span id="cb18-2"><a href="#cb18-2"></a>  pr_tname = char, <span class="co">// &lt;= `bzero` doesn't initialize this</span></span>
+<span id="cb18-3"><a href="#cb18-3"></a>  _pad = uint</span>
+<span id="cb18-4"><a href="#cb18-4"></a>}</span>
+<span id="cb18-5"><a href="#cb18-5"></a></span>
+<span id="cb18-6"><a href="#cb18-6"></a><span class="kw">fun</span> sbuf_bcat_thrmisc <span class="dt">{l:addr}</span> (pf: !elf_thrmisc_t @ l | p: ptr l): void =</span>
+<span id="cb18-7"><a href="#cb18-7"></a>  undefined()</span>
+<span id="cb18-8"><a href="#cb18-8"></a></span>
+<span id="cb18-9"><a href="#cb18-9"></a><span class="kw">fun</span> note_thrmisc(): void = {</span>
+<span id="cb18-10"><a href="#cb18-10"></a>  <span class="kw">var</span> thrmisc: elf_thrmisc_t</span>
+<span id="cb18-11"><a href="#cb18-11"></a>  <span class="kw">prval</span> pf_thrmisc_pad = view@thrmisc._pad</span>
+<span id="cb18-12"><a href="#cb18-12"></a>  <span class="kw">val</span> addr_thrmisc_pad = addr@thrmisc._pad</span>
+<span id="cb18-13"><a href="#cb18-13"></a>  <span class="kw">val</span> () = bzero(pf_thrmisc_pad | addr_thrmisc_pad)</span>
+<span id="cb18-14"><a href="#cb18-14"></a>  <span class="kw">prval</span> () = view@thrmisc._pad := pf_thrmisc_pad</span>
+<span id="cb18-15"><a href="#cb18-15"></a></span>
+<span id="cb18-16"><a href="#cb18-16"></a>  <span class="kw">prval</span> pf_thrmisc = view@thrmisc</span>
+<span id="cb18-17"><a href="#cb18-17"></a>  <span class="kw">val</span> addr_thrmisc = addr@thrmisc</span>
+<span id="cb18-18"><a href="#cb18-18"></a>  <span class="kw">val</span> () = sbuf_bcat_thrmisc(pf_thrmisc | addr_thrmisc) <span class="co">// &lt;= return uninitialized value to user space</span></span>
+<span id="cb18-19"><a href="#cb18-19"></a>  <span class="kw">prval</span> () = view@thrmisc:= pf_thrmisc</span>
+<span id="cb18-20"><a href="#cb18-20"></a>}</span></code></pre></div>
+<p>then ATS2 compiler causes compile error. It means you can notice this bug before shipping. You can try to see the compile result on your PC as following:</p>
+<pre class="shell"><code>$ (cd postmortem/Security-Advisory/FreeBSD-kernel/FreeBSD-SA-20:03.thrmisc/Resolution/ATS2 &amp;&amp; make)</code></pre>
+<p>But ATS2 has a limitation that can’t capture error on polymorphic function such as following:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode ats"><code class="sourceCode ats"><span id="cb20-1"><a href="#cb20-1"></a><span class="kw">fun</span> sbuf_bcat <span class="dt">{a:vt@ype}{l:addr}</span> (pf: !a @ l | p: ptr l): void =</span>
+<span id="cb20-2"><a href="#cb20-2"></a>  undefined()</span>
+<span id="cb20-3"><a href="#cb20-3"></a></span>
+<span id="cb20-4"><a href="#cb20-4"></a><span class="kw">fun</span> note_thrmisc(): void = {</span>
+<span id="cb20-5"><a href="#cb20-5"></a>  <span class="kw">var</span> thrmisc: elf_thrmisc_t</span>
+<span id="cb20-6"><a href="#cb20-6"></a>  <span class="kw">prval</span> pf_thrmisc_pad = view@thrmisc._pad</span>
+<span id="cb20-7"><a href="#cb20-7"></a>  <span class="kw">val</span> addr_thrmisc_pad = addr@thrmisc._pad</span>
+<span id="cb20-8"><a href="#cb20-8"></a>  <span class="kw">val</span> () = bzero(pf_thrmisc_pad | addr_thrmisc_pad)</span>
+<span id="cb20-9"><a href="#cb20-9"></a>  <span class="kw">prval</span> () = view@thrmisc._pad := pf_thrmisc_pad</span>
+<span id="cb20-10"><a href="#cb20-10"></a></span>
+<span id="cb20-11"><a href="#cb20-11"></a>  <span class="kw">prval</span> pf_thrmisc = view@thrmisc</span>
+<span id="cb20-12"><a href="#cb20-12"></a>  <span class="kw">val</span> addr_thrmisc = addr@thrmisc</span>
+<span id="cb20-13"><a href="#cb20-13"></a>  <span class="kw">val</span> () = sbuf_bcat(pf_thrmisc | addr_thrmisc) <span class="co">// &lt;= Not cause compile error</span></span>
+<span id="cb20-14"><a href="#cb20-14"></a>  <span class="kw">prval</span> () = view@thrmisc:= pf_thrmisc</span>
+<span id="cb20-15"><a href="#cb20-15"></a>}</span></code></pre></div>
+<p>Above code doesn’t cause any compile error. But it correctly causes compile error, if you use <code>sbuf_bcat_thrmis</code> function instead of polymorphic <code>sbuf_bcat</code> function. This limitation should be fixed on future, because there are many system calls to read data from kernel space. As an example, please imagine <a href="https://www.freebsd.org/cgi/man.cgi?query=read&amp;sektion=2">read(2)</a> system call, which is undoubtedly a polymorphic function and should only return initialized values from any device.</p>
+<h2 id="conclusion-and-discussion">Conclusion and Discussion</h2>
+<p>After investigating latest 50 of the FreeBSD vulnerabilities, 8 of them could be avoided by the ATS2 language, and 5 of them could be avoided by the VeriFast verifier. It means we can mechanically avoid <strong>16%</strong> of the latest vulnerabilities without human resource such as code review. This is a notable amount.</p>
+<p>Some of vulnerabilities (which is known Pattern D in this post) are only avoided by ATS2. VeriFast has not yet avoided that.</p>
+<p>We need much experience on real usage for ATS2 and VeriFast to introduce real kernel developments such as Linux and FreeBSD. Because for that, existing kernel needs be re-written by ATS2, or it needs so many <a href="../../en/posts/2018-11-13-see-you-verifast.html">pseudo C language headers</a> to be verified by VeriFast.</p>
+<p>And we should look for solutions other than ATS2 and VeriFast.</p>
+<h2 id="future-works">Future works</h2>
+<p>We will continue this project to understand the solutions to avoid vulnerabilities.</p>
+<p>Firstly, we will choose and compare following solutions instead of ATS2 and VeriFast:</p>
+<ul>
+<li><a href="https://github.com/FStarLang/kremlin">KreMLin</a></li>
+<li><a href="https://www.rust-lang.org/">Rust</a></li>
+<li><a href="https://www.adacore.com/about-spark">SPARK</a></li>
+<li><a href="https://ziglang.org/">Zig</a></li>
+</ul>
+<p>Secondly, we will know if formal methods such as model checking avoid vulnerabilities.</p>
+<p>Finally, we will take more FreeBSD vulnerabilities.</p>
+<h2 id="acknowledgements">Acknowledgements</h2>
+<ul>
+<li>This post was supported by <a href="https://github.com/metasepi/postmortem/blob/master/Adviser.md">advisers</a>.</li>
+<li>This post was strongly inspired by <a href="https://bluishcoder.co.nz/2014/04/11/preventing-heartbleed-bugs-with-safe-languages.html">Chris’s blog post</a>.</li>
+</ul>
+<p>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_shortname = 'metasepi';
+    var disqus_identifier = '/en/posts/2020-10-14-avoid-freebsd-security-issue.html';
+    var disqus_url = 'http://metasepi.org' + '/en/posts/2020-10-14-avoid-freebsd-security-issue.html';
+    var disqus_title = 'ATS2 and VeriFast avoid some of FreeBSD vulnerabilities';
+    var disqus_developer = 1;
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>
+    Please enable JavaScript to view the 
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  <a href="http://disqus.com" class="dsq-brlink">
+    blog comments powered by <span.logo-disqus>Disqus</span>
+  </a>
+</p>
+
+    </div>
+
+    <footer>
+      <p>
+        This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
+        <br>
+        Metasepi project is supported by
+        <a href="https://www.qcore.co.jp/"><img alt="QuantumCore" style="border-width:0" src="../../img/qcore_158x25.png" /></a> ×
+        <a href="http://www.metasepi-design.com/"><img alt="METASEPI DESIGN" style="border-width:0" src="../../img/metasepi_design_logo_82x25.png" /></a> ×
+        <a href="../../past-supporters.html">Past Supporters</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="/js/libs/jquery-1.6.2.min.js"><\/script>')</script>
+
+  <!-- scripts concatenated and minified via ant build script-->
+  <script defer src="../../js/plugins.js"></script>
+  <script defer src="../../js/script.js"></script>
+  <!-- end scripts-->
+
+  <script>
+    window._gaq = [['_setAccount','UA-158383-8'],['_trackPageview'],['_trackPageLoadTime']];
+    Modernizr.load({
+      load: ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js'
+    });
+  </script>
+
+  <!--[if lt IE 7 ]>
+    <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js">
+    <script>
+      window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})
+  <![endif]-->
+</body>
