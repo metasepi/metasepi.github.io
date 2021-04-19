@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>ATS2 can avoid some of FreeBSD Problem Reports - Metasepi</title>
+
+  <meta name="description" content="metasepi.org">
+  <meta name="author" content="Kiwamu Okabe">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="http://metasepi.org/rss_en.xml" rel="alternate" title="Blog" type="application/rss+xml">
+
+  <!-- CSS concatenated and minified via ant build script-->
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="../../css/syntax.css">
+  <link rel="stylesheet" href="../../css/calendar.css">
+  <!-- end CSS-->
+
+  <link rel="stylesheet" href="../../css/default.css">
+
+  <script src="../../js/libs/modernizr-2.0.6.min.js"></script>
+</head>
+
+<body onload="prettyPrint()">
+  <div id="fb-root"></div>
+  <script>
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = '//connect.facebook.net/ja_JP/all.js#xfbml=1';
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
+
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <a href="../../">Metasepi</a>
+      </div>
+
+      <div class="nav">
+        <li><a href="../../">Home</a></li>
+        <li><a href="../../en/posts.html">Blog</a></li>
+        <li><a href="../../papers.html">Papers</a></li>
+        <li><a href="../../map.html">Map</a></li>
+        <li><a href="../../memories.html">Memories</a></li>
+        <li><a href="../../about.html">About</a></li>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="content clearfix">
+      <h1>ATS2 can avoid some of FreeBSD Problem Reports</h1>
+<div class="info">Posted on April 19, 2021 / Tags: <a href="../../en/tags/ats.html">ats</a>, <a href="../../en/tags/bug.html">bug</a>, <a href="../../en/tags/freebsd.html">freebsd</a>, <a href="../../en/tags/kernel.html">kernel</a>, <a href="../../en/tags/postmortem.html">postmortem</a></div>
+<h2>Table of contents</h2>
+<ul>
+<li><a href="#tldr">TL;DR</a></li>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#freebsd-problem-report-pr">FreeBSD Problem Report (PR)</a></li>
+<li><a href="#how-to-avoid-freebsd-prs">How to avoid FreeBSD PRs</a><ul>
+<li><a href="#pattern-1-panic-or-kassert">Pattern 1: Panic or KASSERT</a></li>
+<li><a href="#pattern-2-mixing-different-meaning-on-same-type">Pattern 2: Mixing different meaning on same type</a></li>
+<li><a href="#pattern-3-division-by-zero">Pattern 3: Division by zero</a></li>
+<li><a href="#pattern-4-variable-length-structure">Pattern 4: Variable length structure</a></li>
+<li><a href="#pattern-5-non-recursive-mutex">Pattern 5: Non-recursive mutex</a></li>
+</ul></li>
+<li><a href="#conclusion-and-discussion">Conclusion and Discussion</a></li>
+<li><a href="#acknowledgements">Acknowledgements</a></li>
+</ul>
+<hr>
+<h2 id="tldr">TL;DR</h2>
+<p>The 6 of the 50 arbitrarily selected bugs reported in <a href="https://www.freebsd.org/support/bugreports/">FreeBSD Problem Reports</a> could be prevented by <a href="http://www.ats-lang.org/">ATS2</a> at compile time. This means that <strong>12%</strong> of FreeBSD Problem Reports can be avoided at compile time.</p>
+<h2 id="introduction">Introduction</h2>
+<p>In <a href="./2020-10-14-avoid-freebsd-security-issue.html">the previous article</a>, we created some postmortems for FreeBSD vulnerabilities and presented a solution using <a href="http://www.ats-lang.org/">ATS2</a> and <a href="https://github.com/verifast/verifast">VeriFast</a>. However, kernel bugs are not only reported in the vulnerability report. There are many bugs that are not vulnerabilities that are discovered after the kernel is released.</p>
+<p>Is it possible to find a way to avoid non-vulnerable bugs by creating a postmortem for vulnerabilities? We think no. The vulnerability report only lists defects that affect security. Since security is mainly concerned about network defects, non-security related defects such as a display not appearing are not reported.</p>
+<h2 id="freebsd-problem-report-pr">FreeBSD Problem Report (PR)</h2>
+<p>The <a href="https://www.freebsd.org/support/bugreports/">FreeBSD Problem Report (PR)</a> manages bugs that are not such vulnerabilities. The PR has reported various bugs with the FreeBSD OS. This time, we selected any 50 cases from PR, wrote a post-mortem, and investigated whether ATS2 could avoid the problem.</p>
+<h2 id="how-to-avoid-freebsd-prs">How to avoid FreeBSD PRs</h2>
+<p>This time, we chose only ATS2 as a solution to avoid bugs. The reason is that in the previous article, ATS2 was the most effective in avoiding vulnerabilities. Of course, the characteristics of the defect may differ between the vulnerability and PR, so it is also good to consider another solution such as VeriFast.</p>
+<h3 id="pattern-1-panic-or-kassert">Pattern 1: Panic or KASSERT</h3>
+<p>The bug is that calling <code>panic</code> or <code>KASSERT</code> causes the kernel to stop running altogether. The following seems to be preventable at compile time:</p>
+<ul>
+<li><a href="https://github.com/metasepi/postmortem/tree/master/PR/FreeBSD-kernel/253061">253061</a></li>
+</ul>
+<h3 id="pattern-2-mixing-different-meaning-on-same-type">Pattern 2: Mixing different meaning on same type</h3>
+<p>This bug is that it can be misused by mixing multiple meanings in one type such as <code>int</code>. The following seems to be preventable at compile time:</p>
+<ul>
+<li><a href="https://github.com/metasepi/postmortem/tree/master/PR/FreeBSD-kernel/248065">248065</a></li>
+</ul>
+<h3 id="pattern-3-division-by-zero">Pattern 3: Division by zero</h3>
+<p>This bug is that the execution of the kernel is completely stopped by dividing by zero. The following seems to be preventable at compile time:</p>
+<ul>
+<li><a href="https://github.com/metasepi/postmortem/tree/master/PR/FreeBSD-kernel/252958">252958</a></li>
+<li><a href="https://github.com/metasepi/postmortem/tree/master/PR/FreeBSD-kernel/253511">253511</a></li>
+</ul>
+<h3 id="pattern-4-variable-length-structure">Pattern 4: Variable length structure</h3>
+<p>The bug is that copying the structure fails if someone doesn’t consider the size of the variable length structure. The following seems to be preventable at compile time:</p>
+<ul>
+<li><a href="https://github.com/metasepi/postmortem/tree/master/PR/FreeBSD-kernel/253488">253488</a></li>
+</ul>
+<h3 id="pattern-5-non-recursive-mutex">Pattern 5: Non-recursive mutex</h3>
+<p>The bug is that the kernel crashes by locking multiple mutexes that should not be recursively locked. The following seems to be preventable at compile time:</p>
+<ul>
+<li><a href="https://github.com/metasepi/postmortem/tree/master/PR/FreeBSD-kernel/216510">216510</a></li>
+</ul>
+<h2 id="conclusion-and-discussion">Conclusion and Discussion</h2>
+<p>Six of the 50 arbitrarily selected bugs reported in FreeBSD PRs could be avoided by ATS2 at compile time. The sample size is small, but it means that 12% of FreeBSD PRs can be avoided at compile time. Whether this percentage feels large or small will vary from person to person.</p>
+<p>Illegal memory access could not be prevented this time. This is because ATS2 cannot create a view that contains a view.</p>
+<p>We expected that the bug that the kernel would stop due to conditions such as <code>panic</code> and <code>KASSERT</code> could be prevented more at compile time. However, when we actually investigated it, we got the impression that the causes of <code>panic</code> are often dynamic rather than static. It will be quite difficult to completely remove <code>panic</code> and <code>KASSERT</code> from the kernel.</p>
+<p>We were surprised to find two defects due to division by zero. Dependent type should be introduced on the right value of division.</p>
+<p>Misuse of variable length structures can be a common sensational defect. There should be many more of this bug.</p>
+<p>Overall, the dependent and linear types of ATS2 were very useful. On the other hand, in ATS2, it is difficult to port C language expressions such as structures including pointers as they are. A secure and safe kernel requires something that extends ATS2 to be more C-friendly. Or we may need to boldly re-write your current C implementation.</p>
+<h2 id="acknowledgements">Acknowledgements</h2>
+<ul>
+<li>This post was supported by <a href="https://github.com/metasepi/postmortem/blob/master/Adviser.md">advisers</a>.</li>
+<li>This post was strongly inspired by <a href="https://bluishcoder.co.nz/2014/04/11/preventing-heartbleed-bugs-with-safe-languages.html">Chris’s blog post</a>.</li>
+</ul>
+<p>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_shortname = 'metasepi';
+    var disqus_identifier = '/en/posts/2021-04-19-avoid-freebsd-pr.html';
+    var disqus_url = 'https://metasepi.org' + '/en/posts/2021-04-19-avoid-freebsd-pr.html';
+    var disqus_title = 'ATS2 can avoid some of FreeBSD Problem Reports';
+    var disqus_developer = 1;
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>
+    Please enable JavaScript to view the 
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  <a href="http://disqus.com" class="dsq-brlink">
+    blog comments powered by <span.logo-disqus>Disqus</span>
+  </a>
+</p>
+
+    </div>
+
+    <footer>
+      <p>
+        This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
+        <br>
+        Metasepi project is supported by
+        <a href="https://www.donuts.ne.jp/"><img alt="Donuts Co. Ltd." style="border-width:0" src="../../img/donuts_76x25.png" /></a> ×
+        <a href="http://www.metasepi-design.com/"><img alt="METASEPI DESIGN" style="border-width:0" src="../../img/metasepi_design_logo_82x25.png" /></a> ×
+        <a href="../../past-supporters.html">Past Supporters</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="/js/libs/jquery-1.6.2.min.js"><\/script>')</script>
+
+  <!-- scripts concatenated and minified via ant build script-->
+  <script defer src="../../js/plugins.js"></script>
+  <script defer src="../../js/script.js"></script>
+  <!-- end scripts-->
+
+  <script>
+    window._gaq = [['_setAccount','UA-158383-8'],['_trackPageview'],['_trackPageLoadTime']];
+    Modernizr.load({
+      load: ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js'
+    });
+  </script>
+
+  <!--[if lt IE 7 ]>
+    <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js">
+    <script>
+      window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})
+  <![endif]-->
+</body>

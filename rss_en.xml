@@ -8,8 +8,16 @@
         <name>Kiwamu Okabe</name>
         <email>kiwamu@debian.or.jp</email>
     </author>
-    <updated>2020-10-14T00:00:00Z</updated>
+    <updated>2021-04-19T00:00:00Z</updated>
     <entry>
+    <title>ATS2 can avoid some of FreeBSD Problem Reports</title>
+    <link href="http://metasepi.org//en/posts/2021-04-19-avoid-freebsd-pr.html" />
+    <id>http://metasepi.org//en/posts/2021-04-19-avoid-freebsd-pr.html</id>
+    <published>2021-04-19T00:00:00Z</published>
+    <updated>2021-04-19T00:00:00Z</updated>
+    <summary type="html"><![CDATA[Mechanically avoid 12% of latest FreeBSD Problem Reports without code review.]]></summary>
+</entry>
+<entry>
     <title>ATS2 and VeriFast avoid some of FreeBSD vulnerabilities</title>
     <link href="http://metasepi.org//en/posts/2020-10-14-avoid-freebsd-security-issue.html" />
     <id>http://metasepi.org//en/posts/2020-10-14-avoid-freebsd-security-issue.html</id>
@@ -80,14 +88,6 @@
     <published>2015-03-06T00:00:00Z</published>
     <updated>2015-03-06T00:00:00Z</updated>
     <summary type="html"><![CDATA[An ATS Programming Tutorial for beginner.]]></summary>
-</entry>
-<entry>
-    <title>Metasepi team meeting</title>
-    <link href="http://metasepi.org//en/posts/2014-10-19-osc-tokyo.html" />
-    <id>http://metasepi.org//en/posts/2014-10-19-osc-tokyo.html</id>
-    <published>2014-10-19T00:00:00Z</published>
-    <updated>2014-10-19T00:00:00Z</updated>
-    <summary type="html"><![CDATA[ATS application on Arduino Uno]]></summary>
 </entry>
 
 </feed>
