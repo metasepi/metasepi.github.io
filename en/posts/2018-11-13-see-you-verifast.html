@@ -58,17 +58,18 @@
   <div class="container">
     <div class="content clearfix">
       <h1>So long VeriFast, and see again ATS</h1>
-<div class="info">Posted on November 13, 2018 / Tags: <a href="../../en/tags/verifast.html">verifast</a>, <a href="../../en/tags/c.html">c</a>, <a href="../../en/tags/ats.html">ats</a></div>
+<div class="info">Posted on November 13, 2018 / Tags: <a title="All pages tagged 'verifast'." href="../../en/tags/verifast.html" rel="tag">verifast</a>, <a title="All pages tagged 'c'." href="../../en/tags/c.html" rel="tag">c</a>, <a title="All pages tagged 'ats'." href="../../en/tags/ats.html" rel="tag">ats</a></div>
 <h2>Table of contents</h2>
 <ul>
-<li><a href="#tldr">TL;DR</a></li>
-<li><a href="#trying-to-apply-annotation-to-freertos-using-verifast">Trying to apply annotation to FreeRTOS using VeriFast</a></li>
-<li><a href="#kpt">KPT</a><ul>
-<li><a href="#keep">Keep</a></li>
-<li><a href="#problem">Problem</a></li>
-<li><a href="#try">Try</a></li>
+<li><a href="#tldr" id="toc-tldr">TL;DR</a></li>
+<li><a href="#trying-to-apply-annotation-to-freertos-using-verifast" id="toc-trying-to-apply-annotation-to-freertos-using-verifast">Trying to apply annotation to FreeRTOS using VeriFast</a></li>
+<li><a href="#kpt" id="toc-kpt">KPT</a>
+<ul>
+<li><a href="#keep" id="toc-keep">Keep</a></li>
+<li><a href="#problem" id="toc-problem">Problem</a></li>
+<li><a href="#try" id="toc-try">Try</a></li>
 </ul></li>
-<li><a href="#come-back-to-bohai-iteration-for-ats-language">Come back to Bohai iteration for ATS language</a></li>
+<li><a href="#come-back-to-bohai-iteration-for-ats-language" id="toc-come-back-to-bohai-iteration-for-ats-language">Come back to Bohai iteration for ATS language</a></li>
 </ul>
 <hr>
 <h2 id="tldr">TL;DR</h2>
@@ -79,11 +80,16 @@
 <pre><code>$ vfide -D ESP_PLATFORM -D HAVE_CONFIG_H -D __XTENSA__ -D __IEEE_LITTLE_ENDIAN -I /home/kiwamu/src/amazon-freertos/demos/espressif/esp32_devkitc_esp_wrover_kit/common/application_code/espressif_code/freertos/include -I /home/kiwamu/src/amazon-freertos/demos/espressif/esp32_devkitc_esp_wrover_kit/common/config_files -I /home/kiwamu/src/amazon-freertos/lib/include -I /home/kiwamu/src/amazon-freertos/lib/include/private -I /home/kiwamu/src/amazon-freertos/lib/FreeRTOS/portable/ThirdParty/GCC/Xtensa_ESP32/include -I /home/kiwamu/src/amazon-freertos/lib/FreeRTOS-Plus-TCP/include -I /home/kiwamu/src/amazon-freertos/lib/FreeRTOS-Plus-TCP/source/portable/Compiler/GCC -I /home/kiwamu/src/amazon-freertos/lib/third_party/jsmn -I /home/kiwamu/src/amazon-freertos/demos/common/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/app_trace/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/app_update/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/bootloader_support/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/console -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/cxx/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/driver/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/esp32/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/esp_adc_cal/include -I /home/kiwamu/src/amazon-freertos/demos/espressif/esp32_devkitc_esp_wrover_kit/common/application_code/espressif_code/ethernet/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/expat/port/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/expat/include/expat -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/fatfs/src -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/heap/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/log/include -I /home/kiwamu/src/amazon-freertos/demos/espressif/esp32_devkitc_esp_wrover_kit/common/application_code/espressif_code/mbedtls/port/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mbedtls/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/micro-ecc/micro-ecc -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/newlib/platform_include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/newlib/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/nghttp/port/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/nghttp/nghttp2/lib/includes -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/nvs_flash/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/openssl/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/pthread/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/sdmmc/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/soc/esp32/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/soc/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/spi_flash/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/spiffs/include -I /home/kiwamu/src/amazon-freertos/demos/espressif/esp32_devkitc_esp_wrover_kit/common/application_code/espressif_code/tcpip_adapter/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/ulp/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/vfs/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/wear_levelling/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/wpa_supplicant/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/wpa_supplicant/port/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/esp32/include -I /home/kiwamu/src/amazon-freertos/lib/third_party/mcu_vendor/espressif/esp-idf/components/xtensa-debug-module/include -I /home/kiwamu/src/amazon-freertos/demos/espressif/esp32_devkitc_esp_wrover_kit/make/build/include -I lib/FreeRTOS lib/FreeRTOS/list.c</code></pre>
 <p>Above means there are no pseud C headers for VeriFast. Many people use such pseud headers to focus verifying C language as target. Why? Because VeriFast parser is not compatible with GCC or C99:</p>
 <p><img src="../../draw/2018-11-13-pseud-header.png" /></p>
-<p>Indeed, above <code>vfide</code> can’t parse the <code>list.c</code> file. Finally, we gave up to verify target code without such pseud C headers. But we believe there should be no such pseud C headers to rewrite (or snatch) NetBSD kernel for real product, because verifing total of the kernel is hard. Such pseud headers divide target code into verified code and pseud interface. Nobody guarantee pseud interface matches real implementation.</p>
+<p>Indeed, above <code>vfide</code> can’t parse the <code>list.c</code> file. Finally, we gave up to verify target code without such pseud C headers.
+But we believe there should be no such pseud C headers to rewrite (or snatch) NetBSD kernel for real product, because verifing total of the kernel is hard. Such pseud headers divide target code into verified code and pseud interface.
+Nobody guarantee pseud interface matches real implementation.</p>
 <p>Second step, we tried to parse <code>lib/FreeRTOS/tasks.c</code> with VeriFast such like following:</p>
 <pre><code>$ vfide -disable_overflow_check -I verifast_inc lib/FreeRTOS/tasks.c</code></pre>
-<p>Fortunately, this trying got successful with <a href="https://github.com/metasepi/amazon-freertos">a few changed target code</a> and <a href="https://github.com/master-q/verifast">modified VeriFast parser</a>. But unfortunately, it’s hard to make C99 compatible parser of original VeriFast own parser. We believe making C99 parser from scratch using LLVM/GCC is better to modify VeriFast parser.</p>
-<p>Third step, we tried to inject VeriFast annotation comment into <a href="https://github.com/metasepi/amazon-freertos/blob/chiers/lib/FreeRTOS/tasks.c#L764">xTaskCreate function</a> on <code>lib/FreeRTOS/tasks.c</code>. But we gave up at following error to be fixed:</p>
+<p>Fortunately, this trying got successful with <a href="https://github.com/metasepi/amazon-freertos">a few changed target code</a> and <a href="https://github.com/master-q/verifast">modified VeriFast parser</a>.
+But unfortunately, it’s hard to make C99 compatible parser of original VeriFast own parser.
+We believe making C99 parser from scratch using LLVM/GCC is better to modify VeriFast parser.</p>
+<p>Third step, we tried to inject VeriFast annotation comment into <a href="https://github.com/metasepi/amazon-freertos/blob/chiers/lib/FreeRTOS/tasks.c#L764">xTaskCreate function</a> on <code>lib/FreeRTOS/tasks.c</code>.
+But we gave up at following error to be fixed:</p>
 <pre><code>$ cat lib/FreeRTOS/tasks.c
 --snip--
 	BaseType_t xTaskCreate(	TaskFunction_t pxTaskCode,
@@ -126,22 +132,32 @@ $ vfide -disable_overflow_check -I verifast_inc lib/FreeRTOS/tasks.c</code></pre
 <li>Create concrete memory model such like <code>const</code> and <code>volatile</code> on ATS’s at-view.</li>
 </ul>
 <h2 id="come-back-to-bohai-iteration-for-ats-language">Come back to Bohai iteration for ATS language</h2>
-<p>Totally, we should leave Chiers iteration, which means giving up VeriFast for real product. VeriFast is a good part to learn verification on C language for education or academic. Sometimes, it’s useful to verify <a href="https://www.willemp.be/cw/usbkbd/">real product such like Linux kernel</a>. However such real verification also depends on <a href="https://github.com/verifast/verifast/tree/master/examples/usbkbd/src">many pseud C headers</a>, because VeriFast is not compatible with C99 and GCC.</p>
-<p>Please imagine you feel free to inject VeriFast annotate comment into NetBSD kernel. Undoubtedly, it’s paradise on both implementer and prover. But, there are also the <a href="http://www.haaretz.com/life/arts-leisure/always-on-the-side-of-the-egg-1.270371">high-solid wall</a>. It’s creating full compatible VeriFast C language parser, which needs huge human resources. Everyone, include us, can’t pay the resources until today…</p>
-<p>What’s next? Before this iteration, we choose ATS language on <a href="../../map.html#bohai">Bohai iteration</a>. Why did we switch to VeriFast? Because VeriFast doesn’t need rewriting current implementation. If we rewrite (or snatch) NetBSD kernel using ATS, we should rewrite all of the C language implementation in ATS language such like:</p>
+<p>Totally, we should leave Chiers iteration, which means giving up VeriFast for real product.
+VeriFast is a good part to learn verification on C language for education or academic.
+Sometimes, it’s useful to verify <a href="https://www.willemp.be/cw/usbkbd/">real product such like Linux kernel</a>.
+However such real verification also depends on <a href="https://github.com/verifast/verifast/tree/master/examples/usbkbd/src">many pseud C headers</a>, because VeriFast is not compatible with C99 and GCC.</p>
+<p>Please imagine you feel free to inject VeriFast annotate comment into NetBSD kernel. Undoubtedly, it’s paradise on both implementer and prover.
+But, there are also the <a href="http://www.haaretz.com/life/arts-leisure/always-on-the-side-of-the-egg-1.270371">high-solid wall</a>. It’s creating full compatible VeriFast C language parser, which needs huge human resources. Everyone, include us, can’t pay the resources until today…</p>
+<p>What’s next?
+Before this iteration, we choose ATS language on <a href="../../map.html#bohai">Bohai iteration</a>.
+Why did we switch to VeriFast? Because VeriFast doesn’t need rewriting current implementation.
+If we rewrite (or snatch) NetBSD kernel using ATS, we should rewrite all of the C language implementation in ATS language such like:</p>
 <ol type="1">
 <li>Start on pure C language implementation</li>
 <li>Rewrite some C language function using ATS language little by little</li>
 <li>Finally get pure ATS language implementation</li>
 <li>Introduce more dependent types into ATS implementation to be verified</li>
 </ol>
-<p>Above 2nd stage needs much human resources. While such trying, we found VeriFast and started new Chiers iteration. We imagine we introduce annotation to verify C language code without modify the implementation such lile:</p>
+<p>Above 2nd stage needs much human resources.
+While such trying, we found VeriFast and started new Chiers iteration.
+We imagine we introduce annotation to verify C language code without modify the implementation such lile:</p>
 <ol type="1">
 <li>Start on pure C language implementation</li>
 <li>Get parsable C language implementation</li>
 <li>Introduce annotation onto C language implementation to be verified</li>
 </ol>
-<p>But VeriFast doesn’t have C99 compatible parser. Then today, VeriFast verification process is such like:</p>
+<p>But VeriFast doesn’t have C99 compatible parser.
+Then today, VeriFast verification process is such like:</p>
 <ol type="1">
 <li>Start on pure C language implementation</li>
 <li>Get parsable C language implementation</li>
@@ -150,9 +166,12 @@ $ vfide -disable_overflow_check -I verifast_inc lib/FreeRTOS/tasks.c</code></pre
 <li>Rewrite some C language function using C language subset on VeriFast parser</li>
 <li>Go to 3 until we complete to verify all of C language implementation</li>
 </ol>
-<p>We think above process is as hard as ATS way, because it also needs rewriting (or snatching). If so, why not choose ATS from the first?</p>
-<p>Fortunately, <a href="https://github.com/githwxi/ATS-Xanadu">ATS3</a> is launched at the beginning of this year. We will try to write small but real product using ATS2, and know useful requirement for ATS3.</p>
-<p>However, it’s not just retreating. <a href="https://www.youtube.com/watch?v=uSBzZyIxdak">After Chiers iteration closes today</a>, <a href="https://en.wikipedia.org/wiki/Auld_Lang_Syne">reboot Bohai iteration with our experience of VeriFast tomorrow</a>.</p>
+<p>We think above process is as hard as ATS way, because it also needs rewriting (or snatching).
+If so, why not choose ATS from the first?</p>
+<p>Fortunately, <a href="https://github.com/githwxi/ATS-Xanadu">ATS3</a> is launched at the beginning of this year.
+We will try to write small but real product using ATS2, and know useful requirement for ATS3.</p>
+<p>However, it’s not just retreating.
+<a href="https://www.youtube.com/watch?v=uSBzZyIxdak">After Chiers iteration closes today</a>, <a href="https://en.wikipedia.org/wiki/Auld_Lang_Syne">reboot Bohai iteration with our experience of VeriFast tomorrow</a>.</p>
 <p>
 <script src="https://giscus.app/client.js" data-repo="metasepi/metasepi-website" data-repo-id="MDEwOlJlcG9zaXRvcnkxMjgyMzQ5Nw==" data-category="[ENTER CATEGORY NAME HERE]" data-category-id="[ENTER CATEGORY ID HERE]" data-mapping="pathname" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="bottom" data-theme="preferred_color_scheme" data-lang="en" crossorigin="anonymous" async>
 </script>

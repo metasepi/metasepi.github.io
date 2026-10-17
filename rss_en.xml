@@ -1,15 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>Metasepi Blog</title>
+    <subtitle><![CDATA[A diary to develop Metasepi kernel.]]></subtitle>
     <link href="http://metasepi.org//rss_en.xml" rel="self" />
     <link href="http://metasepi.org/" />
     <id>http://metasepi.org//rss_en.xml</id>
     <author>
         <name>Kiwamu Okabe</name>
+        
         <email>kiwamu@debian.or.jp</email>
+        
     </author>
-    <updated>2026-09-19T00:00:00Z</updated>
+    <updated>2026-10-14T00:00:00Z</updated>
     <entry>
+    <title>Survey. An Introduction to OS-Level Verification with Asterinas and Verus</title>
+    <link href="http://metasepi.org//en/posts/2026-10-14-rust_verus.html" />
+    <id>http://metasepi.org//en/posts/2026-10-14-rust_verus.html</id>
+    <published>2026-10-14T00:00:00Z</published>
+    <updated>2026-10-14T00:00:00Z</updated>
+    <summary type="html"><![CDATA[A talk about verifying Linux compatible kernel written with Rust]]></summary>
+</entry>
+<entry>
     <title>Turning Kernel Defects into Compile Errors with Takibi lang</title>
     <link href="http://metasepi.org//en/posts/2026-09-19-koedolug.html" />
     <id>http://metasepi.org//en/posts/2026-09-19-koedolug.html</id>
@@ -80,14 +91,6 @@
     <published>2016-09-17T00:00:00Z</published>
     <updated>2016-09-17T00:00:00Z</updated>
     <summary type="html"><![CDATA[Create scaffold to rewrite large Unix-like kernel using ATS.]]></summary>
-</entry>
-<entry>
-    <title>Functional IoT Meetup</title>
-    <link href="http://metasepi.org//en/posts/2016-01-30-fpiot_0.html" />
-    <id>http://metasepi.org//en/posts/2016-01-30-fpiot_0.html</id>
-    <published>2016-01-30T00:00:00Z</published>
-    <updated>2016-01-30T00:00:00Z</updated>
-    <summary type="html"><![CDATA[First meetup to talk about Functional programming on embedded device.]]></summary>
 </entry>
 
 </feed>

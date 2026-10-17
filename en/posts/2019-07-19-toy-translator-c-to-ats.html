@@ -58,27 +58,29 @@
   <div class="container">
     <div class="content clearfix">
       <h1>A toy translator C to ATS</h1>
-<div class="info">Posted on July 19, 2019 / Tags: <a href="../../en/tags/ats.html">ats</a>, <a href="../../en/tags/idiomaticca.html">idiomaticca</a>, <a href="../../en/tags/haskell.html">haskell</a>, <a href="../../en/tags/c.html">c</a>, <a href="../../en/tags/translator.html">translator</a></div>
+<div class="info">Posted on July 19, 2019 / Tags: <a title="All pages tagged 'ats'." href="../../en/tags/ats.html" rel="tag">ats</a>, <a title="All pages tagged 'idiomaticca'." href="../../en/tags/idiomaticca.html" rel="tag">idiomaticca</a>, <a title="All pages tagged 'haskell'." href="../../en/tags/haskell.html" rel="tag">haskell</a>, <a title="All pages tagged 'c'." href="../../en/tags/c.html" rel="tag">c</a>, <a title="All pages tagged 'translator'." href="../../en/tags/translator.html" rel="tag">translator</a></div>
 <h2>Table of contents</h2>
 <ul>
-<li><a href="#tldr">TL;DR</a></li>
-<li><a href="#why-difficult-to-make-real-products-in-ats-language">Why difficult to make real products in ATS language?</a></li>
-<li><a href="#why-is-c2ats-not-useful">Why is c2ats not useful?</a></li>
-<li><a href="#lets-start-to-create-new-translator-c-to-ats">Let’s start to create new translator C to ATS</a></li>
-<li><a href="#how-to-install">How to install</a></li>
-<li><a href="#some-examples">Some examples</a><ul>
-<li><a href="#while-loop-in-c"><code>while</code> loop in C</a></li>
-<li><a href="#for-loop-in-c"><code>for</code> loop in C</a></li>
-<li><a href="#the-others">the others</a></li>
+<li><a href="#tldr" id="toc-tldr">TL;DR</a></li>
+<li><a href="#why-difficult-to-make-real-products-in-ats-language" id="toc-why-difficult-to-make-real-products-in-ats-language">Why difficult to make real products in ATS language?</a></li>
+<li><a href="#why-is-c2ats-not-useful" id="toc-why-is-c2ats-not-useful">Why is c2ats not useful?</a></li>
+<li><a href="#lets-start-to-create-new-translator-c-to-ats" id="toc-lets-start-to-create-new-translator-c-to-ats">Let’s start to create new translator C to ATS</a></li>
+<li><a href="#how-to-install" id="toc-how-to-install">How to install</a></li>
+<li><a href="#some-examples" id="toc-some-examples">Some examples</a>
+<ul>
+<li><a href="#while-loop-in-c" id="toc-while-loop-in-c"><code>while</code> loop in C</a></li>
+<li><a href="#for-loop-in-c" id="toc-for-loop-in-c"><code>for</code> loop in C</a></li>
+<li><a href="#the-others" id="toc-the-others">the others</a></li>
 </ul></li>
-<li><a href="#next">Next?</a></li>
-<li><a href="#acknowledgements">Acknowledgements</a></li>
+<li><a href="#next" id="toc-next">Next?</a></li>
+<li><a href="#acknowledgements" id="toc-acknowledgements">Acknowledgements</a></li>
 </ul>
 <hr>
 <h2 id="tldr">TL;DR</h2>
 <p>We can translate a simple <code>for</code> and <code>while</code> loop in C language into a recursive function in ATS language, using the <a href="https://github.com/metasepi/idiomaticca">idiomaticca</a> tool.</p>
 <h2 id="why-difficult-to-make-real-products-in-ats-language">Why difficult to make real products in ATS language?</h2>
-<p>We believe <a href="http://www.ats-lang.org/">ATS language</a> is a better choice than C language. Because it can:</p>
+<p>We believe <a href="http://www.ats-lang.org/">ATS language</a> is a better choice than C language.
+Because it can:</p>
 <ul>
 <li>prove simple invariant,</li>
 <li>safely use pointer,</li>
@@ -91,7 +93,10 @@
 <li>Hard to reuse existing programs and libraries written in C.</li>
 </ol>
 <h2 id="why-is-c2ats-not-useful">Why is c2ats not useful?</h2>
-<p>We have already create <a href="https://github.com/metasepi/c2ats">c2ats</a> to fix above barriers. But people should write own ATS code side of existing C code, because the c2ats only translate C function signature into ATS. It can’t translate C function body.</p>
+<p>We have already create <a href="https://github.com/metasepi/c2ats">c2ats</a> to fix above barriers.
+But people should write own ATS code side of existing C code,
+because the c2ats only translate C function signature into ATS.
+It can’t translate C function body.</p>
 <p>Please imagine that someone tries to translate <a href="https://www.netbsd.org/docs/internals/en/chap-file-system.html">a file system driver</a> using c2ats:</p>
 <ol type="1">
 <li>Choose <a href="https://github.com/NetBSD/src/tree/trunk/sys/ufs/ffs">target files</a> to be translated.</li>
@@ -100,12 +105,15 @@
 </ol>
 <p>Undoubtedly, the step 3 requires more man-hours, and is sometimes unrealistic.</p>
 <h2 id="lets-start-to-create-new-translator-c-to-ats">Let’s start to create new translator C to ATS</h2>
-<p>If so, how about translate <strong>both</strong> function signature and function body into ATS? The translator may fix:</p>
+<p>If so, how about translate <strong>both</strong> function signature and function body into ATS?
+The translator may fix:</p>
 <ul>
 <li>the barrier 1, because programmer learn ATS with codes translated from their C code,</li>
 <li>the barrier 2, because manually re-writing is not needed.</li>
 </ul>
-<p>Of course, we know it seems like a crazy attempt. Let’s try to create a toy translator C to ATS. We call it <a href="https://github.com/metasepi/idiomaticca">idiomaticca</a>.</p>
+<p>Of course, we know it seems like a crazy attempt.
+Let’s try to create a toy translator C to ATS.
+We call it <a href="https://github.com/metasepi/idiomaticca">idiomaticca</a>.</p>
 <h2 id="how-to-install">How to install</h2>
 <pre class="shell"><code>$ git clone https://github.com/metasepi/idiomaticca.git -b v0.1.0.0
 $ cd idiomaticca
@@ -115,135 +123,135 @@ $ which idiomaticca
 <h2 id="some-examples">Some examples</h2>
 <h3 id="while-loop-in-c"><code>while</code> loop in C</h3>
 <pre class="shell"><code>$ vi loop_while.c</code></pre>
-<div class="sourceCode" id="cb3"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb3-1"><a href="#cb3-1"></a><span class="dt">int</span> fib(<span class="dt">int</span> n) {</span>
-<span id="cb3-2"><a href="#cb3-2"></a>	<span class="dt">int</span> f0 = <span class="dv">0</span>, f1 = <span class="dv">1</span>;</span>
-<span id="cb3-3"><a href="#cb3-3"></a></span>
-<span id="cb3-4"><a href="#cb3-4"></a>	<span class="cf">while</span> (n-- &gt; <span class="dv">0</span>) {</span>
-<span id="cb3-5"><a href="#cb3-5"></a>		<span class="dt">int</span> tmp = f1;</span>
-<span id="cb3-6"><a href="#cb3-6"></a>		f1 = f0 + f1;</span>
-<span id="cb3-7"><a href="#cb3-7"></a>		f0 = tmp;</span>
-<span id="cb3-8"><a href="#cb3-8"></a>	}</span>
-<span id="cb3-9"><a href="#cb3-9"></a></span>
-<span id="cb3-10"><a href="#cb3-10"></a>	<span class="cf">return</span> f0;</span>
-<span id="cb3-11"><a href="#cb3-11"></a>}</span>
-<span id="cb3-12"><a href="#cb3-12"></a></span>
-<span id="cb3-13"><a href="#cb3-13"></a><span class="dt">int</span> main() {</span>
-<span id="cb3-14"><a href="#cb3-14"></a>	<span class="cf">return</span> fib(<span class="dv">10</span>);</span>
-<span id="cb3-15"><a href="#cb3-15"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> fib<span class="op">(</span><span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>	<span class="dt">int</span> f0 <span class="op">=</span> <span class="dv">0</span><span class="op">,</span> f1 <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>	<span class="cf">while</span> <span class="op">(</span>n<span class="op">--</span> <span class="op">&gt;</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>		<span class="dt">int</span> tmp <span class="op">=</span> f1<span class="op">;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>		f1 <span class="op">=</span> f0 <span class="op">+</span> f1<span class="op">;</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>		f0 <span class="op">=</span> tmp<span class="op">;</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>	<span class="op">}</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>	<span class="cf">return</span> f0<span class="op">;</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>	<span class="cf">return</span> fib<span class="op">(</span><span class="dv">10</span><span class="op">);</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <pre class="shell"><code>$ gcc loop_while.c
 $ ./a.out
 $ echo $?
 55
 $ idiomaticca trans loop_while.c &gt; loop_while.dats
 $ cat loop_while.dats</code></pre>
-<div class="sourceCode" id="cb5"><pre class="sourceCode ats"><code class="sourceCode ats"><span id="cb5-1"><a href="#cb5-1"></a><span class="dt">#include</span> &quot;share/atspre_staload.hats&quot;</span>
-<span id="cb5-2"><a href="#cb5-2"></a></span>
-<span id="cb5-3"><a href="#cb5-3"></a><span class="kw">staload</span> UN = &quot;prelude/SATS/unsafe.sats&quot;</span>
-<span id="cb5-4"><a href="#cb5-4"></a></span>
-<span id="cb5-5"><a href="#cb5-5"></a><span class="kw">fun</span> fib(n : int) : int =</span>
-<span id="cb5-6"><a href="#cb5-6"></a>  <span class="kw">let</span></span>
-<span id="cb5-7"><a href="#cb5-7"></a>    <span class="kw">var</span> n: int = n</span>
-<span id="cb5-8"><a href="#cb5-8"></a>  <span class="kw">in</span></span>
-<span id="cb5-9"><a href="#cb5-9"></a>    <span class="kw">let</span></span>
-<span id="cb5-10"><a href="#cb5-10"></a>      <span class="kw">var</span> f0: int = <span class="dv">0</span></span>
-<span id="cb5-11"><a href="#cb5-11"></a>      <span class="kw">var</span> f1: int = <span class="dv">1</span></span>
-<span id="cb5-12"><a href="#cb5-12"></a>      </span>
-<span id="cb5-13"><a href="#cb5-13"></a>      <span class="kw">fun</span> loop_while(f0 : int, f1 : int, n : int) : (int, int, int) =</span>
-<span id="cb5-14"><a href="#cb5-14"></a>        <span class="kw">let</span></span>
-<span id="cb5-15"><a href="#cb5-15"></a>          <span class="kw">var</span> f0: int = f0</span>
-<span id="cb5-16"><a href="#cb5-16"></a>          <span class="kw">var</span> f1: int = f1</span>
-<span id="cb5-17"><a href="#cb5-17"></a>          <span class="kw">var</span> n: int = n</span>
-<span id="cb5-18"><a href="#cb5-18"></a>        <span class="kw">in</span></span>
-<span id="cb5-19"><a href="#cb5-19"></a>          <span class="kw">if</span> n &gt; <span class="dv">0</span> <span class="kw">then</span></span>
-<span id="cb5-20"><a href="#cb5-20"></a>            <span class="kw">let</span></span>
-<span id="cb5-21"><a href="#cb5-21"></a>              <span class="kw">val</span> () = n := n - <span class="dv">1</span></span>
-<span id="cb5-22"><a href="#cb5-22"></a>              <span class="kw">var</span> tmp: int = f1</span>
-<span id="cb5-23"><a href="#cb5-23"></a>              <span class="kw">val</span> () = f1 := f0 + f1</span>
-<span id="cb5-24"><a href="#cb5-24"></a>              <span class="kw">val</span> () = f0 := tmp</span>
-<span id="cb5-25"><a href="#cb5-25"></a>            <span class="kw">in</span></span>
-<span id="cb5-26"><a href="#cb5-26"></a>              loop_while(f0, f1, n)</span>
-<span id="cb5-27"><a href="#cb5-27"></a>            <span class="kw">end</span></span>
-<span id="cb5-28"><a href="#cb5-28"></a>          <span class="kw">else</span></span>
-<span id="cb5-29"><a href="#cb5-29"></a>            (f0, f1, n)</span>
-<span id="cb5-30"><a href="#cb5-30"></a>        <span class="kw">end</span></span>
-<span id="cb5-31"><a href="#cb5-31"></a>      </span>
-<span id="cb5-32"><a href="#cb5-32"></a>      <span class="kw">val</span> (i9a_f0, i9a_f1, i9a_n) = loop_while(f0, f1, n)</span>
-<span id="cb5-33"><a href="#cb5-33"></a>      <span class="kw">val</span> () = f0 := i9a_f0</span>
-<span id="cb5-34"><a href="#cb5-34"></a>      <span class="kw">val</span> () = f1 := i9a_f1</span>
-<span id="cb5-35"><a href="#cb5-35"></a>      <span class="kw">val</span> () = n := i9a_n</span>
-<span id="cb5-36"><a href="#cb5-36"></a>    <span class="kw">in</span></span>
-<span id="cb5-37"><a href="#cb5-37"></a>      f0</span>
-<span id="cb5-38"><a href="#cb5-38"></a>    <span class="kw">end</span></span>
-<span id="cb5-39"><a href="#cb5-39"></a>  <span class="kw">end</span></span>
-<span id="cb5-40"><a href="#cb5-40"></a></span>
-<span id="cb5-41"><a href="#cb5-41"></a><span class="kw">implement</span> main () =</span>
-<span id="cb5-42"><a href="#cb5-42"></a>  fib(<span class="dv">10</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode ats"><code class="sourceCode ats"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="dt">#include</span> &quot;share/atspre_staload.hats&quot;</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">staload</span> UN = &quot;prelude/SATS/unsafe.sats&quot;</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="kw">fun</span> fib(n : int) : int =</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">var</span> n: int = n</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>      <span class="kw">var</span> f0: int = <span class="dv">0</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>      <span class="kw">var</span> f1: int = <span class="dv">1</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>      <span class="kw">fun</span> loop_while(f0 : int, f1 : int, n : int) : (int, int, int) =</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>          <span class="kw">var</span> f0: int = f0</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>          <span class="kw">var</span> f1: int = f1</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>          <span class="kw">var</span> n: int = n</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>        <span class="kw">in</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>          <span class="kw">if</span> n &gt; <span class="dv">0</span> <span class="kw">then</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>            <span class="kw">let</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>              <span class="kw">val</span> () = n := n - <span class="dv">1</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>              <span class="kw">var</span> tmp: int = f1</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>              <span class="kw">val</span> () = f1 := f0 + f1</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>              <span class="kw">val</span> () = f0 := tmp</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>            <span class="kw">in</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>              loop_while(f0, f1, n)</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>            <span class="kw">end</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>          <span class="kw">else</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>            (f0, f1, n)</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>      <span class="kw">val</span> (i9a_f0, i9a_f1, i9a_n) = loop_while(f0, f1, n)</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>      <span class="kw">val</span> () = f0 := i9a_f0</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>      <span class="kw">val</span> () = f1 := i9a_f1</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>      <span class="kw">val</span> () = n := i9a_n</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>    <span class="kw">in</span></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>      f0</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>  <span class="kw">end</span></span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a><span class="kw">implement</span> main () =</span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>  fib(<span class="dv">10</span>)</span></code></pre></div>
 <pre class="shell"><code>$ patscc loop_while.dats
 $ ./a.out
 $ echo $?
 55</code></pre>
 <h3 id="for-loop-in-c"><code>for</code> loop in C</h3>
 <pre class="shell"><code>$ vi loop_for.c</code></pre>
-<div class="sourceCode" id="cb8"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb8-1"><a href="#cb8-1"></a><span class="dt">int</span> sum(<span class="dt">int</span> n) {</span>
-<span id="cb8-2"><a href="#cb8-2"></a>	<span class="dt">int</span> i, sum = <span class="dv">0</span>;</span>
-<span id="cb8-3"><a href="#cb8-3"></a></span>
-<span id="cb8-4"><a href="#cb8-4"></a>	<span class="cf">for</span> (i = <span class="dv">1</span>; i &lt;= n; i++) {</span>
-<span id="cb8-5"><a href="#cb8-5"></a>		sum = sum + i;</span>
-<span id="cb8-6"><a href="#cb8-6"></a>	}</span>
-<span id="cb8-7"><a href="#cb8-7"></a></span>
-<span id="cb8-8"><a href="#cb8-8"></a>	<span class="cf">return</span> sum;</span>
-<span id="cb8-9"><a href="#cb8-9"></a>}</span>
-<span id="cb8-10"><a href="#cb8-10"></a></span>
-<span id="cb8-11"><a href="#cb8-11"></a><span class="dt">int</span> main() {</span>
-<span id="cb8-12"><a href="#cb8-12"></a>	<span class="cf">return</span> sum(<span class="dv">5</span>);</span>
-<span id="cb8-13"><a href="#cb8-13"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> sum<span class="op">(</span><span class="dt">int</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>	<span class="dt">int</span> i<span class="op">,</span> sum <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>	<span class="cf">for</span> <span class="op">(</span>i <span class="op">=</span> <span class="dv">1</span><span class="op">;</span> i <span class="op">&lt;=</span> n<span class="op">;</span> i<span class="op">++)</span> <span class="op">{</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>		sum <span class="op">=</span> sum <span class="op">+</span> i<span class="op">;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>	<span class="op">}</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>	<span class="cf">return</span> sum<span class="op">;</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>	<span class="cf">return</span> sum<span class="op">(</span><span class="dv">5</span><span class="op">);</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <pre class="shell"><code>$ gcc loop_for.c
 $ ./a.out
 $ echo $?
 15
 $ idiomaticca trans loop_for.c &gt; loop_for.dats
 $ cat loop_for.dats</code></pre>
-<div class="sourceCode" id="cb10"><pre class="sourceCode ats"><code class="sourceCode ats"><span id="cb10-1"><a href="#cb10-1"></a><span class="dt">#include</span> &quot;share/atspre_staload.hats&quot;</span>
-<span id="cb10-2"><a href="#cb10-2"></a></span>
-<span id="cb10-3"><a href="#cb10-3"></a><span class="kw">staload</span> UN = &quot;prelude/SATS/unsafe.sats&quot;</span>
-<span id="cb10-4"><a href="#cb10-4"></a></span>
-<span id="cb10-5"><a href="#cb10-5"></a><span class="kw">fun</span> sum(n : int) : int =</span>
-<span id="cb10-6"><a href="#cb10-6"></a>  <span class="kw">let</span></span>
-<span id="cb10-7"><a href="#cb10-7"></a>    <span class="kw">var</span> n: int = n</span>
-<span id="cb10-8"><a href="#cb10-8"></a>  <span class="kw">in</span></span>
-<span id="cb10-9"><a href="#cb10-9"></a>    <span class="kw">let</span></span>
-<span id="cb10-10"><a href="#cb10-10"></a>      <span class="kw">var</span> i: int</span>
-<span id="cb10-11"><a href="#cb10-11"></a>      <span class="kw">var</span> sum: int = <span class="dv">0</span></span>
-<span id="cb10-12"><a href="#cb10-12"></a></span>
-<span id="cb10-13"><a href="#cb10-13"></a>      <span class="kw">fun</span> loop_for(i : int, n : int, sum : int) : (int, int, int) =</span>
-<span id="cb10-14"><a href="#cb10-14"></a>        <span class="kw">let</span></span>
-<span id="cb10-15"><a href="#cb10-15"></a>          <span class="kw">var</span> i: int = i</span>
-<span id="cb10-16"><a href="#cb10-16"></a>          <span class="kw">var</span> n: int = n</span>
-<span id="cb10-17"><a href="#cb10-17"></a>          <span class="kw">var</span> sum: int = sum</span>
-<span id="cb10-18"><a href="#cb10-18"></a>        <span class="kw">in</span></span>
-<span id="cb10-19"><a href="#cb10-19"></a>          <span class="kw">if</span> i &lt;= n <span class="kw">then</span></span>
-<span id="cb10-20"><a href="#cb10-20"></a>            <span class="kw">let</span></span>
-<span id="cb10-21"><a href="#cb10-21"></a>              <span class="kw">val</span> () = sum := sum + i</span>
-<span id="cb10-22"><a href="#cb10-22"></a>              <span class="kw">val</span> () = i := i + <span class="dv">1</span></span>
-<span id="cb10-23"><a href="#cb10-23"></a>            <span class="kw">in</span></span>
-<span id="cb10-24"><a href="#cb10-24"></a>              loop_for(i, n, sum)</span>
-<span id="cb10-25"><a href="#cb10-25"></a>            <span class="kw">end</span></span>
-<span id="cb10-26"><a href="#cb10-26"></a>          <span class="kw">else</span></span>
-<span id="cb10-27"><a href="#cb10-27"></a>            (i, n, sum)</span>
-<span id="cb10-28"><a href="#cb10-28"></a>        <span class="kw">end</span></span>
-<span id="cb10-29"><a href="#cb10-29"></a></span>
-<span id="cb10-30"><a href="#cb10-30"></a>      <span class="kw">val</span> () = i := <span class="dv">1</span></span>
-<span id="cb10-31"><a href="#cb10-31"></a>      <span class="kw">val</span> (i9a_i, i9a_n, i9a_sum) = loop_for(i, n, sum)</span>
-<span id="cb10-32"><a href="#cb10-32"></a>      <span class="kw">val</span> () = i := i9a_i</span>
-<span id="cb10-33"><a href="#cb10-33"></a>      <span class="kw">val</span> () = n := i9a_n</span>
-<span id="cb10-34"><a href="#cb10-34"></a>      <span class="kw">val</span> () = sum := i9a_sum</span>
-<span id="cb10-35"><a href="#cb10-35"></a>    <span class="kw">in</span></span>
-<span id="cb10-36"><a href="#cb10-36"></a>      sum</span>
-<span id="cb10-37"><a href="#cb10-37"></a>    <span class="kw">end</span></span>
-<span id="cb10-38"><a href="#cb10-38"></a>  <span class="kw">end</span></span>
-<span id="cb10-39"><a href="#cb10-39"></a></span>
-<span id="cb10-40"><a href="#cb10-40"></a><span class="kw">implement</span> main () =</span>
-<span id="cb10-41"><a href="#cb10-41"></a>  sum(<span class="dv">5</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode ats"><code class="sourceCode ats"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="dt">#include</span> &quot;share/atspre_staload.hats&quot;</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="kw">staload</span> UN = &quot;prelude/SATS/unsafe.sats&quot;</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="kw">fun</span> sum(n : int) : int =</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">var</span> n: int = n</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>      <span class="kw">var</span> i: int</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>      <span class="kw">var</span> sum: int = <span class="dv">0</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>      <span class="kw">fun</span> loop_for(i : int, n : int, sum : int) : (int, int, int) =</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>          <span class="kw">var</span> i: int = i</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>          <span class="kw">var</span> n: int = n</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>          <span class="kw">var</span> sum: int = sum</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>        <span class="kw">in</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>          <span class="kw">if</span> i &lt;= n <span class="kw">then</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>            <span class="kw">let</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>              <span class="kw">val</span> () = sum := sum + i</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>              <span class="kw">val</span> () = i := i + <span class="dv">1</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>            <span class="kw">in</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>              loop_for(i, n, sum)</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>            <span class="kw">end</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>          <span class="kw">else</span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>            (i, n, sum)</span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>      <span class="kw">val</span> () = i := <span class="dv">1</span></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>      <span class="kw">val</span> (i9a_i, i9a_n, i9a_sum) = loop_for(i, n, sum)</span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>      <span class="kw">val</span> () = i := i9a_i</span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>      <span class="kw">val</span> () = n := i9a_n</span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>      <span class="kw">val</span> () = sum := i9a_sum</span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>    <span class="kw">in</span></span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>      sum</span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>  <span class="kw">end</span></span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a><span class="kw">implement</span> main () =</span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>  sum(<span class="dv">5</span>)</span></code></pre></div>
 <pre class="shell"><code>$ patscc loop_for.dats
 $ ./a.out
 $ echo $?

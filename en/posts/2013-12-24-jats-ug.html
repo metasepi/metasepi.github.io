@@ -58,26 +58,60 @@
   <div class="container">
     <div class="content clearfix">
       <h1>Kickoff Japan ATS User Group (JATS-UG) and Ajhc's future plan</h1>
-<div class="info">Posted on December 24, 2013 / Tags: <a href="../../en/tags/ats.html">ats</a>, <a href="../../en/tags/translation.html">translation</a>, <a href="../../en/tags/haskell.html">haskell</a>, <a href="../../en/tags/ajhc.html">ajhc</a>, <a href="../../en/tags/jhc.html">jhc</a>, <a href="../../en/tags/netbsd.html">netbsd</a></div>
+<div class="info">Posted on December 24, 2013 / Tags: <a title="All pages tagged 'ats'." href="../../en/tags/ats.html" rel="tag">ats</a>, <a title="All pages tagged 'translation'." href="../../en/tags/translation.html" rel="tag">translation</a>, <a title="All pages tagged 'haskell'." href="../../en/tags/haskell.html" rel="tag">haskell</a>, <a title="All pages tagged 'ajhc'." href="../../en/tags/ajhc.html" rel="tag">ajhc</a>, <a title="All pages tagged 'jhc'." href="../../en/tags/jhc.html" rel="tag">jhc</a>, <a title="All pages tagged 'netbsd'." href="../../en/tags/netbsd.html" rel="tag">netbsd</a></div>
 <h2>Table of contents</h2>
 <ul>
-<li><a href="#what-is-japan-ats-user-group-jats-ug">What is Japan ATS User Group (JATS-UG)?</a></li>
-<li><a href="#why-need-the-user-group">Why need the user group?</a></li>
-<li><a href="#an-e-mail">An E-mail</a></li>
+<li><a href="#what-is-japan-ats-user-group-jats-ug" id="toc-what-is-japan-ats-user-group-jats-ug">What is Japan ATS User Group (JATS-UG)?</a></li>
+<li><a href="#why-need-the-user-group" id="toc-why-need-the-user-group">Why need the user group?</a></li>
+<li><a href="#an-e-mail" id="toc-an-e-mail">An E-mail</a></li>
 </ul>
 <hr>
-<p>This article is a part of <a href="http://qiita.com/advent-calendar/2013/theorem_prover">Theorem Prover Advent Calendar 2013 - Qiita [キータ]</a>.</p>
+<p>This article is a part of <a href="http://qiita.com/advent-calendar/2013/theorem_prover">Theorem Prover Advent Calendar 2013 - Qiita
+[キータ]</a>.</p>
 <h2 id="what-is-japan-ats-user-group-jats-ug">What is Japan ATS User Group (JATS-UG)?</h2>
-<p>We declare to build “Japan ATS User Group (JATS-UG)”, to pool and discuss ATS infomation in Japanese! The web site is found at <a href="http://jats-ug.metasepi.org/">http://jats-ug.metasepi.org/</a>.</p>
+<p>We declare to build “Japan ATS User Group (JATS-UG)”, to pool and discuss
+ATS infomation in Japanese! The web site is found at
+<a href="http://jats-ug.metasepi.org/">http://jats-ug.metasepi.org/</a>.</p>
 <p><a href="http://jats-ug.metasepi.org/"><img src="../../img/20131224_jats-ug_website.png" /></a></p>
-<p>Today, the web page only has the summary of ATS language and the link to <a href="https://github.com/jats-ug/translate/blob/master/README.md">translated documents</a>. We will focus translating ATS documents into Japanese, through the end of this year.</p>
+<p>Today, the web page only has the summary of ATS language and the link to
+<a href="https://github.com/jats-ug/translate/blob/master/README.md">translated
+documents</a>. We
+will focus translating ATS documents into Japanese, through the end of this
+year.</p>
 <h2 id="why-need-the-user-group">Why need the user group?</h2>
-<p>I have a motive to research around ATS language recently. We are in <a href="2013-01-09-design_arafura.html">Arafura</a> as the first iteration. The Arafura design is:</p>
-<p>“Rewrite NetBSD kernel using Ajhc Haskell compiler, with Snatch-driven development stype.”</p>
-<p>The next iteration should be planned in parallel, because we have the method to rewrite NetBSD kernel device drivers using Ajhc now. Research is similar to betting that has good result using diversified investment. Arafura iteration’s problem is clear without any KPT (keep, problem, try) framework.</p>
-<p>It’s caused by much time to develop Ajhc. Haskell for embedded is a big challenge in itself. We need the challenge’s success to attain the starting post to write kernel. Furthermore, John as upstream author of jhc doesn’t develop jhc actively. There is many technical puzzles on ATS domain. It’s the “Problem”.</p>
-<p>On the other hand, Snatch-driven development method is relatively doing good. Result fully-applying the method to NetBSD kernel will not be obtained in the first iteration. However, We have found no underlying faults. And we can’t perfectly decide that using NetBSD kernel as base platform is good. We think it causes same result while the other monolithic kernel is used. That is to say that these are clearly “Keep”.</p>
-<p>What is “Try”? I wrote <a href="2013-12-23-ml_guide_to_ats.html">the article</a>, about ATS language has good behavior for embedded such like jhc. However, there are no Japanese infomation about ATS, and no communities about ATS in Japan… Things can’t remain as they are. Then, I would like to construct an ATS community in Japan, while I learn ATS language. It’s first “Try” to start our next iteration.</p>
+<p>I have a motive to research around ATS language recently.
+We are in <a href="2013-01-09-design_arafura.html">Arafura</a> as the first iteration.
+The Arafura design is:</p>
+<p>“Rewrite NetBSD kernel using Ajhc Haskell compiler, with Snatch-driven
+development stype.”</p>
+<p>The next iteration should be planned in parallel, because we have the method
+to rewrite NetBSD kernel device drivers using Ajhc now. Research is similar
+to betting that has good result using diversified investment. Arafura
+iteration’s problem is clear without any KPT (keep, problem, try) framework.</p>
+<p>It’s caused by much time to develop Ajhc.
+Haskell for embedded is a big challenge in itself.
+We need the challenge’s success to attain the starting post to write kernel.
+Furthermore, John as upstream author of jhc doesn’t develop jhc actively.
+There is many technical puzzles on ATS domain.
+It’s the “Problem”.</p>
+<p>On the other hand, Snatch-driven development method is relatively doing
+good.
+Result fully-applying the method to NetBSD kernel will not be obtained in
+the first iteration.
+However, We have found no underlying faults.
+And we can’t perfectly decide that using NetBSD kernel as base platform is
+good.
+We think it causes same result while the other monolithic kernel is used.
+That is to say that these are clearly “Keep”.</p>
+<p>What is “Try”?
+I wrote <a href="2013-12-23-ml_guide_to_ats.html">the article</a>, about ATS language
+has good behavior for embedded such like jhc.
+However, there are no Japanese infomation about ATS, and no communities
+about ATS in Japan…
+Things can’t remain as they are.
+Then, I would like to construct an ATS community in Japan, while I learn ATS
+language.
+It’s first “Try” to start our next iteration.</p>
 <h2 id="an-e-mail">An E-mail</h2>
 <p>While thinking such things, I got an E-mail from ATS language author.</p>
 <pre><code>Date: Mon Dec 23 11:40 JST 2013
@@ -127,9 +161,38 @@ performance-wise.
 Cheers,
 
 --Hongwei</code></pre>
-<p>Umm… What I want to say is preoccupied by him. This may be caused by weight of long china history.</p>
-<p>Jhc Haskell compiler also has a good future. ATS’s type is safe, but not rich such like Haskell’s. Haskell has type class. I think that ATS can’t write code that has higher order representation such like Haskell. That is to say, ATS may not be good to write application that use the representation. Haskell’s issue is that the representation strongly depends on GHC language implementation. There is no future on GHC growing to be good for system programming. On the other hand, how about jhc? No, it’s good for system programming, but can’t use most of the representation. So, jhc is currently Haskell implementation that imposes writing a code such like ATS’s on programmer. If the issue is relieved, we can dramatically expand Haskell language’s application range. Problem is who can pay huge man-hours to be needed for research/design/develop/debug them. While even genius such as John gets tired, who can try to solve the challenging problem? In another way, who can support John’s mind? That is, the <a href="http://www.haaretz.com/life/arts-leisure/always-on-the-side-of-the-egg-1.270371">high-solid wall</a> on Haskell for embedded.</p>
-<p>However, this should be a positive step. <a href="https://www.youtube.com/watch?v=avl_88EY4Tk">While seeing the sunset</a>, <a href="http://lyrics.wikia.com/%E6%9D%B1%E4%BA%AC%E4%BA%8B%E5%A4%89_%28Tokyo_Jihen%29:%E8%90%BD%E6%97%A5">I belive having new sunlight tomorrow.</a> And, Merry Christmas! De-gesso.</p>
+<p>Umm… What I want to say is preoccupied by him.
+This may be caused by weight of long china history.</p>
+<p>Jhc Haskell compiler also has a good future.
+ATS’s type is safe, but not rich such like Haskell’s.
+Haskell has type class.
+I think that ATS can’t write code that has higher order representation such
+like Haskell.
+That is to say, ATS may not be good to write application that use the
+representation.
+Haskell’s issue is that the representation strongly depends on GHC language
+implementation.
+There is no future on GHC growing to be good for system programming.
+On the other hand, how about jhc?
+No, it’s good for system programming, but can’t use most of the
+representation.
+So, jhc is currently Haskell implementation that imposes writing a code such
+like ATS’s on programmer.
+If the issue is relieved, we can dramatically expand Haskell language’s
+application range.
+Problem is who can pay huge man-hours to be needed for
+research/design/develop/debug them.
+While even genius such as John gets tired, who can try to solve the
+challenging problem?
+In another way, who can support John’s mind?
+That is, the <a href="http://www.haaretz.com/life/arts-leisure/always-on-the-side-of-the-egg-1.270371">high-solid
+wall</a>
+on Haskell for embedded.</p>
+<p>However, this should be a positive step.
+<a href="https://www.youtube.com/watch?v=avl_88EY4Tk">While seeing the sunset</a>,
+<a href="http://lyrics.wikia.com/%E6%9D%B1%E4%BA%AC%E4%BA%8B%E5%A4%89_%28Tokyo_Jihen%29:%E8%90%BD%E6%97%A5">I belive having new sunlight
+tomorrow.</a>
+And, Merry Christmas! De-gesso.</p>
 <p>
 <script src="https://giscus.app/client.js" data-repo="metasepi/metasepi-website" data-repo-id="MDEwOlJlcG9zaXRvcnkxMjgyMzQ5Nw==" data-category="[ENTER CATEGORY NAME HERE]" data-category-id="[ENTER CATEGORY ID HERE]" data-mapping="pathname" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="bottom" data-theme="preferred_color_scheme" data-lang="en" crossorigin="anonymous" async>
 </script>

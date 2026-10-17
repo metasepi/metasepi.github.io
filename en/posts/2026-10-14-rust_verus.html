@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>Survey. An Introduction to OS-Level Verification with Asterinas and Verus - Metasepi</title>
+
+  <meta name="description" content="metasepi.org">
+  <meta name="author" content="Kiwamu Okabe">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="http://metasepi.org/rss_en.xml" rel="alternate" title="Blog" type="application/rss+xml">
+
+  <!-- CSS concatenated and minified via ant build script-->
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="../../css/syntax.css">
+  <link rel="stylesheet" href="../../css/calendar.css">
+  <!-- end CSS-->
+
+  <link rel="stylesheet" href="../../css/default.css">
+
+  <script src="../../js/libs/modernizr-2.0.6.min.js"></script>
+</head>
+
+<body onload="prettyPrint()">
+  <div id="fb-root"></div>
+  <script>
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = '//connect.facebook.net/ja_JP/all.js#xfbml=1';
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
+
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <a href="../../">Metasepi</a>
+      </div>
+
+      <div class="nav">
+        <li><a href="../../">Home</a></li>
+        <li><a href="../../en/posts.html">Blog</a></li>
+        <li><a href="../../papers.html">Papers</a></li>
+        <li><a href="../../map.html">Map</a></li>
+        <li><a href="../../memories.html">Memories</a></li>
+        <li><a href="../../about.html">About</a></li>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="content clearfix">
+      <h1>Survey. An Introduction to OS-Level Verification with Asterinas and Verus</h1>
+<div class="info">Posted on October 14, 2026 / Tags: <a title="All pages tagged 'survey'." href="../../en/tags/survey.html" rel="tag">survey</a>, <a title="All pages tagged 'rust'." href="../../en/tags/rust.html" rel="tag">rust</a>, <a title="All pages tagged 'verus'." href="../../en/tags/verus.html" rel="tag">verus</a>, <a title="All pages tagged 'linux'." href="../../en/tags/linux.html" rel="tag">linux</a>, <a title="All pages tagged 'kernel'." href="../../en/tags/kernel.html" rel="tag">kernel</a>, <a title="All pages tagged 'asterinas'." href="../../en/tags/asterinas.html" rel="tag">asterinas</a></div>
+<h2>Table of contents</h2>
+<ul>
+<li><a href="#resources" id="toc-resources">Resources</a></li>
+</ul>
+<hr>
+<p>I gave a short talk at <a href="https://estie.connpass.com/event/405217/">Rust、何もわからない… #15</a> about formal verification at the operating-system level. The slides are below.</p>
+<div class="slide-deck">
+<p><iframe src="../../doc/talks/2026-10-14-rust_verus/index.html" title="An Introduction to OS-Level Verification with Asterinas and Verus" loading="lazy" allow="autoplay; fullscreen" allowfullscreen></iframe></p>
+</div>
+<p class="slide-deck-links">
+<a href="../../doc/talks/2026-10-14-rust_verus/index.html">Open slides in a new tab</a>
+·
+<a href="../../doc/talks/2026-10-14-rust_verus/slides.pdf">Download PDF</a>
+·
+<a href="https://github.com/master-q/masterq-docs/tree/master/presentations/20261014-rust_verus">View Markdown source</a>
+</p>
+<p><a href="https://github.com/asterinas/asterinas">Asterinas</a> is a Linux-compatible kernel written in Rust. Most of its code uses safe Rust, while low-level operations that require <code>unsafe</code> are isolated in OSTD. <a href="https://github.com/asterinas/vostd">VOSTD</a> uses <a href="https://github.com/verus-lang/verus">Verus</a> to verify this low-level layer.</p>
+<p>For the demo, I deliberately introduced a bug into <code>align_down</code>. The function should return the greatest multiple of a power-of-two alignment that is no greater than the input. Changing</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">self</span> <span class="op">&amp;</span> <span class="op">!</span>(align <span class="op">-</span> <span class="dv">1</span>)</span></code></pre></div>
+<p>to</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">self</span> <span class="op">&amp;</span> (align <span class="op">-</span> <span class="dv">1</span>)</span></code></pre></div>
+<p>breaks that guarantee. Verus caught the bug because it could no longer prove the postcondition <code>ret % align == 0</code>. Unlike a test, this check is about satisfying the specification, not just passing selected inputs.</p>
+<p>Writing the proof for the correct implementation is much harder than spotting this bug. The proof needs lemmas connecting bitwise operations, masks, and alignment. <a href="https://github.com/asterinas/KVerus">KVerus</a> explores using LLMs to generate and repair Verus proofs. Perhaps one day, developers will only need to write preconditions and postconditions, while an LLM drafts the proof code and Verus checks it. That is a direction to explore, not yet a reason to treat proof generation as a solved problem.</p>
+<h2 id="resources">Resources</h2>
+<ul>
+<li><a href="https://github.com/asterinas/asterinas">Asterinas</a></li>
+<li><a href="https://github.com/asterinas/vostd">VOSTD</a></li>
+<li><a href="https://github.com/verus-lang/verus">Verus</a></li>
+<li><a href="https://github.com/asterinas/KVerus">KVerus</a></li>
+</ul>
+<p>
+<script src="https://giscus.app/client.js" data-repo="metasepi/metasepi-website" data-repo-id="MDEwOlJlcG9zaXRvcnkxMjgyMzQ5Nw==" data-category="[ENTER CATEGORY NAME HERE]" data-category-id="[ENTER CATEGORY ID HERE]" data-mapping="pathname" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="bottom" data-theme="preferred_color_scheme" data-lang="en" crossorigin="anonymous" async>
+</script>
+</p>
+
+    </div>
+
+    <footer>
+      <p>
+        This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
+        <br>
+        Metasepi project is supported by
+        <a href="http://www.metasepi-design.com/"><img alt="METASEPI DESIGN" style="border-width:0" src="../../img/metasepi_design_logo_82x25.png" /></a> ×
+        <a href="../../past-supporters.html">Past Supporters</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="/js/libs/jquery-1.6.2.min.js"><\/script>')</script>
+
+  <!-- scripts concatenated and minified via ant build script-->
+  <script defer src="../../js/plugins.js"></script>
+  <script defer src="../../js/script.js"></script>
+  <!-- end scripts-->
+
+  <!--[if lt IE 7 ]>
+    <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js">
+    <script>
+      window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})
+  <![endif]-->
+</body>
