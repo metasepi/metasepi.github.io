@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>No more pulling the SD card -- SWD on Raspberry Pi 5 with the Debug Probe - Metasepi</title>
+
+  <meta name="description" content="metasepi.org">
+  <meta name="author" content="Kiwamu Okabe">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="http://metasepi.org/rss_en.xml" rel="alternate" title="Blog" type="application/rss+xml">
+
+  <!-- CSS concatenated and minified via ant build script-->
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="../../css/syntax.css">
+  <link rel="stylesheet" href="../../css/calendar.css">
+  <!-- end CSS-->
+
+  <link rel="stylesheet" href="../../css/default.css">
+
+  <script src="../../js/libs/modernizr-2.0.6.min.js"></script>
+</head>
+
+<body onload="prettyPrint()">
+  <div id="fb-root"></div>
+  <script>
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = '//connect.facebook.net/ja_JP/all.js#xfbml=1';
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
+
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <a href="../../">Metasepi</a>
+      </div>
+
+      <div class="nav">
+        <li><a href="../../">Home</a></li>
+        <li><a href="../../en/posts.html">Blog</a></li>
+        <li><a href="../../papers.html">Papers</a></li>
+        <li><a href="../../map.html">Map</a></li>
+        <li><a href="../../memories.html">Memories</a></li>
+        <li><a href="../../about.html">About</a></li>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="content clearfix">
+      <h1>No more pulling the SD card -- SWD on Raspberry Pi 5 with the Debug Probe</h1>
+<div class="info">Posted on October 27, 2026 / Tags: <a title="All pages tagged 'takibi'." href="../../en/tags/takibi.html" rel="tag">takibi</a>, <a title="All pages tagged 'kernel'." href="../../en/tags/kernel.html" rel="tag">kernel</a>, <a title="All pages tagged 'debug'." href="../../en/tags/debug.html" rel="tag">debug</a>, <a title="All pages tagged 'raspberrypi'." href="../../en/tags/raspberrypi.html" rel="tag">raspberrypi</a></div>
+<h2>Table of contents</h2>
+<ul>
+<li><a href="#only-a-stub-on-the-sd-card" id="toc-only-a-stub-on-the-sd-card">Only a stub on the SD card</a></li>
+<li><a href="#where-i-got-stuck" id="toc-where-i-got-stuck">Where I got stuck</a></li>
+<li><a href="#resources" id="toc-resources">Resources</a></li>
+</ul>
+<hr>
+<p>I gave a talk at <a href="https://raspberrypi.connpass.com/event/408515/">Raspberry JAM Tokyo 2026.10</a>
+about loading and
+debugging a research OS on a Raspberry Pi 5 over SWD, using the official Debug
+Probe. The slides are below.</p>
+<div class="slide-deck">
+<p><iframe src="../../doc/talks/2026-10-27-raspberry-jam-tokyo/index.html" title="No more pulling the SD card -- SWD on Raspberry Pi 5 with the Debug Probe" loading="lazy" allow="autoplay; fullscreen" allowfullscreen></iframe></p>
+</div>
+<p class="slide-deck-links">
+<a href="../../doc/talks/2026-10-27-raspberry-jam-tokyo/index.html">Open slides in a new tab</a>
+·
+<a href="../../doc/talks/2026-10-27-raspberry-jam-tokyo/slides.pdf">Download PDF</a>
+·
+<a href="https://github.com/takibi-lang/takibi/tree/main/docs/talks/2026-10-27-raspberry-jam-tokyo">View Markdown source</a>
+</p>
+<p>The OS is <a href="https://github.com/takibi-lang/takibi">Takibi</a>, a research prototype
+in which I am building a language and a
+kernel together. This talk left the language out entirely. It is about what it
+took to load and debug a self-made OS on real hardware every day.</p>
+<p>I chose the RPi5 because it is easy to buy and cheap – the Debug Probe costs
+a few thousand yen – while still having four Cortex-A76 cores and plenty of
+documentation. The 3-pin debug connector carries SWD or UART but not both, so
+the UART comes out on GPIO14/15.</p>
+<h2 id="only-a-stub-on-the-sd-card">Only a stub on the SD card</h2>
+<p>The SD card holds a stub of about 100 lines, written once. It saves the DTB
+the firmware hands over and waits in <code>wfe</code>. Every new kernel goes in by
+halting the CPU with OpenOCD, loading the image straight into RAM over SWD,
+and resuming.</p>
+<p>OpenOCD 0.12.0 ships no <code>bcm2712.cfg</code> for the RPi5, so I vendored the one
+published in <a href="https://www.raspi.jp/2024/03/raspberry-pi-5-hardware-debbuging/">an article on raspi.jp</a>.
+The Japanese community saved me a lot of work here. The config defaults to
+1 MHz, but on my setup 30 MHz works fine.</p>
+<h2 id="where-i-got-stuck">Where I got stuck</h2>
+<ul>
+<li><strong>No reset line</strong>: the Debug Probe’s SWD wiring has no nSRST, so
+<code>reset halt</code> stops with “how to reset?”. Instead I write a two-instruction
+trampoline that calls PSCI SYSTEM_RESET and let the CPU run it – the same
+path Linux’s <code>reboot</code> takes.</li>
+<li><strong>EL2 does not mean it is my OS</strong>: Cortex-A76 has VHE, so Linux runs its
+whole kernel at EL2 too. I now decide by whether the halted PC is below
+32 MB, not by the exception level.</li>
+<li><strong>The memory you see may not be real</strong>: SWD reads DRAM, not the cache. CPU
+state is read from registers, and the kernel cleans the cache before it
+parks.</li>
+<li><strong>A failed write still exits 0</strong>: halted in EL0, OpenOCD cannot write
+kernel memory, and it still exits with status 0. I stop in EL1 with a
+hardware breakpoint in the IRQ handler, then read the value back to
+confirm the write.</li>
+</ul>
+<p>Every script is in the repository. I hope it helps anyone writing their own
+OS on an RPi5.</p>
+<h2 id="resources">Resources</h2>
+<ul>
+<li>Source of the OpenOCD config: <a href="https://www.raspi.jp/2024/03/raspberry-pi-5-hardware-debbuging/">raspi.jp (2024/03)</a></li>
+<li>RPi5 JTAG setup: <a href="https://github.com/takibi-lang/takibi/blob/ab3e773af9703ce2024080e95bd12213d9c41c87/kernel/README.md#L640">kernel/README.md</a></li>
+<li>Repository: <a href="https://github.com/takibi-lang/takibi">github.com/takibi-lang/takibi</a></li>
+</ul>
+<p>
+<script src="https://giscus.app/client.js" data-repo="metasepi/metasepi-website" data-repo-id="MDEwOlJlcG9zaXRvcnkxMjgyMzQ5Nw==" data-category="[ENTER CATEGORY NAME HERE]" data-category-id="[ENTER CATEGORY ID HERE]" data-mapping="pathname" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="bottom" data-theme="preferred_color_scheme" data-lang="en" crossorigin="anonymous" async>
+</script>
+</p>
+
+    </div>
+
+    <footer>
+      <p>
+        This page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>. <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a>
+        <br>
+        Metasepi project is supported by
+        <a href="http://www.metasepi-design.com/"><img alt="METASEPI DESIGN" style="border-width:0" src="../../img/metasepi_design_logo_82x25.png" /></a> ×
+        <a href="../../past-supporters.html">Past Supporters</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="/js/libs/jquery-1.6.2.min.js"><\/script>')</script>
+
+  <!-- scripts concatenated and minified via ant build script-->
+  <script defer src="../../js/plugins.js"></script>
+  <script defer src="../../js/script.js"></script>
+  <!-- end scripts-->
+
+  <!--[if lt IE 7 ]>
+    <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js">
+    <script>
+      window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})
+  <![endif]-->
+</body>
